@@ -29,6 +29,8 @@ import { InventoryUniformEntity } from '../core/infrastructure/entity/inventory-
 import { InventoryExtintorEntity } from '../core/infrastructure/entity/inventory-extintor.entity';
 import { InventoryMovementEntity } from '../core/infrastructure/entity/inventory-movement.entity';
 import { InventoryAssignmentEntity } from '../core/infrastructure/entity/inventory-assignment.entity';
+import { TrainingInstructionEntity } from '../core/infrastructure/entity/training-instruction.entity';
+import { TrainingInstructionFolderEntity } from '../core/infrastructure/entity/training-instruction-folder.entity';
 
 dotenv.config();
 
@@ -48,7 +50,8 @@ export const AppDataSource = new DataSource({
     CategoriesEntity, SubcategoriesEntity, EmployeeEntity, RequestDetailsEntity, RequestHeadersEntity, RequestsAdditionalEntity,
     LaborEventEntity, EmployeeUniformEntity, EmployeeDocumentEntity, JobDescriptionEntity, TerminationEntity,
     CommitteeDocumentEntity, AbsenceRequestEntity, DisabilityEntity, SalaryTabulatorEntity,
-    InventoryEntity, InventoryUniformEntity, InventoryExtintorEntity, InventoryMovementEntity, InventoryAssignmentEntity],
+    InventoryEntity, InventoryUniformEntity, InventoryExtintorEntity, InventoryMovementEntity, InventoryAssignmentEntity,
+    TrainingInstructionEntity, TrainingInstructionFolderEntity],
 });
 
 

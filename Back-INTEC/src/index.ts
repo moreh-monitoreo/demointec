@@ -35,6 +35,8 @@ import inventoryUniformRouter from './core/infrastructure/rest/routes/inventory-
 import inventoryExtintorRouter from './core/infrastructure/rest/routes/inventory-extintor.route';
 import inventoryMovementRouter from './core/infrastructure/rest/routes/inventory-movement.route';
 import inventoryAssignmentRouter from './core/infrastructure/rest/routes/inventory-assignment.route';
+import trainingInstructionRouter from './core/infrastructure/rest/routes/training-instruction.route';
+import trainingInstructionFolderRouter from './core/infrastructure/rest/routes/training-instruction-folder.route';
 
 import { RoleEntity } from './core/infrastructure/entity/roles.entity';
 import { UserEntity } from './core/infrastructure/entity/users.entity';
@@ -84,6 +86,8 @@ app.use('/api', inventoryUniformRouter);
 app.use('/api', inventoryExtintorRouter);
 app.use('/api', inventoryMovementRouter);
 app.use('/api', inventoryAssignmentRouter);
+app.use('/api', trainingInstructionRouter);
+app.use('/api', trainingInstructionFolderRouter);
 
 // Serve Frontend Static Files
 app.use(express.static(path.join(__dirname, '../public')));

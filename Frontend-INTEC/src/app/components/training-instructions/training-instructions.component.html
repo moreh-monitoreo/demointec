@@ -1,0 +1,186 @@
+<div class="content-container">
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Capacitación y Adiestramiento</h1>
+    </div>
+    <button class="btn-new-folder" (click)="openFolderModal()">
+      <i class="bi bi-folder-plus"></i>
+      Crear carpeta
+    </button>
+  </div>
+
+  <!-- Buscador de documentos -->
+  <div class="filters-section">
+    <div class="filters-row">
+      <div class="filter-group search-wrapper">
+        <label for="searchDocument">Buscar Documento</label>
+        <div class="search-input-container">
+          <i class="bi bi-search search-icon"></i>
+          <input type="text" id="searchDocument" class="filter-input" placeholder="Escriba el nombre del documento..."
+            [(ngModel)]="searchTerm" (input)="onSearchInput()" autocomplete="off">
+          <button *ngIf="searchTerm" type="button" class="btn-clear-input" (click)="searchTerm = ''; onSearchInput()">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Carpetas tipo acordeón -->
+  <div class="table-container">
+    <div class="table-header">
+      <div class="table-info">Carpetas de Instrucciones de Capacitación</div>
+    </div>
+
+    <div class="folders-list">
+      <!-- Loading secciones -->
+      <div class="folder-loading" *ngIf="isLoadingSections">
+        <i class="bi bi-arrow-repeat loading-icon"></i>
+        Cargando carpetas...
+      </div>
+
+      <!-- Sin carpetas -->
+      <div class="no-documents" *ngIf="!isLoadingSections && sections.length === 0">
+        <i class="bi bi-folder2-open"></i>
+        <span>No hay carpetas creadas.</span>
+        <span class="no-docs-hint">Crea una con el botón <i class="bi bi-folder-plus"></i> <strong>Crear carpeta</strong></span>
+      </div>
+
+      <div class="folder-item" *ngFor="let section of sections">
+        <!-- Fila de carpeta -->
+        <div class="folder-header" (click)="toggleSection(section)" [class.expanded]="section.expanded">
+          <div class="folder-title">
+            <i class="bi bi-chevron-down folder-arrow" [class.rotated]="!section.expanded"></i>
+            <i class="bi bi-folder2" *ngIf="!section.expanded"></i>
+            <i class="bi bi-folder2-open" *ngIf="section.expanded"></i>
+            <span class="section-abbreviation">{{ section.key }}</span>
+            <span class="folder-label">{{ section.label }}</span>
+          </div>
+          <div class="folder-actions" (click)="$event.stopPropagation()">
+            <button class="btn-action btn-upload-action" (click)="openUploadModal(section)">
+              <i class="bi bi-cloud-arrow-up"></i>
+              Subir
+            </button>
+          </div>
+        </div>
+
+        <!-- Contenido expandible -->
+        <div class="folder-content" *ngIf="section.expanded">
+          <!-- Loading -->
+          <div class="folder-loading" *ngIf="section.isLoading">
+            <i class="bi bi-arrow-repeat loading-icon"></i>
+            Cargando documentos...
+          </div>
+
+          <!-- Documentos -->
+          <div *ngIf="!section.isLoading && section.loaded">
+            <div class="document-item" *ngFor="let doc of section.filteredDocuments">
+              <div class="document-info">
+                <i class="bi bi-file-earmark-text"></i>
+                <div>
+                  <span class="document-name">{{ doc.name_document || 'Sin nombre' }}</span>
+                  <small class="document-date" *ngIf="doc.upload_date">Subido: {{ doc.upload_date }}</small>
+                </div>
+              </div>
+              <div class="document-actions">
+                <button class="btn-doc btn-doc-view" (click)="viewDocument(doc)" title="Ver">
+                  <i class="bi bi-eye"></i>
+                </button>
+                <button class="btn-doc btn-doc-download" (click)="downloadDocument(doc)" title="Descargar">
+                  <i class="bi bi-download"></i>
+                </button>
+                <button class="btn-doc btn-doc-delete" (click)="deleteDocument(doc, section)" title="Eliminar">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Sin documentos -->
+            <div class="no-documents" *ngIf="section.filteredDocuments.length === 0 && searchTerm.length > 0">
+              <i class="bi bi-search"></i>
+              <span>No se encontraron documentos que coincidan con la búsqueda.</span>
+            </div>
+
+            <div class="no-documents" *ngIf="section.filteredDocuments.length === 0 && searchTerm.length === 0">
+              <i class="bi bi-folder2-open"></i>
+              <span>No hay documentos en esta carpeta.</span>
+              <span class="no-docs-hint">Sube uno con el botón <i class="bi bi-cloud-arrow-up"></i> <strong>Subir</strong></span>
+            </div>
+          </div>
+
+          <!-- Carpeta expandida sin cargar aún -->
+          <div class="no-documents" *ngIf="!section.isLoading && !section.loaded">
+            <i class="bi bi-folder2-open"></i>
+            <span>No hay documentos en esta carpeta.</span>
+            <span class="no-docs-hint">Sube uno con el botón <i class="bi bi-cloud-arrow-up"></i> <strong>Subir</strong></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para crear carpeta -->
+<div class="modal-overlay" *ngIf="showFolderModal" (click)="closeFolderModal()">
+  <div class="modal-upload" (click)="$event.stopPropagation()">
+    <div class="modal-upload-header">
+      <h3 class="modal-upload-title">
+        <i class="bi bi-folder-plus"></i>
+        Crear carpeta
+      </h3>
+      <button class="modal-close" (click)="closeFolderModal()">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+    <div class="modal-upload-body">
+      <div class="upload-field">
+        <label class="upload-label" for="folderName">Nombre de la carpeta</label>
+        <input type="text" id="folderName" class="filter-input" style="width:100%"
+          placeholder="Ej. Capacitación 2026"
+          [(ngModel)]="newFolderName" autocomplete="off">
+      </div>
+    </div>
+    <div class="modal-upload-footer">
+      <button class="btn-cancel" (click)="closeFolderModal()">Cancelar</button>
+      <button class="btn-upload" (click)="createFolder()" [disabled]="!newFolderName.trim() || isCreatingFolder">
+        <i class="bi bi-folder-plus"></i>
+        {{ isCreatingFolder ? 'Creando...' : 'Crear' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Mini modal para subir archivo -->
+<div class="modal-overlay" *ngIf="showUploadModal" (click)="closeUploadModal()">
+  <div class="modal-upload" (click)="$event.stopPropagation()">
+    <div class="modal-upload-header">
+      <h3 class="modal-upload-title">
+        <i class="bi bi-cloud-arrow-up"></i>
+        Subir documento
+      </h3>
+      <button class="modal-close" (click)="closeUploadModal()">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+    <div class="modal-upload-body">
+      <div class="upload-info">
+        <span class="upload-info-label">Carpeta:</span>
+        <span class="section-abbreviation">{{ uploadSection?.key }}</span>
+        {{ uploadSection?.label }}
+      </div>
+      <div class="upload-field">
+        <label class="upload-label">Seleccionar archivo</label>
+        <input type="file" class="upload-input" (change)="onFileSelected($event)">
+      </div>
+    </div>
+    <div class="modal-upload-footer">
+      <button class="btn-cancel" (click)="closeUploadModal()">Cancelar</button>
+      <button class="btn-upload" (click)="uploadDocument()" [disabled]="!selectedFile || isUploading">
+        <i class="bi bi-cloud-arrow-up"></i>
+        {{ isUploading ? 'Subiendo...' : 'Subir' }}
+      </button>
+    </div>
+  </div>
+</div>
+

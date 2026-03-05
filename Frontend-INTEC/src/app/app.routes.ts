@@ -23,6 +23,7 @@ import { SalaryReportComponent } from './components/salary-report/salary-report.
 import { TemplateAnalysisComponent } from './components/template-analysis/template-analysis.component';
 import { InventoryComponent } from './components/inventory/inventory.component';
 import { InventoryAssignmentComponent } from './components/inventory-assignment/inventory-assignment.component';
+import { TrainingInstructionsComponent } from './components/training-instructions/training-instructions.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -53,6 +54,8 @@ export const routes: Routes = [
       { path: 'analisis-plantillas', component: TemplateAnalysisComponent },
       { path: 'inventario-rh', component: InventoryComponent },
       { path: 'asignacion-inventario', component: InventoryAssignmentComponent },
+      { path: 'capacitaciones', component: TrainingInstructionsComponent },
+
       { path: 'permisos-vacaciones', loadComponent: () => import('./components/permissions-vacations/permissions-vacations.component').then(m => m.PermissionsVacationsComponent) },
     ]
   },
