@@ -25,15 +25,6 @@ export class ReportPermisoPdfService {
 
     this.drawCopia(doc, 5, empleado, solicitud, logoBase64);
 
-    // Línea punteada separadora — azul
-    doc.setLineDashPattern([2, 2], 0);
-    doc.setDrawColor(42, 122, 228);
-    doc.setLineWidth(0.6);
-    doc.line(10, 149, 200, 149);
-    doc.setLineDashPattern([], 0);
-
-    this.drawCopia(doc, 152, empleado, solicitud, logoBase64);
-
     const today = new Date().toISOString().split('T')[0].replace(/-/g, '');
     doc.save(`SolicitudPermiso_${today}.pdf`);
   }
@@ -321,10 +312,10 @@ export class ReportPermisoPdfService {
     const fh = 18;
 
     const firmas = [
-      { top: 'Trabajador(a)', bottom: 'Nombre y Firma' },
+      { top: 'Trabajador(a)', bottom: 'Firma' },
       { top: 'Aprobada:  Jefe directo /\nEncargado de obra / Residente', bottom: 'Firma' },
-      { top: 'Autoriza\nGerente de area', bottom: 'Firma de autorización' },
-      { top: 'Enterado', bottom: 'Firma de R.H.' }
+      { top: 'Autoriza\nGerente de area', bottom: 'Firma' },
+      { top: 'Enterado', bottom: 'Firma' }
     ];
 
     doc.setDrawColor(42, 122, 228);

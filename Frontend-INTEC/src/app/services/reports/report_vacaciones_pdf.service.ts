@@ -31,15 +31,6 @@ export class ReportVacacionesPdfService {
 
     this.drawCopia(doc, 5, empleado, solicitud, logoBase64);
 
-    // Línea punteada separadora — azul, igual que en la imagen
-    doc.setLineDashPattern([2, 2], 0);
-    doc.setDrawColor(42, 122, 228);
-    doc.setLineWidth(0.6);
-    doc.line(10, 149, 200, 149);
-    doc.setLineDashPattern([], 0);
-
-    this.drawCopia(doc, 152, empleado, solicitud, logoBase64);
-
     const today = new Date().toISOString().split('T')[0].replace(/-/g, '');
     doc.save(`SolicitudVacaciones_${today}.pdf`);
   }
@@ -343,10 +334,10 @@ export class ReportVacacionesPdfService {
     const fh = 26;
 
     const firmas = [
-      { top: 'Trabajador(a)', bottom: 'Nombre y Firma' },
+      { top: 'Trabajador(a)', bottom: 'Firma' },
       { top: 'Aprobada:  Jefe directo\nEncargado de obra / Residente', bottom: 'Firma' },
-      { top: 'Autoriza\nGerente de operaciones\n/ Administrativo', bottom: 'Firma de autorización' },
-      { top: 'Enterado', bottom: 'Firma de R.H.' }
+      { top: 'Autoriza\nGerente de operaciones\n/ Administrativo', bottom: 'Firma' },
+      { top: 'Enterado', bottom: 'Firma' }
     ];
 
     doc.setDrawColor(42, 122, 228);

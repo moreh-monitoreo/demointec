@@ -14,7 +14,7 @@ export class ReportPrenominaService {
 
   exportToExcel(data: Prenomina[], isMultiDay: boolean, startDate: string, endDate: string): void {
     const groups = this.buildGroups(data);
-    const colCount = isMultiDay ? 5 : 4;
+    const colCount = isMultiDay ? 6 : 5;
 
     const rows: any[][] = [];
 
@@ -39,8 +39,8 @@ export class ReportPrenominaService {
 
     // Headers
     const headers = isMultiDay
-      ? ['Colaborador', 'Estatus', 'Fecha', 'Entrada', 'Salida']
-      : ['Colaborador', 'Estatus', 'Entrada', 'Salida'];
+      ? ['Colaborador', 'Estatus', 'Fecha', 'Entrada', 'Salida', 'Firma']
+      : ['Colaborador', 'Estatus', 'Entrada', 'Salida', 'Firma'];
     rows.push(headers);
 
     const headerRowIndex = rows.length - 1;
@@ -62,14 +62,16 @@ export class ReportPrenominaService {
             emp.status,
             emp.date,
             emp.entry_time || '---',
-            emp.exit_time || '---'
+            emp.exit_time || '---',
+            ''
           ]);
         } else {
           rows.push([
             emp.name_employee,
             emp.status,
             emp.entry_time || '---',
-            emp.exit_time || '---'
+            emp.exit_time || '---',
+            ''
           ]);
         }
       }
@@ -229,6 +231,7 @@ export class ReportPrenominaService {
         { wch: 14 },  // Fecha
         { wch: 12 },  // Entrada
         { wch: 12 },  // Salida
+        { wch: 18 },  // Firma
       ];
     } else {
       ws['!cols'] = [
@@ -236,6 +239,7 @@ export class ReportPrenominaService {
         { wch: 14 },  // Estatus
         { wch: 12 },  // Entrada
         { wch: 12 },  // Salida
+        { wch: 18 },  // Firma
       ];
     }
 

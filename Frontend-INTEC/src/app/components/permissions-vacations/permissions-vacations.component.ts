@@ -94,6 +94,11 @@ export class PermissionsVacationsComponent implements OnInit {
     // Vacation Years for dropdown
     availableVacationYears: number[] = [];
 
+    // Incapacidad motivo state
+    incapacidadMotivoBase: string = '';
+    incapacidadTrayecto: string = '';
+    incapacidadOtrosTexto: string = '';
+
     constructor(
         private employeesAdapter: EmployeesAdapterService,
         private docService: EmployeeDocumentsAdapterService,
@@ -343,17 +348,46 @@ export class PermissionsVacationsComponent implements OnInit {
         this.editingRequestId = null;
         this.isReadOnly = false;
         this.currentDocumentUrl = null;
+        this.incapacidadMotivoBase = '';
+        this.incapacidadTrayecto = '';
+        this.incapacidadOtrosTexto = '';
         const modal = new (window as any).bootstrap.Modal(document.getElementById('createRequestModal'));
         modal.show();
     }
 
     // Helper to open edit from history
+    onIncapacidadMotivoChange(value: string): void {
+        this.incapacidadMotivoBase = value;
+        this.incapacidadTrayecto = '';
+        this.incapacidadOtrosTexto = '';
+        if (value === 'Accidente en trayecto') {
+            this.requestForm.patchValue({ reason: value });
+        } else if (value === 'Otros') {
+            this.requestForm.patchValue({ reason: '' });
+        } else {
+            this.requestForm.patchValue({ reason: value });
+        }
+    }
+
+    onTrayectoChange(value: string): void {
+        this.incapacidadTrayecto = value;
+        this.requestForm.patchValue({ reason: `Accidente en trayecto - ${value}` });
+    }
+
+    onOtrosTextoChange(value: string): void {
+        this.incapacidadOtrosTexto = value;
+        this.requestForm.patchValue({ reason: value });
+    }
+
     editRequest(record: RequestRecord, employeeId: string): void {
         this.requestType = record.type;
         this.editingRequestId = record.id;
         this.selectedFile = null;
         this.isReadOnly = false;
         this.currentDocumentUrl = record.documentUrl || null;
+        this.incapacidadMotivoBase = '';
+        this.incapacidadTrayecto = '';
+        this.incapacidadOtrosTexto = '';
 
         this.requestForm.patchValue({
             employeeId: employeeId,
@@ -379,6 +413,9 @@ export class PermissionsVacationsComponent implements OnInit {
         this.selectedFile = null;
         this.isReadOnly = true;
         this.currentDocumentUrl = record.documentUrl || null;
+        this.incapacidadMotivoBase = '';
+        this.incapacidadTrayecto = '';
+        this.incapacidadOtrosTexto = '';
 
         this.requestForm.patchValue({
             employeeId: employeeId,

@@ -151,12 +151,12 @@
                                 <small class="text-muted">Indica de qué año se tomarán los días de vacaciones</small>
                             </div>
                         </div>
-                        <div class="row" *ngIf="requestType === 'Permiso' || requestType === 'Incapacidad'">
+                        <div class="row" *ngIf="requestType === 'Permiso'">
                             <div class="col-md-12 mb-3">
                                 <div class="form-check form-switch">
                                     <input class="form-check-input" type="checkbox" formControlName="withPay"
                                         id="withPaySwitch">
-                                    <label class="form-check-label" for="withPaySwitch">{{ requestType === 'Incapacidad' ? 'Incapacidad con Goce de Sueldo' : 'Permiso con Goce de Sueldo' }}</label>
+                                    <label class="form-check-label" for="withPaySwitch">Permiso con Goce de Sueldo</label>
                                 </div>
                             </div>
                         </div>
@@ -173,13 +173,37 @@
                         </div>
                         <div class="mb-3" *ngIf="requestType === 'Incapacidad'">
                             <label class="form-label">Motivo</label>
-                            <select formControlName="reason" class="form-select">
-                                <option value="">Seleccione un motivo...</option>
-                                <option value="Enfermedad General">Enfermedad General</option>
-                                <option value="Riesgo de Trabajo">Riesgo de Trabajo</option>
-                                <option value="Maternidad">Maternidad</option>
-                                <option value="Otros">Otros</option>
-                            </select>
+                            <div class="d-flex align-items-start gap-3 flex-wrap">
+                                <select class="form-select" style="max-width: 280px;" (change)="onIncapacidadMotivoChange($any($event.target).value)">
+                                    <option value="">Seleccione un motivo...</option>
+                                    <option value="Enfermedad General">Enfermedad General</option>
+                                    <option value="Accidente de trabajo">Accidente de trabajo</option>
+                                    <option value="Maternidad">Maternidad</option>
+                                    <option value="Parcial permanente">Parcial permanente</option>
+                                    <option value="Accidente en trayecto">Accidente en trayecto</option>
+                                    <option value="Otros">Otros</option>
+                                </select>
+                                <div *ngIf="incapacidadMotivoBase === 'Accidente en trayecto'" class="d-flex flex-column gap-1">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="trayectoDir" id="trayectoCasaTrabajo"
+                                            value="De casa a trabajo" [(ngModel)]="incapacidadTrayecto"
+                                            [ngModelOptions]="{standalone: true}"
+                                            (change)="onTrayectoChange($any($event.target).value)">
+                                        <label class="form-check-label" for="trayectoCasaTrabajo">De casa a trabajo</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="trayectoDir" id="trayectoTrabajoCasa"
+                                            value="De trabajo a casa" [(ngModel)]="incapacidadTrayecto"
+                                            [ngModelOptions]="{standalone: true}"
+                                            (change)="onTrayectoChange($any($event.target).value)">
+                                        <label class="form-check-label" for="trayectoTrabajoCasa">De trabajo a casa</label>
+                                    </div>
+                                </div>
+                                <input *ngIf="incapacidadMotivoBase === 'Otros'" type="text" class="form-control"
+                                    style="max-width: 220px;" placeholder="Especifique el motivo..."
+                                    [(ngModel)]="incapacidadOtrosTexto" [ngModelOptions]="{standalone: true}"
+                                    (input)="onOtrosTextoChange($any($event.target).value)">
+                            </div>
                         </div>
 
                         <!-- Campos exclusivos de Incapacidad -->
@@ -209,16 +233,6 @@
                                 </div>
                             </div>
                             <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Ramo de Seguro</label>
-                                    <select formControlName="insuranceBranch" class="form-select">
-                                        <option value="">Seleccione...</option>
-                                        <option value="Enfermedad General">Enfermedad General</option>
-                                        <option value="Riesgo de Trabajo">Riesgo de Trabajo</option>
-                                        <option value="Accidente en Trayecto">Accidente en Trayecto</option>
-                                        <option value="Capacidad Parcial Permanente">Capacidad Parcial Permanente</option>
-                                    </select>
-                                </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Inicio Labores</label>
                                     <input type="date" formControlName="returnToWorkDate" class="form-control">

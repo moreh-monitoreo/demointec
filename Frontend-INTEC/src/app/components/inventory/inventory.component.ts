@@ -5,9 +5,11 @@ import { RouterModule } from '@angular/router';
 import { InventoryAdapterService } from '../../adapters/inventory.adapter';
 import { InventoryExtintorAdapterService } from '../../adapters/inventory-extintor.adapter';
 import { InventoryUniformAdapterService } from '../../adapters/inventory-uniform.adapter';
+import { InventoryCategoryAdapterService } from '../../adapters/inventory-category.adapter';
 import { Inventory } from '../../models/inventory';
 import { InventoryExtintor } from '../../models/inventory-extintor';
 import { InventoryUniform } from '../../models/inventory-uniform';
+import { InventoryCategory } from '../../models/inventory-category';
 import { InventoryAssignmentComponent } from '../inventory-assignment/inventory-assignment.component';
 import { InventoryMovementComponent } from '../inventory-movement/inventory-movement.component';
 import { ReportInventoryService } from '../../services/report-inventory.service';
@@ -40,7 +42,9 @@ export class InventoryComponent implements OnInit {
   hasConsulted: boolean = false;
   isLoading: boolean = false;
 
-  categoryOptions = ['Materiales', 'Herramientas', 'Equipos', 'Extintores', 'Uniformes', 'Consumibles'];
+  categoryOptions: string[] = [];
+  newCategoryName: string = '';
+  isSavingCategory: boolean = false;
   unitOptions = ['Pieza', 'Caja', 'Rollo', 'Metro', 'Kilogramo', 'Litro', 'Par', 'Juego'];
   stateOptions = ['Nuevo', 'Bueno', 'Regular', 'Deteriorado', 'Dado de baja'];
   extintorTypeOptions = ['PQS', 'CO2', 'Agua', 'Espuma', 'Halón'];
@@ -49,6 +53,7 @@ export class InventoryComponent implements OnInit {
   private inventoryAdapter = inject(InventoryAdapterService);
   private extintorAdapter = inject(InventoryExtintorAdapterService);
   private uniformAdapter = inject(InventoryUniformAdapterService);
+  private categoryAdapter = inject(InventoryCategoryAdapterService);
   private reportService = inject(ReportInventoryService);
 
   constructor(private fb: FormBuilder) {
@@ -88,7 +93,35 @@ export class InventoryComponent implements OnInit {
     });
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.loadCategories();
+  }
+
+  loadCategories(): void {
+    this.categoryAdapter.getList().subscribe({
+      next: (data: InventoryCategory[]) => {
+        this.categoryOptions = data.map(c => c.name_category);
+      },
+      error: () => {}
+    });
+  }
+
+  saveCategory(): void {
+    const name = this.newCategoryName.trim();
+    if (!name) return;
+    this.isSavingCategory = true;
+    this.categoryAdapter.post({ name_category: name, status: true }).subscribe({
+      next: () => {
+        this.newCategoryName = '';
+        this.isSavingCategory = false;
+        this.closeModal('nuevaCategoriaModal');
+        this.loadCategories();
+      },
+      error: () => {
+        this.isSavingCategory = false;
+      }
+    });
+  }
 
   get selectedCategory_create(): string {
     return this.inventoryForm.get('category')?.value ?? '';
