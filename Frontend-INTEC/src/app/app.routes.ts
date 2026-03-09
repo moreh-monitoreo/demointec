@@ -24,6 +24,7 @@ import { TemplateAnalysisComponent } from './components/template-analysis/templa
 import { InventoryComponent } from './components/inventory/inventory.component';
 import { InventoryAssignmentComponent } from './components/inventory-assignment/inventory-assignment.component';
 import { TrainingInstructionsComponent } from './components/training-instructions/training-instructions.component';
+import { FormatsComponent } from './components/formats/formats.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -55,6 +56,7 @@ export const routes: Routes = [
       { path: 'inventario-rh', component: InventoryComponent },
       { path: 'asignacion-inventario', component: InventoryAssignmentComponent },
       { path: 'capacitaciones', component: TrainingInstructionsComponent },
+      { path: 'formatos', component: FormatsComponent },
 
       { path: 'permisos-vacaciones', loadComponent: () => import('./components/permissions-vacations/permissions-vacations.component').then(m => m.PermissionsVacationsComponent) },
     ]

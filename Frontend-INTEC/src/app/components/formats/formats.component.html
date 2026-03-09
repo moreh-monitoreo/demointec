@@ -1,0 +1,36 @@
+<div class="content-container">
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Formatos</h1>
+    </div>
+  </div>
+
+  <!-- Lista de formatos -->
+  <div class="table-container">
+    <div class="table-header">
+      <div class="table-info">Formatos disponibles</div>
+    </div>
+
+    <div class="formats-list">
+      <div class="format-item" *ngFor="let format of formats">
+        <div class="format-info">
+          <i class="bi {{ format.icon }} format-icon"></i>
+          <div>
+            <span class="format-name">{{ format.label }}</span>
+            <small class="format-description">{{ format.description }}</small>
+          </div>
+        </div>
+        <div class="format-actions">
+          <button
+            class="btn-download"
+            (click)="downloadFormat(format)"
+            title="Descargar formato">
+            <i class="bi bi-download"></i>
+            Descargar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

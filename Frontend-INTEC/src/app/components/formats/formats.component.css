@@ -1,0 +1,144 @@
+.content-container {
+  padding: 1rem;
+  background-color: #eff2f7;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  background-color: #eff2f7;
+}
+
+.page-title {
+  font-size: 1.5rem;
+  font-weight: 300;
+  color: #333;
+  margin: 0;
+}
+
+.table-container {
+  background-color: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #eee;
+  background-color: #f8f9fa;
+}
+
+.table-info {
+  color: #666;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.formats-list {
+  padding: 0.75rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.format-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border: 1px solid #eee;
+  border-radius: 6px;
+  background-color: white;
+  transition: background-color 0.2s;
+}
+
+.format-item:hover {
+  background-color: #f0f4ff;
+}
+
+.format-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.format-icon {
+  font-size: 1.5rem;
+  color: #2a7ae4;
+  flex-shrink: 0;
+}
+
+.format-info > div {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.format-name {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #333;
+}
+
+.format-description {
+  font-size: 0.78rem;
+  color: #999;
+}
+
+.format-actions {
+  flex-shrink: 0;
+}
+
+.btn-download {
+  background-color: #F58525;
+  color: white;
+  border: none;
+  padding: 0.4rem 0.9rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+}
+
+.btn-download:hover:not(:disabled) {
+  background-color: #ecaa2f;
+}
+
+.btn-download:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .content-container {
+    padding: 1rem;
+  }
+
+  .page-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+
+  .format-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .format-actions {
+    align-self: flex-end;
+  }
+}
