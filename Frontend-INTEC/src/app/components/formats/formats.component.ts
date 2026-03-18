@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ReportRenunciaLaboralService } from '../../services/reports/report_renuncia_laboral.service';
 import { ReportEntrevistaSalidaService } from '../../services/reports/report_entrevista_salida.service';
 import { ReportEncuestaSatisfaccionService } from '../../services/reports/report_encuesta_satisfaccion.service';
@@ -16,6 +16,10 @@ import { ReportResponsivaEppService } from '../../services/reports/report_respon
 import { ReportResponsivaLlavesService } from '../../services/reports/report_responsiva_llaves.service';
 import { ReportRitService } from '../../services/reports/report_rit.service';
 import { ReportActaAbandonoTrabajoService } from '../../services/reports/report_acta_abandono_trabajo.service';
+import { ReportAnexoRitService } from '../../services/reports/report_anexo_rit.service';
+import { ReportContratoTiempoIndeterminadoService } from '../../services/reports/report_contrato_tiempo_indeterminado.service';
+import { ReportCartaResponsivaLeySillaService } from '../../services/reports/report_carta_responsiva_ley_silla.service';
+import { ReportCartaTerminacionContratoService } from '../../services/reports/report_carta_terminacion_contrato.service';
 import { EmployeesAdapterService } from '../../adapters/employees.adapter';
 import { Employee } from '../../models/employees';
 
@@ -52,6 +56,10 @@ export class FormatsComponent implements OnInit {
   private responsivaLlavesService = inject(ReportResponsivaLlavesService);
   private ritService = inject(ReportRitService);
   private actaAbandonoService = inject(ReportActaAbandonoTrabajoService);
+  private anexoRitService = inject(ReportAnexoRitService);
+  private contratoIndeterminadoService = inject(ReportContratoTiempoIndeterminadoService);
+  private cartaResponsivaLeySillaService = inject(ReportCartaResponsivaLeySillaService);
+  private cartaTerminacionContratoService = inject(ReportCartaTerminacionContratoService);
   private employeesAdapter = inject(EmployeesAdapterService);
 
   // ── Autocomplete ────────────────────────────────────────────────────────────
@@ -221,6 +229,29 @@ export class FormatsComponent implements OnInit {
         benNombre3: emp.beneficiary3_name ?? '',
         benParentesco3: emp.beneficiary3_relationship ?? '',
         benPorcentaje3: emp.beneficiary3_percentage ?? '',
+      });
+
+    } else if (this.activeFormatKey === 'carta-terminacion-contrato') {
+      this.cartaTerminacionContratoForm.patchValue({
+        nombreTrabajador: emp.name_employee ?? '',
+        puesto: emp.position ?? '',
+      });
+
+    } else if (this.activeFormatKey === 'contrato-tiempo-indeterminado') {
+      this.contratoIndeterminadoForm.patchValue({
+        nombreTrabajador: emp.name_employee ?? '',
+        nacionalidad: 'Mexicana',
+        calle: emp.street ?? '',
+        numero: emp.outdoor_number ?? '',
+        colonia: emp.colony ?? '',
+        cp: emp.zip_code ?? '',
+        edad: emp.age ? String(emp.age) : '',
+        sexo: emp.gender ?? '',
+        estadoCivil: emp.marital_status ?? '',
+        curp: emp.curp ?? '',
+        rfc: emp.rfc ?? '',
+        nss: emp.nss ?? '',
+        puesto: emp.position ?? '',
       });
 
     } else if (this.activeFormatKey === 'contrato-obra-determinada') {
@@ -497,6 +528,84 @@ export class FormatsComponent implements OnInit {
     puesto: ['', Validators.required],
   });
 
+  anexoRitForm: FormGroup = this.fb.group({
+    nombreRepresentante: ['', Validators.required],
+    nombreTrabajador: ['', Validators.required],
+  });
+
+  contratoIndeterminadoForm: FormGroup = this.fb.group({
+    ciudad: ['Guadalajara', Validators.required],
+    dia: ['', Validators.required],
+    mes: ['', Validators.required],
+    anio: ['2026', Validators.required],
+    nombreTrabajador: ['', Validators.required],
+    nacionalidad: ['Mexicana', Validators.required],
+    calle: ['', Validators.required],
+    numero: ['', Validators.required],
+    colonia: ['', Validators.required],
+    cp: ['', Validators.required],
+    edad: ['', Validators.required],
+    sexo: ['', Validators.required],
+    estadoCivil: ['', Validators.required],
+    curp: ['', Validators.required],
+    rfc: ['', Validators.required],
+    nss: ['', Validators.required],
+    puesto: ['', Validators.required],
+    diaInicio: ['', Validators.required],
+    mesInicio: ['', Validators.required],
+    anioInicio: ['2026', Validators.required],
+    salarioNum: ['', Validators.required],
+    salarioLetras: ['', Validators.required],
+    benNombre1: [''],
+    benParentesco1: [''],
+    benNombreSust1: [''],
+    benParentescoSust1: [''],
+  });
+
+  cartaResponsivaLeySillaForm: FormGroup = this.fb.group({
+    filas: this.fb.array(this.buildLeySillaFilas(10))
+  });
+
+  cartaTerminacionContratoForm: FormGroup = this.fb.group({
+    ciudad: ['Guadalajara', Validators.required],
+    dia: ['', Validators.required],
+    mes: ['', Validators.required],
+    nombreTrabajador: ['', Validators.required],
+    puesto: ['', Validators.required],
+    diaEfectivo: ['', Validators.required],
+    mesEfectivo: ['', Validators.required],
+    nombreFirmante: ['', Validators.required],
+  });
+
+  private buildLeySillaFilas(count: number) {
+    return Array.from({ length: count }, () =>
+      this.fb.group({
+        id: [''],
+        nombre: [''],
+        puesto: [''],
+        obra: [''],
+        sillas: [''],
+        fecha: [''],
+      })
+    );
+  }
+
+  get leySillaFilas(): FormArray {
+    return this.cartaResponsivaLeySillaForm.get('filas') as FormArray;
+  }
+
+  addLeySillaFila(): void {
+    this.leySillaFilas.push(this.fb.group({
+      id: [''], nombre: [''], puesto: [''], obra: [''], sillas: [''], fecha: [''],
+    }));
+  }
+
+  removeLeySillaFila(i: number): void {
+    if (this.leySillaFilas.length > 1) {
+      this.leySillaFilas.removeAt(i);
+    }
+  }
+
   ritForm: FormGroup = this.fb.group({
     lugar: ['Guadalajara', Validators.required],
     dia: ['', Validators.required],
@@ -641,6 +750,42 @@ export class FormatsComponent implements OnInit {
       filePath: '/formatos/RIT Reglamento interior de trabajo.pdf',
       fileName: 'RIT Reglamento Interior de Trabajo.pdf',
       fillable: true
+    },
+    {
+      key: 'anexo-rit',
+      label: 'Anexo a RIT — Listado de Sanciones por Infracción',
+      description: 'Anexo 1 del Reglamento Interior de Trabajo con listado de sanciones',
+      icon: 'bi-file-earmark-pdf',
+      filePath: '',
+      fileName: '',
+      fillable: true
+    },
+    {
+      key: 'contrato-tiempo-indeterminado',
+      label: 'Contrato por Tiempo Indeterminado',
+      description: 'Contrato individual de trabajo por tiempo indeterminado',
+      icon: 'bi-file-earmark-pdf',
+      filePath: '/formatos/C.ontrato por tiempo Indeterminado.pdf',
+      fileName: 'Contrato por Tiempo Indeterminado.pdf',
+      fillable: true
+    },
+    {
+      key: 'carta-responsiva-ley-silla',
+      label: 'Carta Responsiva Ley Silla',
+      description: 'Carta responsiva de asignación de silla conforme a Ley Silla (LFT/STPS)',
+      icon: 'bi-file-earmark-pdf',
+      filePath: '',
+      fileName: '',
+      fillable: true
+    },
+    {
+      key: 'carta-terminacion-contrato',
+      label: 'Carta de Terminación de Contrato',
+      description: 'Carta de aviso de terminación de contrato individual de trabajo',
+      icon: 'bi-file-earmark-pdf',
+      filePath: '',
+      fileName: '',
+      fillable: true
     }
   ];
 
@@ -663,6 +808,12 @@ export class FormatsComponent implements OnInit {
       this.responsivaLlavesForm.reset({ anio: '2026' });
       this.ritForm.reset({ lugar: 'Guadalajara', anio: '2026' });
       this.actaAbandonoForm.reset();
+      this.anexoRitForm.reset();
+      this.contratoIndeterminadoForm.reset({ ciudad: 'Guadalajara', nacionalidad: 'Mexicana', anio: '2026', anioInicio: '2026' });
+      this.cartaTerminacionContratoForm.reset({ ciudad: 'Guadalajara', nombreFirmante: 'Ing. Juan Pablo Jimenez Espinoza.' });
+      const filasArray = this.cartaResponsivaLeySillaForm.get('filas') as FormArray;
+      filasArray.clear();
+      this.buildLeySillaFilas(10).forEach(g => filasArray.push(g));
       this.showModal = true;
     } else {
       const link = document.createElement('a');
@@ -693,6 +844,10 @@ export class FormatsComponent implements OnInit {
     if (this.activeFormatKey === 'responsiva-llaves') return this.responsivaLlavesForm;
     if (this.activeFormatKey === 'rit') return this.ritForm;
     if (this.activeFormatKey === 'constancia-abandono') return this.actaAbandonoForm;
+    if (this.activeFormatKey === 'anexo-rit') return this.anexoRitForm;
+    if (this.activeFormatKey === 'contrato-tiempo-indeterminado') return this.contratoIndeterminadoForm;
+    if (this.activeFormatKey === 'carta-responsiva-ley-silla') return this.cartaResponsivaLeySillaForm;
+    if (this.activeFormatKey === 'carta-terminacion-contrato') return this.cartaTerminacionContratoForm;
     return this.renunciaForm;
   }
 
@@ -743,6 +898,16 @@ export class FormatsComponent implements OnInit {
         await this.ritService.generate(this.ritForm.value);
       } else if (this.activeFormatKey === 'constancia-abandono') {
         await this.actaAbandonoService.generate(this.actaAbandonoForm.value);
+      } else if (this.activeFormatKey === 'anexo-rit') {
+        await this.anexoRitService.generate(this.anexoRitForm.value);
+      } else if (this.activeFormatKey === 'contrato-tiempo-indeterminado') {
+        await this.contratoIndeterminadoService.generate(this.contratoIndeterminadoForm.value);
+      } else if (this.activeFormatKey === 'carta-responsiva-ley-silla') {
+        await this.cartaResponsivaLeySillaService.generate({
+          filas: this.leySillaFilas.value,
+        });
+      } else if (this.activeFormatKey === 'carta-terminacion-contrato') {
+        await this.cartaTerminacionContratoService.generate(this.cartaTerminacionContratoForm.value);
       }
       this.closeModal();
     } finally {

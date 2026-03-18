@@ -2006,3 +2006,470 @@
 
   </div>
 </div>
+
+<!-- Modal Anexo a RIT -->
+<div class="modal-overlay" *ngIf="showModal && activeFormatKey === 'anexo-rit'" (click)="closeModal()">
+  <div class="modal-form" (click)="$event.stopPropagation()">
+
+    <div class="modal-form-header">
+      <h3 class="modal-form-title">
+        <i class="bi bi-file-earmark-text"></i>
+        Anexo a RIT — Listado de Sanciones por Infracción
+      </h3>
+      <button class="modal-close" (click)="closeModal()">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <div class="modal-form-body">
+      <form [formGroup]="anexoRitForm">
+
+        <div class="form-section">
+          <div class="form-section-title">Datos de las partes</div>
+          <div class="form-grid-2">
+            <div class="form-field">
+              <label>Nombre del representante del patrón <span class="required">*</span></label>
+              <input type="text" formControlName="nombreRepresentante" placeholder="Nombre completo del representante"
+                [class.invalid]="anexoRitForm.get('nombreRepresentante')?.invalid && anexoRitForm.get('nombreRepresentante')?.touched">
+            </div>
+            <div class="form-field">
+              <label>Nombre del trabajador <span class="required">*</span></label>
+              <input type="text" formControlName="nombreTrabajador" placeholder="Nombre completo del trabajador"
+                [class.invalid]="anexoRitForm.get('nombreTrabajador')?.invalid && anexoRitForm.get('nombreTrabajador')?.touched">
+            </div>
+          </div>
+        </div>
+
+      </form>
+    </div>
+
+    <div class="modal-form-footer">
+      <button class="btn-cancel" (click)="closeModal()">Cancelar</button>
+      <button class="btn-generate" (click)="submitForm()" [disabled]="isGenerating">
+        <i class="bi bi-file-earmark-arrow-down"></i>
+        {{ isGenerating ? 'Generando...' : 'Generar PDF' }}
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal Contrato por Tiempo Indeterminado -->
+<div class="modal-overlay" *ngIf="showModal && activeFormatKey === 'contrato-tiempo-indeterminado'" (click)="closeModal()">
+  <div class="modal-form" (click)="$event.stopPropagation()">
+
+    <div class="modal-form-header">
+      <h3 class="modal-form-title">
+        <i class="bi bi-file-earmark-text"></i>
+        Contrato por Tiempo Indeterminado
+      </h3>
+      <button class="modal-close" (click)="closeModal()">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <div class="modal-form-body">
+
+      <!-- Autocompletar desde empleado -->
+      <div class="employee-search-wrap">
+        <div class="employee-search-label">
+          <i class="bi bi-person-fill"></i> Autocompletar desde empleado registrado
+        </div>
+        <div class="employee-search-input-wrap">
+          <input
+            type="text"
+            class="employee-search-input"
+            placeholder="Buscar por nombre..."
+            [value]="employeeSearch"
+            (input)="onSearchInput($any($event.target).value)"
+            autocomplete="off">
+          <button *ngIf="employeeSearch" class="employee-search-clear" (click)="clearSearch()" type="button" title="Limpiar">
+            <i class="bi bi-x"></i>
+          </button>
+        </div>
+        <div class="employee-suggestions" *ngIf="showSuggestions">
+          <div
+            class="employee-suggestion-item"
+            *ngFor="let emp of employeeSuggestions"
+            (click)="selectEmployee(emp)">
+            <i class="bi bi-person"></i>
+            <span class="emp-name">{{ emp.name_employee }}</span>
+            <span class="emp-position">{{ emp.position }}</span>
+          </div>
+        </div>
+      </div>
+
+      <form [formGroup]="contratoIndeterminadoForm">
+
+        <div class="form-section">
+          <div class="form-section-title">Datos personales del trabajador</div>
+          <div class="form-grid-2">
+            <div class="form-field">
+              <label>Nombre completo <span class="required">*</span></label>
+              <input type="text" formControlName="nombreTrabajador" placeholder="Nombre completo"
+                [class.invalid]="contratoIndeterminadoForm.get('nombreTrabajador')?.invalid && contratoIndeterminadoForm.get('nombreTrabajador')?.touched">
+            </div>
+            <div class="form-field">
+              <label>Nacionalidad <span class="required">*</span></label>
+              <input type="text" formControlName="nacionalidad" placeholder="ej. Mexicana"
+                [class.invalid]="contratoIndeterminadoForm.get('nacionalidad')?.invalid && contratoIndeterminadoForm.get('nacionalidad')?.touched">
+            </div>
+          </div>
+          <div class="form-grid-2" style="margin-top: 0.75rem;">
+            <div class="form-field">
+              <label>Calle <span class="required">*</span></label>
+              <input type="text" formControlName="calle" placeholder="Calle"
+                [class.invalid]="contratoIndeterminadoForm.get('calle')?.invalid && contratoIndeterminadoForm.get('calle')?.touched">
+            </div>
+            <div class="form-field">
+              <label>Número <span class="required">*</span></label>
+              <input type="text" formControlName="numero" placeholder="Número exterior"
+                [class.invalid]="contratoIndeterminadoForm.get('numero')?.invalid && contratoIndeterminadoForm.get('numero')?.touched">
+            </div>
+          </div>
+          <div class="form-grid-2" style="margin-top: 0.75rem;">
+            <div class="form-field">
+              <label>Colonia <span class="required">*</span></label>
+              <input type="text" formControlName="colonia" placeholder="Colonia"
+                [class.invalid]="contratoIndeterminadoForm.get('colonia')?.invalid && contratoIndeterminadoForm.get('colonia')?.touched">
+            </div>
+            <div class="form-field">
+              <label>C.P. <span class="required">*</span></label>
+              <input type="text" formControlName="cp" placeholder="Código postal"
+                [class.invalid]="contratoIndeterminadoForm.get('cp')?.invalid && contratoIndeterminadoForm.get('cp')?.touched">
+            </div>
+          </div>
+          <div class="form-grid-2" style="margin-top: 0.75rem;">
+            <div class="form-field">
+              <label>Edad <span class="required">*</span></label>
+              <input type="text" formControlName="edad" placeholder="ej. 28"
+                [class.invalid]="contratoIndeterminadoForm.get('edad')?.invalid && contratoIndeterminadoForm.get('edad')?.touched">
+            </div>
+            <div class="form-field">
+              <label>Sexo <span class="required">*</span></label>
+              <input type="text" formControlName="sexo" placeholder="ej. Masculino"
+                [class.invalid]="contratoIndeterminadoForm.get('sexo')?.invalid && contratoIndeterminadoForm.get('sexo')?.touched">
+            </div>
+          </div>
+          <div class="form-grid-2" style="margin-top: 0.75rem;">
+            <div class="form-field">
+              <label>Estado civil <span class="required">*</span></label>
+              <input type="text" formControlName="estadoCivil" placeholder="ej. Soltero"
+                [class.invalid]="contratoIndeterminadoForm.get('estadoCivil')?.invalid && contratoIndeterminadoForm.get('estadoCivil')?.touched">
+            </div>
+            <div class="form-field">
+              <label>CURP <span class="required">*</span></label>
+              <input type="text" formControlName="curp" placeholder="CURP"
+                [class.invalid]="contratoIndeterminadoForm.get('curp')?.invalid && contratoIndeterminadoForm.get('curp')?.touched">
+            </div>
+          </div>
+          <div class="form-grid-2" style="margin-top: 0.75rem;">
+            <div class="form-field">
+              <label>RFC <span class="required">*</span></label>
+              <input type="text" formControlName="rfc" placeholder="RFC"
+                [class.invalid]="contratoIndeterminadoForm.get('rfc')?.invalid && contratoIndeterminadoForm.get('rfc')?.touched">
+            </div>
+            <div class="form-field">
+              <label>Número de seguro social <span class="required">*</span></label>
+              <input type="text" formControlName="nss" placeholder="NSS"
+                [class.invalid]="contratoIndeterminadoForm.get('nss')?.invalid && contratoIndeterminadoForm.get('nss')?.touched">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section" style="margin-top: 1rem;">
+          <div class="form-section-title">Datos del contrato</div>
+          <div class="form-grid-2">
+            <div class="form-field">
+              <label>Puesto <span class="required">*</span></label>
+              <input type="text" formControlName="puesto" placeholder="Puesto de trabajo"
+                [class.invalid]="contratoIndeterminadoForm.get('puesto')?.invalid && contratoIndeterminadoForm.get('puesto')?.touched">
+            </div>
+            <div class="form-field">
+              <label>Día de inicio <span class="required">*</span></label>
+              <input type="text" formControlName="diaInicio" placeholder="ej. 01"
+                [class.invalid]="contratoIndeterminadoForm.get('diaInicio')?.invalid && contratoIndeterminadoForm.get('diaInicio')?.touched">
+            </div>
+          </div>
+          <div class="form-grid-2" style="margin-top: 0.75rem;">
+            <div class="form-field">
+              <label>Mes de inicio <span class="required">*</span></label>
+              <input type="text" formControlName="mesInicio" placeholder="ej. marzo"
+                [class.invalid]="contratoIndeterminadoForm.get('mesInicio')?.invalid && contratoIndeterminadoForm.get('mesInicio')?.touched">
+            </div>
+            <div class="form-field">
+              <label>Año de inicio <span class="required">*</span></label>
+              <input type="text" formControlName="anioInicio" placeholder="ej. 2026"
+                [class.invalid]="contratoIndeterminadoForm.get('anioInicio')?.invalid && contratoIndeterminadoForm.get('anioInicio')?.touched">
+            </div>
+          </div>
+          <div class="form-grid-2" style="margin-top: 0.75rem;">
+            <div class="form-field">
+              <label>Salario (número) <span class="required">*</span></label>
+              <input type="text" formControlName="salarioNum" placeholder="ej. 5000"
+                [class.invalid]="contratoIndeterminadoForm.get('salarioNum')?.invalid && contratoIndeterminadoForm.get('salarioNum')?.touched">
+            </div>
+            <div class="form-field">
+              <label>Salario (letras) <span class="required">*</span></label>
+              <input type="text" formControlName="salarioLetras" placeholder="ej. Cinco mil"
+                [class.invalid]="contratoIndeterminadoForm.get('salarioLetras')?.invalid && contratoIndeterminadoForm.get('salarioLetras')?.touched">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section" style="margin-top: 1rem;">
+          <div class="form-section-title">Beneficiarios (DÉCIMO TERCERA)</div>
+          <div class="form-grid-2">
+            <div class="form-field">
+              <label>Nombre completo beneficiario</label>
+              <input type="text" formControlName="benNombre1" placeholder="Nombre del beneficiario">
+            </div>
+            <div class="form-field">
+              <label>Parentesco o afinidad</label>
+              <input type="text" formControlName="benParentesco1" placeholder="ej. Esposa, Hijo">
+            </div>
+          </div>
+          <div class="form-grid-2" style="margin-top: 0.75rem;">
+            <div class="form-field">
+              <label>Nombre completo beneficiario sustituto</label>
+              <input type="text" formControlName="benNombreSust1" placeholder="Nombre del sustituto">
+            </div>
+            <div class="form-field">
+              <label>Parentesco o afinidad</label>
+              <input type="text" formControlName="benParentescoSust1" placeholder="ej. Madre, Hermano">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section" style="margin-top: 1rem;">
+          <div class="form-section-title">Lugar y fecha de firma</div>
+          <div class="form-grid-2">
+            <div class="form-field">
+              <label>Ciudad <span class="required">*</span></label>
+              <input type="text" formControlName="ciudad" placeholder="ej. Guadalajara"
+                [class.invalid]="contratoIndeterminadoForm.get('ciudad')?.invalid && contratoIndeterminadoForm.get('ciudad')?.touched">
+            </div>
+            <div class="form-field">
+              <label>Día <span class="required">*</span></label>
+              <input type="text" formControlName="dia" placeholder="ej. 18"
+                [class.invalid]="contratoIndeterminadoForm.get('dia')?.invalid && contratoIndeterminadoForm.get('dia')?.touched">
+            </div>
+          </div>
+          <div class="form-grid-2" style="margin-top: 0.75rem;">
+            <div class="form-field">
+              <label>Mes <span class="required">*</span></label>
+              <input type="text" formControlName="mes" placeholder="ej. marzo"
+                [class.invalid]="contratoIndeterminadoForm.get('mes')?.invalid && contratoIndeterminadoForm.get('mes')?.touched">
+            </div>
+            <div class="form-field">
+              <label>Año <span class="required">*</span></label>
+              <input type="text" formControlName="anio" placeholder="ej. 2026"
+                [class.invalid]="contratoIndeterminadoForm.get('anio')?.invalid && contratoIndeterminadoForm.get('anio')?.touched">
+            </div>
+          </div>
+        </div>
+
+      </form>
+    </div>
+
+    <div class="modal-form-footer">
+      <button class="btn-cancel" (click)="closeModal()">Cancelar</button>
+      <button class="btn-generate" (click)="submitForm()" [disabled]="isGenerating">
+        <i class="bi bi-file-earmark-arrow-down"></i>
+        {{ isGenerating ? 'Generando...' : 'Generar PDF' }}
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal Carta Responsiva Ley Silla -->
+<div class="modal-overlay" *ngIf="showModal && activeFormatKey === 'carta-responsiva-ley-silla'" (click)="closeModal()">
+  <div class="modal-form modal-form-wide" (click)="$event.stopPropagation()">
+
+    <div class="modal-form-header">
+      <h3 class="modal-form-title">
+        <i class="bi bi-file-earmark-text"></i>
+        Carta Responsiva Ley Silla
+      </h3>
+      <button class="modal-close" (click)="closeModal()">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <div class="modal-form-body">
+      <form [formGroup]="cartaResponsivaLeySillaForm">
+
+        <div class="form-section">
+          <div class="form-section-title">Trabajadores</div>
+          <div formArrayName="filas">
+            <table class="epp-table">
+              <thead>
+                <tr>
+                  <th style="width:50px">ID</th>
+                  <th>Nombre</th>
+                  <th>Puesto</th>
+                  <th>Obra</th>
+                  <th style="width:60px">Sillas</th>
+                  <th style="width:110px">Fecha</th>
+                  <th style="width:36px"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let fila of leySillaFilas.controls; let i = index" [formGroupName]="i">
+                  <td><input type="text" formControlName="id" placeholder="—"></td>
+                  <td><input type="text" formControlName="nombre" placeholder="—"></td>
+                  <td><input type="text" formControlName="puesto" placeholder="—"></td>
+                  <td><input type="text" formControlName="obra" placeholder="—"></td>
+                  <td><input type="text" formControlName="sillas" placeholder="—"></td>
+                  <td><input type="date" formControlName="fecha"></td>
+                  <td>
+                    <button type="button" class="btn-icon-remove" (click)="removeLeySillaFila(i)" title="Eliminar fila">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <button type="button" class="btn-add-row" (click)="addLeySillaFila()" style="margin-top:0.5rem">
+            <i class="bi bi-plus-circle"></i> Agregar fila
+          </button>
+        </div>
+
+      </form>
+    </div>
+
+    <div class="modal-form-footer">
+      <button class="btn-cancel" (click)="closeModal()">Cancelar</button>
+      <button class="btn-generate" (click)="submitForm()" [disabled]="isGenerating">
+        <i class="bi bi-file-earmark-arrow-down"></i>
+        {{ isGenerating ? 'Generando...' : 'Generar PDF' }}
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal Carta de Terminación de Contrato -->
+<div class="modal-overlay" *ngIf="showModal && activeFormatKey === 'carta-terminacion-contrato'" (click)="closeModal()">
+  <div class="modal-form" (click)="$event.stopPropagation()">
+
+    <div class="modal-form-header">
+      <h3 class="modal-form-title">
+        <i class="bi bi-file-earmark-text"></i>
+        Carta de Terminación de Contrato
+      </h3>
+      <button class="modal-close" (click)="closeModal()">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <div class="modal-form-body">
+
+      <!-- Búsqueda de empleado registrado -->
+      <div class="employee-search-wrap">
+        <div class="employee-search-label">
+          <i class="bi bi-person-fill"></i> Autocompletar desde empleado registrado
+        </div>
+        <div class="employee-search-input-wrap">
+          <input
+            type="text"
+            class="employee-search-input"
+            placeholder="Buscar por nombre..."
+            [value]="employeeSearch"
+            (input)="onSearchInput($any($event.target).value)"
+            autocomplete="off">
+          <button *ngIf="employeeSearch" class="employee-search-clear" (click)="clearSearch()" type="button" title="Limpiar">
+            <i class="bi bi-x"></i>
+          </button>
+        </div>
+        <div class="employee-suggestions" *ngIf="showSuggestions">
+          <div
+            class="employee-suggestion-item"
+            *ngFor="let emp of employeeSuggestions"
+            (click)="selectEmployee(emp)">
+            <i class="bi bi-person"></i>
+            <span class="emp-name">{{ emp.name_employee }}</span>
+            <span class="emp-position">{{ emp.position }}</span>
+          </div>
+        </div>
+      </div>
+
+      <form [formGroup]="cartaTerminacionContratoForm">
+
+        <div class="form-section">
+          <div class="form-section-title">Fecha de la carta</div>
+          <div class="form-grid-3">
+            <div class="form-field">
+              <label>Ciudad <span class="required">*</span></label>
+              <input type="text" formControlName="ciudad" placeholder="ej. Guadalajara"
+                [class.invalid]="cartaTerminacionContratoForm.get('ciudad')?.invalid && cartaTerminacionContratoForm.get('ciudad')?.touched">
+            </div>
+            <div class="form-field">
+              <label>Día <span class="required">*</span></label>
+              <input type="text" formControlName="dia" placeholder="ej. 18"
+                [class.invalid]="cartaTerminacionContratoForm.get('dia')?.invalid && cartaTerminacionContratoForm.get('dia')?.touched">
+            </div>
+            <div class="form-field">
+              <label>Mes <span class="required">*</span></label>
+              <input type="text" formControlName="mes" placeholder="ej. marzo"
+                [class.invalid]="cartaTerminacionContratoForm.get('mes')?.invalid && cartaTerminacionContratoForm.get('mes')?.touched">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title">Datos del trabajador</div>
+          <div class="form-grid-2">
+            <div class="form-field">
+              <label>Nombre del trabajador <span class="required">*</span></label>
+              <input type="text" formControlName="nombreTrabajador" placeholder="Nombre completo"
+                [class.invalid]="cartaTerminacionContratoForm.get('nombreTrabajador')?.invalid && cartaTerminacionContratoForm.get('nombreTrabajador')?.touched">
+            </div>
+            <div class="form-field">
+              <label>Puesto <span class="required">*</span></label>
+              <input type="text" formControlName="puesto" placeholder="ej. Albañil"
+                [class.invalid]="cartaTerminacionContratoForm.get('puesto')?.invalid && cartaTerminacionContratoForm.get('puesto')?.touched">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title">Fecha efectiva de terminación</div>
+          <div class="form-grid-2">
+            <div class="form-field">
+              <label>Día efectivo <span class="required">*</span></label>
+              <input type="text" formControlName="diaEfectivo" placeholder="ej. 20"
+                [class.invalid]="cartaTerminacionContratoForm.get('diaEfectivo')?.invalid && cartaTerminacionContratoForm.get('diaEfectivo')?.touched">
+            </div>
+            <div class="form-field">
+              <label>Mes efectivo <span class="required">*</span></label>
+              <input type="text" formControlName="mesEfectivo" placeholder="ej. abril"
+                [class.invalid]="cartaTerminacionContratoForm.get('mesEfectivo')?.invalid && cartaTerminacionContratoForm.get('mesEfectivo')?.touched">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title">Firmante</div>
+          <div class="form-field">
+            <label>Nombre del firmante <span class="required">*</span></label>
+            <input type="text" formControlName="nombreFirmante" placeholder="ej. Ing. Juan Pablo Jimenez Espinoza."
+              [class.invalid]="cartaTerminacionContratoForm.get('nombreFirmante')?.invalid && cartaTerminacionContratoForm.get('nombreFirmante')?.touched">
+          </div>
+        </div>
+
+      </form>
+    </div>
+
+    <div class="modal-form-footer">
+      <button class="btn-cancel" (click)="closeModal()">Cancelar</button>
+      <button class="btn-generate" (click)="submitForm()" [disabled]="isGenerating">
+        <i class="bi bi-file-earmark-arrow-down"></i>
+        {{ isGenerating ? 'Generando...' : 'Generar PDF' }}
+      </button>
+    </div>
+
+  </div>
+</div>
