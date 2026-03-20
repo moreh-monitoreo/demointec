@@ -779,58 +779,63 @@
           </div>
         </div>
 
-        <!-- Horario -->
+        <!-- Periodo de servicios -->
         <div class="form-section">
-          <div class="form-section-title">Horario laboral</div>
-          <div class="form-grid-2">
+          <div class="form-section-title">Periodo de servicios</div>
+          <div class="form-grid-3">
             <div class="form-field">
-              <label>Días — desde <span class="required">*</span></label>
-              <input type="text" formControlName="diasInicio" placeholder="ej. Lunes"
-                [class.invalid]="cartaPatronalForm.get('diasInicio')?.invalid && cartaPatronalForm.get('diasInicio')?.touched">
+              <label>Día inicio <span class="required">*</span></label>
+              <input type="text" formControlName="diaInicio" placeholder="ej. 04"
+                [class.invalid]="cartaPatronalForm.get('diaInicio')?.invalid && cartaPatronalForm.get('diaInicio')?.touched">
             </div>
             <div class="form-field">
-              <label>Días — hasta <span class="required">*</span></label>
-              <input type="text" formControlName="diasFin" placeholder="ej. Viernes"
-                [class.invalid]="cartaPatronalForm.get('diasFin')?.invalid && cartaPatronalForm.get('diasFin')?.touched">
+              <label>Mes inicio <span class="required">*</span></label>
+              <input type="text" formControlName="mesInicio" placeholder="ej. Diciembre"
+                [class.invalid]="cartaPatronalForm.get('mesInicio')?.invalid && cartaPatronalForm.get('mesInicio')?.touched">
+            </div>
+            <div class="form-field">
+              <label>Año inicio <span class="required">*</span></label>
+              <input type="text" formControlName="anioInicio" placeholder="ej. 2025"
+                [class.invalid]="cartaPatronalForm.get('anioInicio')?.invalid && cartaPatronalForm.get('anioInicio')?.touched">
             </div>
           </div>
-          <div class="form-grid-2" style="margin-top: 0.75rem;">
+          <div class="form-grid-3" style="margin-top: 0.75rem;">
             <div class="form-field">
-              <label>Hora entrada <span class="required">*</span></label>
-              <input type="text" formControlName="horaEntrada" placeholder="ej. 07:00"
-                [class.invalid]="cartaPatronalForm.get('horaEntrada')?.invalid && cartaPatronalForm.get('horaEntrada')?.touched">
+              <label>Día fin <span class="required">*</span></label>
+              <input type="text" formControlName="diaFin" placeholder="ej. 24"
+                [class.invalid]="cartaPatronalForm.get('diaFin')?.invalid && cartaPatronalForm.get('diaFin')?.touched">
             </div>
             <div class="form-field">
-              <label>Hora salida <span class="required">*</span></label>
-              <input type="text" formControlName="horaSalida" placeholder="ej. 17:00"
-                [class.invalid]="cartaPatronalForm.get('horaSalida')?.invalid && cartaPatronalForm.get('horaSalida')?.touched">
+              <label>Mes fin <span class="required">*</span></label>
+              <input type="text" formControlName="mesFin" placeholder="ej. Enero"
+                [class.invalid]="cartaPatronalForm.get('mesFin')?.invalid && cartaPatronalForm.get('mesFin')?.touched">
+            </div>
+            <div class="form-field">
+              <label>Año fin <span class="required">*</span></label>
+              <input type="text" formControlName="anioFin" placeholder="ej. 2026"
+                [class.invalid]="cartaPatronalForm.get('anioFin')?.invalid && cartaPatronalForm.get('anioFin')?.touched">
             </div>
           </div>
         </div>
 
-        <!-- IMSS y vacaciones -->
+        <!-- Firmante -->
         <div class="form-section">
-          <div class="form-section-title">Seguro Social y vacaciones</div>
-          <div class="form-field">
-            <label>Número de afiliación IMSS <span class="required">*</span></label>
-            <input type="text" formControlName="numAfiliacion" placeholder="ej. 12345678901"
-              [class.invalid]="cartaPatronalForm.get('numAfiliacion')?.invalid && cartaPatronalForm.get('numAfiliacion')?.touched">
-          </div>
-          <div class="form-grid-3" style="margin-top: 0.75rem;">
+          <div class="form-section-title">Firmante</div>
+          <div class="form-grid-3">
             <div class="form-field">
-              <label>Día de alta en seguro <span class="required">*</span></label>
-              <input type="text" formControlName="diaAlta" placeholder="ej. 01"
-                [class.invalid]="cartaPatronalForm.get('diaAlta')?.invalid && cartaPatronalForm.get('diaAlta')?.touched">
+              <label>Nombre <span class="required">*</span></label>
+              <input type="text" formControlName="nombreFirmante" placeholder="ej. Lic. María Asunción Mares"
+                [class.invalid]="cartaPatronalForm.get('nombreFirmante')?.invalid && cartaPatronalForm.get('nombreFirmante')?.touched">
             </div>
             <div class="form-field">
-              <label>Mes de alta <span class="required">*</span></label>
-              <input type="text" formControlName="mesAlta" placeholder="ej. enero"
-                [class.invalid]="cartaPatronalForm.get('mesAlta')?.invalid && cartaPatronalForm.get('mesAlta')?.touched">
+              <label>Cargo <span class="required">*</span></label>
+              <input type="text" formControlName="cargoFirmante" placeholder="ej. Coordinador de R.H."
+                [class.invalid]="cartaPatronalForm.get('cargoFirmante')?.invalid && cartaPatronalForm.get('cargoFirmante')?.touched">
             </div>
             <div class="form-field">
-              <label>Días de vacaciones <span class="required">*</span></label>
-              <input type="text" formControlName="diasVacaciones" placeholder="ej. 12"
-                [class.invalid]="cartaPatronalForm.get('diasVacaciones')?.invalid && cartaPatronalForm.get('diasVacaciones')?.touched">
+              <label>Celular <span class="required">*</span></label>
+              <input type="text" formControlName="celFirmante" placeholder="ej. 3324951222"
+                [class.invalid]="cartaPatronalForm.get('celFirmante')?.invalid && cartaPatronalForm.get('celFirmante')?.touched">
             </div>
           </div>
         </div>
@@ -1492,6 +1497,7 @@
             <div class="form-field">
               <label>Días naturales a prueba <span class="required">*</span></label>
               <input type="text" formControlName="diasPrueba" placeholder="ej. 28"
+                (input)="calcularFechaFin()"
                 [class.invalid]="contratoTiempoForm.get('diasPrueba')?.invalid && contratoTiempoForm.get('diasPrueba')?.touched">
             </div>
           </div>
@@ -1504,34 +1510,34 @@
             <div class="form-field">
               <label>Día inicio <span class="required">*</span></label>
               <input type="text" formControlName="diaInicioContrato" placeholder="ej. 01"
+                (input)="calcularFechaFin()"
                 [class.invalid]="contratoTiempoForm.get('diaInicioContrato')?.invalid && contratoTiempoForm.get('diaInicioContrato')?.touched">
             </div>
             <div class="form-field">
               <label>Mes inicio <span class="required">*</span></label>
-              <input type="text" formControlName="mesInicioContrato" placeholder="ej. 04"
+              <input type="text" formControlName="mesInicioContrato" placeholder="ej. enero"
+                (input)="calcularFechaFin()"
                 [class.invalid]="contratoTiempoForm.get('mesInicioContrato')?.invalid && contratoTiempoForm.get('mesInicioContrato')?.touched">
             </div>
             <div class="form-field">
               <label>Año inicio <span class="required">*</span></label>
               <input type="text" formControlName="anioInicioContrato" placeholder="ej. 2026"
+                (input)="calcularFechaFin()"
                 [class.invalid]="contratoTiempoForm.get('anioInicioContrato')?.invalid && contratoTiempoForm.get('anioInicioContrato')?.touched">
             </div>
           </div>
           <div class="form-grid-3" style="margin-top: 0.75rem;">
             <div class="form-field">
-              <label>Día fin <span class="required">*</span></label>
-              <input type="text" formControlName="diaFinContrato" placeholder="ej. 30"
-                [class.invalid]="contratoTiempoForm.get('diaFinContrato')?.invalid && contratoTiempoForm.get('diaFinContrato')?.touched">
+              <label>Día fin (calculado)</label>
+              <input type="text" formControlName="diaFinContrato" placeholder="—" readonly style="background:#f5f5f5; cursor:default;">
             </div>
             <div class="form-field">
-              <label>Mes fin <span class="required">*</span></label>
-              <input type="text" formControlName="mesFinContrato" placeholder="ej. 06"
-                [class.invalid]="contratoTiempoForm.get('mesFinContrato')?.invalid && contratoTiempoForm.get('mesFinContrato')?.touched">
+              <label>Mes fin (calculado)</label>
+              <input type="text" formControlName="mesFinContrato" placeholder="—" readonly style="background:#f5f5f5; cursor:default;">
             </div>
             <div class="form-field">
-              <label>Año fin <span class="required">*</span></label>
-              <input type="text" formControlName="anioFinContrato" placeholder="ej. 2026"
-                [class.invalid]="contratoTiempoForm.get('anioFinContrato')?.invalid && contratoTiempoForm.get('anioFinContrato')?.touched">
+              <label>Año fin (calculado)</label>
+              <input type="text" formControlName="anioFinContrato" placeholder="—" readonly style="background:#f5f5f5; cursor:default;">
             </div>
           </div>
         </div>

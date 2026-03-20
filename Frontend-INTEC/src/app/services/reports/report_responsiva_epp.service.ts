@@ -66,7 +66,7 @@ export class ReportResponsivaEppService {
 
     // ── Logo ──────────────────────────────────────────────────────────────────
     if (logoBase64) {
-      doc.addImage(logoBase64, 'PNG', lm, 14, 22, 18);
+      doc.addImage(logoBase64, 'PNG', lm, 14, 18, 18);
     }
 
     // ── Nombre empresa ────────────────────────────────────────────────────────

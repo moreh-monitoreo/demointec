@@ -85,7 +85,7 @@ export class ReportCaratulaIngresoService {
 
     // ---- Logo ----
     if (logoBase64) {
-      doc.addImage(logoBase64, 'PNG', lm, 8, 22, 16);
+      doc.addImage(logoBase64, 'PNG', lm, 8, 18, 18);
     } else {
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(14);
@@ -272,7 +272,7 @@ export class ReportCaratulaIngresoService {
 
     // ---- Logo ----
     if (logoBase64) {
-      doc.addImage(logoBase64, 'PNG', lm, 8, 22, 16);
+      doc.addImage(logoBase64, 'PNG', lm, 8, 18, 18);
     } else {
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(14);

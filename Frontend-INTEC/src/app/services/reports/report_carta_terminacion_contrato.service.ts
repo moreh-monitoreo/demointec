@@ -53,7 +53,7 @@ export class ReportCartaTerminacionContratoService {
 
     // ── Logo ─────────────────────────────────────────────────────────────────
     if (logoBase64) {
-      doc.addImage(logoBase64, 'PNG', lm, 10, 22, 18);
+      doc.addImage(logoBase64, 'PNG', lm, 10, 18, 18);
     }
 
     let y = 46;
@@ -71,7 +71,7 @@ export class ReportCartaTerminacionContratoService {
     // ── Destinatario ──────────────────────────────────────────────────────────
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(fs);
-    doc.text('Señor', lm, y);
+    doc.text('Señor (a):', lm, y);
     y += lh;
 
     doc.setFont('helvetica', 'bold');

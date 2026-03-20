@@ -180,9 +180,6 @@ export class FormatsComponent implements OnInit {
       this.cartaPatronalForm.patchValue({
         nombreEmpleado: emp.name_employee ?? '',
         puesto: emp.position ?? '',
-        horaEntrada: emp.entry_time ?? '',
-        horaSalida: emp.exit_time ?? '',
-        numAfiliacion: emp.nss ?? '',
       });
 
     } else if (this.activeFormatKey === 'contrato-confidencialidad') {
@@ -382,14 +379,15 @@ export class FormatsComponent implements OnInit {
     anio: ['2026', Validators.required],
     nombreEmpleado: ['', Validators.required],
     puesto: ['', Validators.required],
-    diasInicio: ['', Validators.required],
-    diasFin: ['', Validators.required],
-    horaEntrada: ['', Validators.required],
-    horaSalida: ['', Validators.required],
-    numAfiliacion: ['', Validators.required],
-    diaAlta: ['', Validators.required],
-    mesAlta: ['', Validators.required],
-    diasVacaciones: ['', Validators.required],
+    diaInicio: ['', Validators.required],
+    mesInicio: ['', Validators.required],
+    anioInicio: ['2025', Validators.required],
+    diaFin: ['', Validators.required],
+    mesFin: ['', Validators.required],
+    anioFin: ['2026', Validators.required],
+    nombreFirmante: ['Lic. María Asunción Mares Magallanes', Validators.required],
+    cargoFirmante: ['Coordinador de R.H.', Validators.required],
+    celFirmante: ['3324951222', Validators.required],
   });
 
   contratoConfForm: FormGroup = this.fb.group({
@@ -472,9 +470,9 @@ export class FormatsComponent implements OnInit {
     diaInicioContrato: ['', Validators.required],
     mesInicioContrato: ['', Validators.required],
     anioInicioContrato: ['2026', Validators.required],
-    diaFinContrato: ['', Validators.required],
-    mesFinContrato: ['', Validators.required],
-    anioFinContrato: ['2026', Validators.required],
+    diaFinContrato: [''],
+    mesFinContrato: [''],
+    anioFinContrato: [''],
     horaInicioLV: ['', Validators.required],
     horaFinLV: ['', Validators.required],
     horaInicioSab: ['', Validators.required],
@@ -604,6 +602,28 @@ export class FormatsComponent implements OnInit {
     if (this.leySillaFilas.length > 1) {
       this.leySillaFilas.removeAt(i);
     }
+  }
+
+  calcularFechaFin(): void {
+    const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+    const f = this.contratoTiempoForm;
+    const dias = parseInt(f.get('diasPrueba')?.value, 10);
+    const diaI = parseInt(f.get('diaInicioContrato')?.value, 10);
+    const mesI = f.get('mesInicioContrato')?.value?.trim().toLowerCase();
+    const anioI = parseInt(f.get('anioInicioContrato')?.value, 10);
+
+    const mesIdx = meses.indexOf(mesI);
+    if (!dias || !diaI || mesIdx === -1 || !anioI) return;
+
+    const fechaInicio = new Date(anioI, mesIdx, diaI);
+    const fechaFin = new Date(fechaInicio);
+    fechaFin.setDate(fechaFin.getDate() + dias - 1);
+
+    f.patchValue({
+      diaFinContrato: String(fechaFin.getDate()),
+      mesFinContrato: meses[fechaFin.getMonth()],
+      anioFinContrato: String(fechaFin.getFullYear()),
+    });
   }
 
   ritForm: FormGroup = this.fb.group({
@@ -798,7 +818,7 @@ export class FormatsComponent implements OnInit {
       this.encuestaForm.reset();
       this.avisoForm.reset();
       this.caratulaForm.reset({ nombreEmpresa1: 'INTEC DE JALISCO S.A. DE C.V.' });
-      this.cartaPatronalForm.reset({ ciudad: 'Guadalajara', anio: '2026' });
+      this.cartaPatronalForm.reset({ ciudad: 'Guadalajara', anio: '2026', anioInicio: '2025', anioFin: '2026', nombreFirmante: 'Lic. María Asunción Mares Magallanes', cargoFirmante: 'Coordinador de R.H.', celFirmante: '3324951222' });
       this.contratoConfForm.reset();
       this.contratoObraForm.reset({ ciudad: 'Guadalajara', anio: '2026', nacionalidad: 'Mexicana' });
       this.contratoTiempoForm.reset({ ciudad: 'Guadalajara', anio: '2026', nacionalidad: 'Mexicana', anioInicioContrato: '2026', anioFinContrato: '2026' });

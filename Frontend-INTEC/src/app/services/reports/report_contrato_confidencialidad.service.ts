@@ -50,15 +50,14 @@ export class ReportContratoConfidencialidadService {
   private checkPageBreak(doc: jsPDF, y: number, logoBase64: string | null, lm: number, pw: number): number {
     if (y > this.PAGE_BOTTOM) {
       doc.addPage();
-      this.drawPageHeader(doc, logoBase64, lm, pw);
-      return 34;
+      return 20;
     }
     return y;
   }
 
   private drawPageHeader(doc: jsPDF, logoBase64: string | null, lm: number, pw: number): void {
     if (logoBase64) {
-      doc.addImage(logoBase64, 'PNG', lm, 8, 26, 18);
+      doc.addImage(logoBase64, 'PNG', lm, 8, 18, 18);
     }
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(13);
@@ -77,7 +76,7 @@ export class ReportContratoConfidencialidadService {
 
     // ---- Logo ----
     if (logoBase64) {
-      doc.addImage(logoBase64, 'PNG', lm, 8, 26, 18);
+      doc.addImage(logoBase64, 'PNG', lm, 8, 18, 18);
     } else {
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(14);

@@ -43,7 +43,7 @@ export class ReportAnexoRitService {
   private drawDocument(doc: jsPDF, data: AnexoRitData, logoBase64: string | null): void {
     // ── Header ──────────────────────────────────────────────────────────────
     if (logoBase64) {
-      doc.addImage(logoBase64, 'PNG', this.LM, 10, 25, 18);
+      doc.addImage(logoBase64, 'PNG', this.LM, 10, 18, 18);
     }
 
     doc.setFont('helvetica', 'bold');

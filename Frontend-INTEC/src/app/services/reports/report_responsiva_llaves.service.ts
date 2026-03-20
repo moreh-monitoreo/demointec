@@ -48,7 +48,7 @@ export class ReportResponsivaLlavesService {
 
     // ── Logo ──────────────────────────────────────────────────────────────────
     if (logoBase64) {
-      doc.addImage(logoBase64, 'PNG', lm, 10, 22, 18);
+      doc.addImage(logoBase64, 'PNG', lm, 10, 18, 18);
     }
 
     // ── Nombre empresa ────────────────────────────────────────────────────────

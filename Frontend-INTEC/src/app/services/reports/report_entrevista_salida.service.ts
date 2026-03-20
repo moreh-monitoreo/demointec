@@ -52,7 +52,7 @@ export class ReportEntrevistaSalidaService {
     doc.rect(lm - 3, 8, pw + 6, 276);
 
     if (logoBase64) {
-      doc.addImage(logoBase64, 'PNG', lm, 12, 22, 16);
+      doc.addImage(logoBase64, 'PNG', lm, 12, 18, 18);
     } else {
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(14);
@@ -159,10 +159,10 @@ export class ReportEntrevistaSalidaService {
     for (let i = 0; i < Math.max(leftReasons.length, rightReasons.length); i++) {
       const ry = y + i * rowH;
       if (i < leftReasons.length) {
-        doc.text(leftReasons[i] + '  ( )', lm, ry + 2.5);
+        doc.text(leftReasons[i] + '  (     )', lm, ry + 2.5);
       }
       if (i < rightReasons.length) {
-        doc.text(rightReasons[i] + '  ( )', colMid, ry + 2.5);
+        doc.text(rightReasons[i] + '  (     )', colMid, ry + 2.5);
       }
     }
     y += Math.max(leftReasons.length, rightReasons.length) * rowH + 5;

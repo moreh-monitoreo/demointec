@@ -54,7 +54,7 @@ export class ReportRenunciaLaboralService {
 
     // ---- Logo ----
     if (logoBase64) {
-      doc.addImage(logoBase64, 'PNG', lm, 12, 28, 20);
+      doc.addImage(logoBase64, 'PNG', lm, 12, 18, 18);
     } else {
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(14);
@@ -94,10 +94,6 @@ export class ReportRenunciaLaboralService {
 
     doc.setFont('helvetica', 'normal');
     doc.text(data.nombreTrabajador.toUpperCase(), lm + 34, y);
-
-    doc.setDrawColor(80, 80, 80);
-    doc.setLineWidth(0.3);
-    doc.line(lm + 34, y + 1, lm + 120, y + 1);
 
     y += 14;
 

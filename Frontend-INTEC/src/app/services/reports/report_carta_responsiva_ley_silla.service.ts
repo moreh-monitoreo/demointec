@@ -54,7 +54,7 @@ export class ReportCartaResponsivaLeySillaService {
 
     // ── Header ───────────────────────────────────────────────────────────────
     if (logoBase64) {
-      doc.addImage(logoBase64, 'PNG', lm, 10, 25, 18);
+      doc.addImage(logoBase64, 'PNG', lm, 10, 18, 18);
     }
 
     doc.setFont('helvetica', 'bold');

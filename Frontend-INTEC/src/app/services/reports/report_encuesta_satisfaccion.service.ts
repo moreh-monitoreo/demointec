@@ -48,7 +48,7 @@ export class ReportEncuestaSatisfaccionService {
 
     // ---- Logo ----
     if (logoBase64) {
-      doc.addImage(logoBase64, 'PNG', lm, 10, 22, 16);
+      doc.addImage(logoBase64, 'PNG', lm, 10, 18, 18);
     } else {
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(14);
@@ -87,13 +87,13 @@ export class ReportEncuestaSatisfaccionService {
     this.drawOrangeCell(doc, lm + col1W + col2W + col3W, y, col4W, cellH, 'ESTADO CIVIL:', data.estadoCivil, orange);
     y += cellH;
 
-    // Fila 2: UBICACIÓN/OBRA | INGRESO | DOMICILIO
+    // Fila 2: UBICACIÓN/OBRA | DOMICILIO | INGRESO
     const ubiW = 55;
-    const ingW = 35;
-    const domW = pw - ubiW - ingW;
+    const domW = 90;
+    const ingW = pw - ubiW - domW;
     this.drawOrangeCell(doc, lm, y, ubiW, cellH, 'UBICACIÓN/OBRA', data.ubicacionObra, orange);
-    this.drawOrangeCell(doc, lm + ubiW, y, ingW, cellH, 'INGRESO:', data.ingreso, orange);
-    this.drawOrangeCell(doc, lm + ubiW + ingW, y, domW, cellH, 'DOMICILIO:', data.domicilio, orange);
+    this.drawOrangeCell(doc, lm + ubiW, y, domW, cellH, 'DOMICILIO:', data.domicilio, orange);
+    this.drawOrangeCell(doc, lm + ubiW + domW, y, ingW, cellH, 'INGRESO:', data.ingreso, orange);
     y += cellH + 4;
 
     // ---- Texto introductorio ----

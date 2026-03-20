@@ -346,10 +346,10 @@ export class ReportContratoObraDeterminadaService {
     y = this.checkPageBreak(doc, y, lm);
     const d14text = 'El trabajador designa para el pago de salarios y prestaciones devengadas, dando cumplimiento con lo establecido en el artículo 25 fracción X a los siguientes beneficiarios y sus porcentajes:';
     y = this.drawClause(doc, 'DÉCIMA CUARTA.', d14text, lm, y, pw, lh, fs);
-    y += 4;
+    y += 2;
 
     // Tabla beneficiarios
-    y = this.checkPageBreak(doc, y + 28, lm); // ensure space for table
+    y = this.checkPageBreak(doc, y, lm);
     const orange: [number, number, number] = [245, 133, 37];
     const colW = [90, 45, pw - 90 - 45];
     const hdrH = 6;
@@ -392,10 +392,10 @@ export class ReportContratoObraDeterminadaService {
       y += rowH;
     }
 
-    y += 12;
+    y += 18;
 
     // ── Firmas ───────────────────────────────────────────────────────────────
-    y = this.checkPageBreak(doc, y + 30, lm);
+    y = this.checkPageBreak(doc, y, lm);
     const sigW = 70;
     const leftSigX = lm + 10;
     const rightSigX = 210 - 18 - 10 - sigW;
