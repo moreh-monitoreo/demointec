@@ -576,6 +576,37 @@ export class FormatsComponent implements OnInit {
     nombreFirmante: ['', Validators.required],
   });
 
+  // ── Catálogo EPP ────────────────────────────────────────────────────────────
+  readonly eppCatalog: Record<string, { tallas: string[]; colores: string[]; marcas: string[] }> = {
+    'PLAYERA':           { tallas: ['CH','M','G','XL'],               colores: ['AZUL','GRIS','NEGRA','TINTA','AZUL REY'],                          marcas: ['YAZBEK'] },
+    'CHALECO':           { tallas: ['UNICA','CH','M','G','XL'],        colores: ['AZUL REY','MARINO','BEIGE'],                                       marcas: ['JOSTEIN','SAFETY DEPOT'] },
+    'CASCO':             { tallas: ['UNICA'],                          colores: ['BLANCO','AZUL'],                                                   marcas: ['JOSTEIN','TRUPER'] },
+    'LENTES':            { tallas: ['UNICA'],                          colores: ['TRANSPARENTES'],                                                   marcas: ['JOSTEIN','TRUPER'] },
+    'GUANTES':           { tallas: ['6','8','9','10'],                 colores: ['NEGROS NITRILO','CAMEL CARNAZA','GRIS NITRILO','ANTICORTE'],       marcas: ['JOSTEIN','TRUPER'] },
+    'TAPONES AUDITIVOS': { tallas: ['UNICA'],                          colores: [],                                                                  marcas: [] },
+    'BOTAS':             { tallas: ['3','4','5','6','7','8','9','30'], colores: ['NEGRAS','CAFÉ'],                                                   marcas: ['LICA'] },
+    'PINZAS DE CORTE':   { tallas: [],                                 colores: ['NARANJA','NEGRO'],                                                 marcas: ['TRUPER'] },
+    'DESARMADORES':      { tallas: [],                                 colores: ['CRUZ','PLANO'],                                                    marcas: ['TRUPER'] },
+  };
+
+  readonly eppArticles: string[] = Object.keys(this.eppCatalog);
+
+  onEppArticleChange(rowIndex: number, article: string): void {
+    const entry = article ? this.eppCatalog[article] : null;
+    this.responsivaEppForm.patchValue({
+      [`fila${rowIndex}descripcion`]: article,
+      [`fila${rowIndex}talla`]: entry && entry.tallas.length === 0 ? 'N/A' : '',
+      [`fila${rowIndex}color`]: entry && entry.colores.length === 0 ? 'N/A' : '',
+      [`fila${rowIndex}marca`]: entry && entry.marcas.length === 0 ? 'N/A' : '',
+    });
+  }
+
+  getEppOptions(rowIndex: number, field: 'tallas' | 'colores' | 'marcas'): string[] {
+    const article = this.responsivaEppForm.get(`fila${rowIndex}descripcion`)?.value as string;
+    if (!article || !this.eppCatalog[article]) return [];
+    return this.eppCatalog[article][field];
+  }
+
   private buildLeySillaFilas(count: number) {
     return Array.from({ length: count }, () =>
       this.fb.group({

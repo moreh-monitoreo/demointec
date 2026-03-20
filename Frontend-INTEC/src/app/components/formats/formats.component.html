@@ -1756,10 +1756,34 @@
             <tbody>
               <tr *ngFor="let i of [0,1,2,3,4]">
                 <td><input type="text" [formControlName]="'fila'+i+'cantidad'" placeholder="—"></td>
-                <td><input type="text" [formControlName]="'fila'+i+'descripcion'" placeholder="—"></td>
-                <td><input type="text" [formControlName]="'fila'+i+'talla'" placeholder="—"></td>
-                <td><input type="text" [formControlName]="'fila'+i+'color'" placeholder="—"></td>
-                <td><input type="text" [formControlName]="'fila'+i+'marca'" placeholder="—"></td>
+                <td>
+                  <select [formControlName]="'fila'+i+'descripcion'"
+                    (change)="onEppArticleChange(i, $any($event.target).value)">
+                    <option value="">— Seleccionar —</option>
+                    <option *ngFor="let art of eppArticles" [value]="art">{{ art }}</option>
+                  </select>
+                </td>
+                <td>
+                  <select *ngIf="getEppOptions(i, 'tallas').length > 0" [formControlName]="'fila'+i+'talla'">
+                    <option value="">— —</option>
+                    <option *ngFor="let t of getEppOptions(i, 'tallas')" [value]="t">{{ t }}</option>
+                  </select>
+                  <input *ngIf="getEppOptions(i, 'tallas').length === 0" type="text" value="N/A" disabled>
+                </td>
+                <td>
+                  <select *ngIf="getEppOptions(i, 'colores').length > 0" [formControlName]="'fila'+i+'color'">
+                    <option value="">— —</option>
+                    <option *ngFor="let c of getEppOptions(i, 'colores')" [value]="c">{{ c }}</option>
+                  </select>
+                  <input *ngIf="getEppOptions(i, 'colores').length === 0" type="text" value="N/A" disabled>
+                </td>
+                <td>
+                  <select *ngIf="getEppOptions(i, 'marcas').length > 0" [formControlName]="'fila'+i+'marca'">
+                    <option value="">— —</option>
+                    <option *ngFor="let m of getEppOptions(i, 'marcas')" [value]="m">{{ m }}</option>
+                  </select>
+                  <input *ngIf="getEppOptions(i, 'marcas').length === 0" type="text" value="N/A" disabled>
+                </td>
               </tr>
             </tbody>
           </table>
