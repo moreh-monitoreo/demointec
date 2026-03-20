@@ -533,6 +533,7 @@ export class FormatsComponent implements OnInit {
 
   contratoIndeterminadoForm: FormGroup = this.fb.group({
     ciudad: ['Guadalajara', Validators.required],
+    ciudadComparecencia: ['Zapopan Jalisco', Validators.required],
     dia: ['', Validators.required],
     mes: ['', Validators.required],
     anio: ['2026', Validators.required],
@@ -829,7 +830,7 @@ export class FormatsComponent implements OnInit {
       this.ritForm.reset({ lugar: 'Guadalajara', anio: '2026' });
       this.actaAbandonoForm.reset();
       this.anexoRitForm.reset();
-      this.contratoIndeterminadoForm.reset({ ciudad: 'Guadalajara', nacionalidad: 'Mexicana', anio: '2026', anioInicio: '2026' });
+      this.contratoIndeterminadoForm.reset({ ciudad: 'Guadalajara', ciudadComparecencia: 'Zapopan Jalisco', nacionalidad: 'Mexicana', anio: '2026', anioInicio: '2026' });
       this.cartaTerminacionContratoForm.reset({ ciudad: 'Guadalajara', nombreFirmante: 'Ing. Juan Pablo Jimenez Espinoza.' });
       const filasArray = this.cartaResponsivaLeySillaForm.get('filas') as FormArray;
       filasArray.clear();
