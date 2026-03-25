@@ -1,38 +1,35 @@
 import { Injectable } from '@angular/core';
 import jsPDF from 'jspdf';
 
-export interface CartaPatronalData {
+export interface ConstanciaTrabajoOperacionesData {
   ciudad: string;
   dia: string;
   mes: string;
   anio: string;
   nombreEmpleado: string;
   puesto: string;
-  area: string;
-  diasLaborales: string;
-  horarioInicio: string;
-  horarioFin: string;
-  ingresoMensual: string;
-  nss: string;
-  diaAltaNss: string;
-  mesAltaNss: string;
-  anioAltaNss: string;
-  diasVacaciones: string;
+  diaInicio: string;
+  mesInicio: string;
+  anioInicio: string;
+  diaFin: string;
+  mesFin: string;
+  anioFin: string;
   nombreFirmante: string;
   cargoFirmante: string;
+  celFirmante: string;
 }
 
 @Injectable({
   providedIn: 'root'
 })
-export class ReportCartaPatronalService {
+export class ReportConstanciaTrabajoOperacionesService {
 
-  async generate(data: CartaPatronalData): Promise<void> {
+  async generate(data: ConstanciaTrabajoOperacionesData): Promise<void> {
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
     const logoBase64 = await this.loadLogoBase64();
     this.drawDocument(doc, data, logoBase64);
     const today = new Date().toISOString().split('T')[0].replace(/-/g, '');
-    doc.save(`CartaPatronal_${today}.pdf`);
+    doc.save(`ConstanciaTrabajoOperaciones_${today}.pdf`);
   }
 
   private async loadLogoBase64(): Promise<string | null> {
@@ -50,20 +47,18 @@ export class ReportCartaPatronalService {
     }
   }
 
-  private drawDocument(doc: jsPDF, data: CartaPatronalData, logoBase64: string | null): void {
-    const lm = 25;           // margen izquierdo
-    const rm = 185;          // margen derecho (210 - 25)
-    const pw = rm - lm;      // ancho de texto = 160
+  private drawDocument(doc: jsPDF, data: ConstanciaTrabajoOperacionesData, logoBase64: string | null): void {
+    const lm = 25;
+    const rm = 185;
+    const pw = rm - lm;
     const fs = 10;
     const lh = 6.5;
     const pageH = 297;
 
-    // ── Logo (izquierda, mismo tamaño que imagen) ─────────────────────────────
     if (logoBase64) {
-      doc.addImage(logoBase64, 'PNG', lm, 12, 18, 18);
+      doc.addImage(logoBase64, 'PNG', lm, 12, 20, 20);
     }
 
-    // ── Fecha ────────────────────────────────────────────────────────────────
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(fs);
     doc.setTextColor(20, 20, 20);
@@ -72,30 +67,20 @@ export class ReportCartaPatronalService {
 
     let y = 72;
 
-    // ── A QUIEN CORRESPONDA ───────────────────────────────────────────────────
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(fs);
     doc.text('A QUIEN CORRESPONDA:', lm, y);
     y += 12;
 
-    // ── Párrafo principal ─────────────────────────────────────────────────────
     y = this.drawMixedJustified(doc, [
       { text: 'Por este medio, hacemos constar que el C. ', bold: false },
       { text: data.nombreEmpleado, bold: true },
-      { text: ', presta sus servicios en esta empresa como ', bold: false },
+      { text: ', prestó sus servicios en esta empresa como ', bold: false },
       { text: data.puesto, bold: true },
-      { text: ' dentro del área ', bold: false },
-      { text: data.area, bold: true },
-      { text: `, con un horario laboral de ${data.diasLaborales} de ${data.horarioInicio} a ${data.horarioFin}hrs, descansando los días Domingos y festivos. Su ingreso mensual es de `, bold: false },
-      { text: `$${data.ingresoMensual}`, bold: true },
-      { text: `. Su alta en el seguro social se generó con el número de afiliación `, bold: false },
-      { text: data.nss, bold: true },
-      { text: ` desde el día ${data.diaAltaNss} de ${data.mesAltaNss} de ${data.anioAltaNss}, Su proporción a vacaciones de acuerdo a su fecha de ingreso es de `, bold: false },
-      { text: `${data.diasVacaciones} días.`, bold: true },
+      { text: ` desde el día ${data.diaInicio} de ${data.mesInicio} de ${data.anioInicio} y hasta el día ${data.diaFin} de ${data.mesFin} de ${data.anioFin}.`, bold: false },
     ], lm, y, pw, lh, fs);
     y += lh * 1.5;
 
-    // ── Párrafo 2 ─────────────────────────────────────────────────────────────
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(fs);
     doc.setTextColor(20, 20, 20);
@@ -106,7 +91,6 @@ export class ReportCartaPatronalService {
     y = this.drawJustified(doc, p2Lines, lm, y, pw, lh);
     y += lh * 1.5;
 
-    // ── Párrafo 3 ─────────────────────────────────────────────────────────────
     const p3Lines = doc.splitTextToSize(
       'Sin más por el momento me despido quedando a sus órdenes para cualquier duda o aclaración.',
       pw
@@ -114,28 +98,26 @@ export class ReportCartaPatronalService {
     y = this.drawJustified(doc, p3Lines, lm, y, pw, lh);
     y += lh * 4;
 
-    // ── AFECTUOSAMENTE ────────────────────────────────────────────────────────
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(fs);
     doc.setTextColor(20, 20, 20);
     doc.text('AFECTUOSAMENTE,', 105, y, { align: 'center' });
     y += lh * 4;
 
-    // ── Línea de firma ────────────────────────────────────────────────────────
     doc.setDrawColor(80, 80, 80);
     doc.setLineWidth(0.3);
     doc.line(70, y, 140, y);
     y += lh;
 
-    // ── Datos del firmante ────────────────────────────────────────────────────
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(fs);
     doc.setTextColor(20, 20, 20);
     doc.text(data.nombreFirmante || 'Lic. María Asunción Mares Magallanes', 105, y, { align: 'center' });
     y += lh;
-    doc.text(data.cargoFirmante || 'Coordinadora de Capital Humano', 105, y, { align: 'center' });
+    doc.text(data.cargoFirmante || 'Coordinador de R.H.', 105, y, { align: 'center' });
+    y += lh;
+    doc.text(`Cel. ${data.celFirmante}`, 105, y, { align: 'center' });
 
-    // ── Pie de página (posición fija cerca del borde inferior) ────────────────
     const footerY = pageH - 28;
     doc.setDrawColor(180, 180, 180);
     doc.setLineWidth(0.3);

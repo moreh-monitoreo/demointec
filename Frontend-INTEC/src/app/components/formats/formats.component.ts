@@ -6,6 +6,7 @@ import { ReportEntrevistaSalidaService } from '../../services/reports/report_ent
 import { ReportEncuestaSatisfaccionService } from '../../services/reports/report_encuesta_satisfaccion.service';
 import { ReportAvisoPrivacidadService } from '../../services/reports/report_aviso_privacidad.service';
 import { ReportCaratulaIngresoService } from '../../services/reports/report_caratula_ingreso.service';
+import { ReportConstanciaTrabajoOperacionesService } from '../../services/reports/report_constancia_trabajo_operaciones.service';
 import { ReportCartaPatronalService } from '../../services/reports/report_carta_patronal.service';
 import { ReportContratoConfidencialidadService } from '../../services/reports/report_contrato_confidencialidad.service';
 import { ReportContratoObraDeterminadaService } from '../../services/reports/report_contrato_obra_determinada.service';
@@ -20,6 +21,7 @@ import { ReportAnexoRitService } from '../../services/reports/report_anexo_rit.s
 import { ReportContratoTiempoIndeterminadoService } from '../../services/reports/report_contrato_tiempo_indeterminado.service';
 import { ReportCartaResponsivaLeySillaService } from '../../services/reports/report_carta_responsiva_ley_silla.service';
 import { ReportCartaTerminacionContratoService } from '../../services/reports/report_carta_terminacion_contrato.service';
+import { ReportSolicitudPrestamoService } from '../../services/reports/report_solicitud_prestamo.service';
 import { EmployeesAdapterService } from '../../adapters/employees.adapter';
 import { Employee } from '../../models/employees';
 
@@ -46,6 +48,7 @@ export class FormatsComponent implements OnInit {
   private encuestaService = inject(ReportEncuestaSatisfaccionService);
   private avisoService = inject(ReportAvisoPrivacidadService);
   private caratulaService = inject(ReportCaratulaIngresoService);
+  private constanciaTrabajoOperacionesService = inject(ReportConstanciaTrabajoOperacionesService);
   private cartaPatronalService = inject(ReportCartaPatronalService);
   private contratoConfService = inject(ReportContratoConfidencialidadService);
   private contratoObraService = inject(ReportContratoObraDeterminadaService);
@@ -60,6 +63,7 @@ export class FormatsComponent implements OnInit {
   private contratoIndeterminadoService = inject(ReportContratoTiempoIndeterminadoService);
   private cartaResponsivaLeySillaService = inject(ReportCartaResponsivaLeySillaService);
   private cartaTerminacionContratoService = inject(ReportCartaTerminacionContratoService);
+  private solicitudPrestamoService = inject(ReportSolicitudPrestamoService);
   private employeesAdapter = inject(EmployeesAdapterService);
 
   // ── Autocomplete ────────────────────────────────────────────────────────────
@@ -73,6 +77,12 @@ export class FormatsComponent implements OnInit {
       next: (list) => { this.employees = list; },
       error: () => { this.employees = []; }
     });
+  }
+
+  onFechaInicioPagoChange(value: string): void {
+    if (!value) return;
+    const [yyyy, mm, dd] = value.split('-');
+    this.solicitudPrestamoForm.patchValue({ fechaInicioPago: `${dd}/${mm}/${yyyy}` });
   }
 
   onSearchInput(value: string): void {
@@ -180,6 +190,14 @@ export class FormatsComponent implements OnInit {
       this.cartaPatronalForm.patchValue({
         nombreEmpleado: emp.name_employee ?? '',
         puesto: emp.position ?? '',
+        horarioInicio: emp.entry_time ?? '',
+        horarioFin: emp.exit_time ?? '',
+        nss: emp.nss ?? '',
+      });
+    } else if (this.activeFormatKey === 'constancia-trabajo-operaciones') {
+      this.constanciaTrabajoOperacionesForm.patchValue({
+        nombreEmpleado: emp.name_employee ?? '',
+        puesto: emp.position ?? '',
       });
 
     } else if (this.activeFormatKey === 'contrato-confidencialidad') {
@@ -192,6 +210,7 @@ export class FormatsComponent implements OnInit {
         ext: emp.interior_number ?? '',
         colonia: emp.colony ?? '',
         municipio: emp.city ?? '',
+        estado: emp.state ?? '',
         cp: emp.zip_code ?? '',
         puesto: emp.position ?? '',
       });
@@ -226,6 +245,12 @@ export class FormatsComponent implements OnInit {
         benNombre3: emp.beneficiary3_name ?? '',
         benParentesco3: emp.beneficiary3_relationship ?? '',
         benPorcentaje3: emp.beneficiary3_percentage ?? '',
+      });
+
+    } else if (this.activeFormatKey === 'solicitud-prestamo') {
+      this.solicitudPrestamoForm.patchValue({
+        nombre: emp.name_employee ?? '',
+        puesto: emp.position ?? '',
       });
 
     } else if (this.activeFormatKey === 'carta-terminacion-contrato') {
@@ -302,6 +327,7 @@ export class FormatsComponent implements OnInit {
 
   renunciaForm: FormGroup = this.fb.group({
     ciudad: ['Guadalajara', Validators.required],
+    estado: ['Jalisco', Validators.required],
     dia: ['', Validators.required],
     mes: ['', Validators.required],
     anio: ['2026', Validators.required],
@@ -379,6 +405,27 @@ export class FormatsComponent implements OnInit {
     anio: ['2026', Validators.required],
     nombreEmpleado: ['', Validators.required],
     puesto: ['', Validators.required],
+    area: ['', Validators.required],
+    diasLaborales: ['', Validators.required],
+    horarioInicio: ['', Validators.required],
+    horarioFin: ['', Validators.required],
+    ingresoMensual: ['', Validators.required],
+    nss: ['', Validators.required],
+    diaAltaNss: ['', Validators.required],
+    mesAltaNss: ['', Validators.required],
+    anioAltaNss: ['', Validators.required],
+    diasVacaciones: ['', Validators.required],
+    nombreFirmante: ['Lic. María Asunción Mares Magallanes', Validators.required],
+    cargoFirmante: ['Coordinadora de Capital Humano', Validators.required],
+  });
+
+  constanciaTrabajoOperacionesForm: FormGroup = this.fb.group({
+    ciudad: ['Guadalajara', Validators.required],
+    dia: ['', Validators.required],
+    mes: ['', Validators.required],
+    anio: ['2026', Validators.required],
+    nombreEmpleado: ['', Validators.required],
+    puesto: ['', Validators.required],
     diaInicio: ['', Validators.required],
     mesInicio: ['', Validators.required],
     anioInicio: ['2025', Validators.required],
@@ -399,6 +446,7 @@ export class FormatsComponent implements OnInit {
     ext: [''],
     colonia: ['', Validators.required],
     municipio: ['', Validators.required],
+    estado: ['', Validators.required],
     cp: ['', Validators.required],
     puesto: ['', Validators.required],
   });
@@ -522,8 +570,19 @@ export class FormatsComponent implements OnInit {
   });
 
   actaAbandonoForm: FormGroup = this.fb.group({
+    ciudad: ['', Validators.required],
+    estado: ['', Validators.required],
+    horas: ['', Validators.required],
+    dia: ['', Validators.required],
+    mes: ['', Validators.required],
+    anio: ['', Validators.required],
+    domicilioEmpresa: ['', Validators.required],
     nombre: ['', Validators.required],
     puesto: ['', Validators.required],
+    testigo1: ['', Validators.required],
+    testigo2: ['', Validators.required],
+    nombreObra: ['', Validators.required],
+    domicilioObra: ['', Validators.required],
   });
 
   anexoRitForm: FormGroup = this.fb.group({
@@ -533,7 +592,8 @@ export class FormatsComponent implements OnInit {
 
   contratoIndeterminadoForm: FormGroup = this.fb.group({
     ciudad: ['Guadalajara', Validators.required],
-    ciudadComparecencia: ['Zapopan Jalisco', Validators.required],
+    municipioComparecencia: ['Zapopan', Validators.required],
+    estadoComparecencia: ['Jalisco', Validators.required],
     dia: ['', Validators.required],
     mes: ['', Validators.required],
     anio: ['2026', Validators.required],
@@ -567,6 +627,7 @@ export class FormatsComponent implements OnInit {
 
   cartaTerminacionContratoForm: FormGroup = this.fb.group({
     ciudad: ['Guadalajara', Validators.required],
+    estado: ['Jalisco', Validators.required],
     dia: ['', Validators.required],
     mes: ['', Validators.required],
     nombreTrabajador: ['', Validators.required],
@@ -574,6 +635,18 @@ export class FormatsComponent implements OnInit {
     diaEfectivo: ['', Validators.required],
     mesEfectivo: ['', Validators.required],
     nombreFirmante: ['', Validators.required],
+  });
+
+  solicitudPrestamoForm: FormGroup = this.fb.group({
+    nombre: ['', Validators.required],
+    puesto: ['', Validators.required],
+    fechaIngreso: ['', Validators.required],
+    montoSolicitado: ['', Validators.required],
+    montoAutorizado: ['', Validators.required],
+    motivoPrestamo: ['', Validators.required],
+    formaPago: ['Semanal', Validators.required],
+    numPagos: ['', Validators.required],
+    fechaInicioPago: ['', Validators.required],
   });
 
   // ── Catálogo EPP ────────────────────────────────────────────────────────────
@@ -707,10 +780,19 @@ export class FormatsComponent implements OnInit {
     {
       key: 'carta-patronal',
       label: 'Carta Patronal',
-      description: 'Carta patronal del colaborador',
+      description: 'Carta patronal con datos de empleo, horario, salario y NSS',
       icon: 'bi-file-earmark-pdf',
-      filePath: '/formatos/CARTA PATRONAL.pdf',
-      fileName: 'Carta Patronal.pdf',
+      filePath: '',
+      fileName: '',
+      fillable: true
+    },
+    {
+      key: 'constancia-trabajo-operaciones',
+      label: 'Constancia de Trabajo de Operaciones',
+      description: 'Constancia de trabajo para personal de operaciones',
+      icon: 'bi-file-earmark-pdf',
+      filePath: '',
+      fileName: '',
       fillable: true
     },
     {
@@ -756,6 +838,15 @@ export class FormatsComponent implements OnInit {
       icon: 'bi-file-earmark-pdf',
       filePath: '/formatos/POLITICA DE PRESTAMOS PERSONALES.pdf',
       fileName: 'Política de Préstamos Personales.pdf',
+      fillable: true
+    },
+    {
+      key: 'solicitud-prestamo',
+      label: 'Solicitud de Préstamo',
+      description: 'Formato de solicitud de préstamo personal para colaboradores',
+      icon: 'bi-file-earmark-text',
+      filePath: '',
+      fileName: '',
       fillable: true
     },
     {
@@ -846,11 +937,12 @@ export class FormatsComponent implements OnInit {
       this.activeFormatKey = format.key;
       this.clearSearch();
       this.entrevistaForm.reset();
-      this.renunciaForm.reset({ ciudad: 'Guadalajara', anio: '2026' });
+      this.renunciaForm.reset({ ciudad: 'Guadalajara', estado: 'Jalisco', anio: '2026' });
       this.encuestaForm.reset();
       this.avisoForm.reset();
       this.caratulaForm.reset({ nombreEmpresa1: 'INTEC DE JALISCO S.A. DE C.V.' });
-      this.cartaPatronalForm.reset({ ciudad: 'Guadalajara', anio: '2026', anioInicio: '2025', anioFin: '2026', nombreFirmante: 'Lic. María Asunción Mares Magallanes', cargoFirmante: 'Coordinador de R.H.', celFirmante: '3324951222' });
+      this.cartaPatronalForm.reset({ ciudad: 'Guadalajara', anio: '2026', nombreFirmante: 'Lic. María Asunción Mares Magallanes', cargoFirmante: 'Coordinadora de Capital Humano' });
+      this.constanciaTrabajoOperacionesForm.reset({ ciudad: 'Guadalajara', anio: '2026', anioInicio: '2025', anioFin: '2026', nombreFirmante: 'Lic. María Asunción Mares Magallanes', cargoFirmante: 'Coordinador de R.H.', celFirmante: '3324951222' });
       this.contratoConfForm.reset();
       this.contratoObraForm.reset({ ciudad: 'Guadalajara', anio: '2026', nacionalidad: 'Mexicana' });
       this.contratoTiempoForm.reset({ ciudad: 'Guadalajara', anio: '2026', nacionalidad: 'Mexicana', anioInicioContrato: '2026', anioFinContrato: '2026' });
@@ -859,10 +951,19 @@ export class FormatsComponent implements OnInit {
       this.responsivaEppForm.reset();
       this.responsivaLlavesForm.reset({ anio: '2026' });
       this.ritForm.reset({ lugar: 'Guadalajara', anio: '2026' });
-      this.actaAbandonoForm.reset();
+      const now = new Date();
+      const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+      this.actaAbandonoForm.reset({
+        dia: String(now.getDate()),
+        mes: meses[now.getMonth()],
+        anio: String(now.getFullYear()),
+        horas: `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`,
+        domicilioEmpresa: 'Misioneros número 2138 Colonia Jardines del Country en Guadalajara, Jalisco con C.P.44210',
+      });
       this.anexoRitForm.reset();
-      this.contratoIndeterminadoForm.reset({ ciudad: 'Guadalajara', ciudadComparecencia: 'Zapopan Jalisco', nacionalidad: 'Mexicana', anio: '2026', anioInicio: '2026' });
-      this.cartaTerminacionContratoForm.reset({ ciudad: 'Guadalajara', nombreFirmante: 'Ing. Juan Pablo Jimenez Espinoza.' });
+      this.contratoIndeterminadoForm.reset({ ciudad: 'Guadalajara', municipioComparecencia: 'Zapopan', estadoComparecencia: 'Jalisco', nacionalidad: 'Mexicana', anio: '2026', anioInicio: '2026' });
+      this.cartaTerminacionContratoForm.reset({ ciudad: 'Guadalajara', estado: 'Jalisco', nombreFirmante: 'Ing. Juan Pablo Jimenez Espinoza.' });
+      this.solicitudPrestamoForm.reset({ formaPago: 'Semanal' });
       const filasArray = this.cartaResponsivaLeySillaForm.get('filas') as FormArray;
       filasArray.clear();
       this.buildLeySillaFilas(10).forEach(g => filasArray.push(g));
@@ -887,6 +988,7 @@ export class FormatsComponent implements OnInit {
     if (this.activeFormatKey === 'aviso-privacidad') return this.avisoForm;
     if (this.activeFormatKey === 'caratula-ingreso') return this.caratulaForm;
     if (this.activeFormatKey === 'carta-patronal') return this.cartaPatronalForm;
+    if (this.activeFormatKey === 'constancia-trabajo-operaciones') return this.constanciaTrabajoOperacionesForm;
     if (this.activeFormatKey === 'contrato-confidencialidad') return this.contratoConfForm;
     if (this.activeFormatKey === 'contrato-obra-determinada') return this.contratoObraForm;
     if (this.activeFormatKey === 'contrato-tiempo-determinado') return this.contratoTiempoForm;
@@ -900,6 +1002,7 @@ export class FormatsComponent implements OnInit {
     if (this.activeFormatKey === 'contrato-tiempo-indeterminado') return this.contratoIndeterminadoForm;
     if (this.activeFormatKey === 'carta-responsiva-ley-silla') return this.cartaResponsivaLeySillaForm;
     if (this.activeFormatKey === 'carta-terminacion-contrato') return this.cartaTerminacionContratoForm;
+    if (this.activeFormatKey === 'solicitud-prestamo') return this.solicitudPrestamoForm;
     return this.renunciaForm;
   }
 
@@ -921,6 +1024,8 @@ export class FormatsComponent implements OnInit {
         await this.caratulaService.generate(this.caratulaForm.value);
       } else if (this.activeFormatKey === 'carta-patronal') {
         await this.cartaPatronalService.generate(this.cartaPatronalForm.value);
+      } else if (this.activeFormatKey === 'constancia-trabajo-operaciones') {
+        await this.constanciaTrabajoOperacionesService.generate(this.constanciaTrabajoOperacionesForm.value);
       } else if (this.activeFormatKey === 'contrato-confidencialidad') {
         await this.contratoConfService.generate(this.contratoConfForm.value);
       } else if (this.activeFormatKey === 'contrato-obra-determinada') {
@@ -960,6 +1065,8 @@ export class FormatsComponent implements OnInit {
         });
       } else if (this.activeFormatKey === 'carta-terminacion-contrato') {
         await this.cartaTerminacionContratoService.generate(this.cartaTerminacionContratoForm.value);
+      } else if (this.activeFormatKey === 'solicitud-prestamo') {
+        await this.solicitudPrestamoService.generate(this.solicitudPrestamoForm.value);
       }
       this.closeModal();
     } finally {

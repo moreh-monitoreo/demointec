@@ -3,7 +3,8 @@ import jsPDF from 'jspdf';
 
 export interface ContratoTiempoIndeterminadoData {
   ciudad: string;
-  ciudadComparecencia: string;
+  municipioComparecencia: string;
+  estadoComparecencia: string;
   dia: string;
   mes: string;
   anio: string;
@@ -85,7 +86,7 @@ export class ReportContratoTiempoIndeterminadoService {
 
     // ── Comparecencia ───────────────────────────────────────────────────────
     y = this.drawInlineSegs(doc, [
-      { t: `EN ${data.ciudadComparecencia.toUpperCase()} COMPARECEN POR UNA PARTE EL (LA) C. "`, b: false },
+      { t: `EN ${(data.municipioComparecencia + ' ' + data.estadoComparecencia).toUpperCase()} COMPARECEN POR UNA PARTE EL (LA) C. "`, b: false },
       { t: data.nombreTrabajador.toUpperCase(), b: false },
       { t: '", POR SU PROPIO DERECHO, A QUIEN EN LO SUCESIVO DENOMINADO COMO "EL (LA) TRABAJADOR(A)" Y POR OTRA PARTE LA PERSONA MORAL INTEC DE JALISCO SA DE CV A QUIEN EN LO SUCESIVO DENOMINAREMOS "EL PATRÓN" POR CONDUCTO DE SU REPRESENTANTE LEGAL "JUAN PABLO JIMÉNEZ ESPINOSA”, MISMO QUE SUJETAN AL TENOR DE LAS SIGUIENTES DECLARACIONES Y CLÁUSULAS', b: false },
     ], lm, y, pw, lh, fs);
@@ -485,7 +486,7 @@ export class ReportContratoTiempoIndeterminadoService {
     y = this.checkPageBreak(doc, y);
     y = this.drawInlineSegs(doc, [
       { t: 'Ambas partes están de acuerdo en que, para la interpretación de este Contrato, se someten a los Tribunales de Trabajo de la ciudad de ', b: false },
-      { t: `${data.ciudad}, Jalisco.`, b: true },
+      { t: `${data.ciudad}, ${data.estadoComparecencia}.`, b: true },
     ], lm, y, pw, lh, fs);
     y += 4;
 
@@ -504,7 +505,7 @@ export class ReportContratoTiempoIndeterminadoService {
     y = this.checkPageBreak(doc, y);
     y = this.drawInlineSegs(doc, [
       { t: 'Se celebra este contrato en ', b: false },
-      { t: data.ciudad, b: true }, { t: ', Jalisco, el día ', b: false },
+      { t: data.ciudad, b: true }, { t: ', ', b: false }, { t: data.estadoComparecencia, b: true }, { t: ', el día ', b: false },
       { t: data.dia, b: true }, { t: ' de ', b: false },
       { t: data.mes, b: true }, { t: ' de ', b: false }, { t: data.anio, b: true },
       { t: ', y se firma por duplicado, recibiendo copias las partes del mismo.', b: false },

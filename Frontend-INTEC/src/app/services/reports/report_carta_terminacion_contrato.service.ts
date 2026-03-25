@@ -3,6 +3,7 @@ import jsPDF from 'jspdf';
 
 export interface CartaTerminacionContratoData {
   ciudad: string;
+  estado: string;
   dia: string;
   mes: string;
   nombreTrabajador: string;
@@ -65,7 +66,7 @@ export class ReportCartaTerminacionContratoService {
     const ciudad = data.ciudad || '___________';
     const dia = data.dia || '__';
     const mes = data.mes || '___________';
-    doc.text(`${ciudad}, Jalisco a ${dia} de ${mes} 2026`, lm + pw, y, { align: 'right' });
+    doc.text(`${ciudad}, ${data.estado || ''} a ${dia} de ${mes} 2026`, lm + pw, y, { align: 'right' });
     y += 18;
 
     // ── Destinatario ──────────────────────────────────────────────────────────

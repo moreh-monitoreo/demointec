@@ -2,8 +2,19 @@ import { Injectable } from '@angular/core';
 import jsPDF from 'jspdf';
 
 export interface ActaAbandonoTrabajoData {
+  ciudad: string;
+  estado: string;
+  horas: string;
+  dia: string;
+  mes: string;
+  anio: string;
+  domicilioEmpresa: string;
   nombre: string;
   puesto: string;
+  testigo1: string;
+  testigo2: string;
+  nombreObra: string;
+  domicilioObra: string;
 }
 
 @Injectable({
@@ -14,9 +25,7 @@ export class ReportActaAbandonoTrabajoService {
   async generate(data: ActaAbandonoTrabajoData): Promise<void> {
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
     const logoBase64 = await this.loadLogoBase64();
-
     this.drawDocument(doc, data, logoBase64);
-
     const today = new Date().toISOString().split('T')[0].replace(/-/g, '');
     doc.save(`ActaAbandonoTrabajo_${today}.pdf`);
   }
@@ -43,53 +52,51 @@ export class ReportActaAbandonoTrabajoService {
     const fs = 10;
     const lh = 6;
 
-    // ── Logo ──────────────────────────────────────────────────────────────────
     if (logoBase64) {
       doc.addImage(logoBase64, 'PNG', lm, 10, 18, 18);
     }
 
-    // ── Nombre empresa ────────────────────────────────────────────────────────
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(11);
     doc.setTextColor(dark[0], dark[1], dark[2]);
     doc.text('INTEC DE JALISCO S.A. DE C.V.', lm + 26, 24);
 
-    // ── Título ────────────────────────────────────────────────────────────────
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(13);
     doc.text('ACTA DE ABANDONO DE TRABAJO', 105, 44, { align: 'center' });
 
     let y = 60;
 
-    // ── Párrafo principal con nombre y puesto en negritas ─────────────────────
-    // El párrafo tiene nombre y puesto como valores variables en negritas.
-    // Se construye como segmentos: [texto normal, texto bold, ...]
-    const seg1 = 'En la Ciudad de Zapopan, Jalisco. Siendo las 13:00 horas del día 23 de junio del año 2025. Reunidos en las oficinas de la fuente de trabajo denominada Intec de Jalisco S.A. de C.V. ubicadas en Misioneros número 2138 Colonia Jardines del Country en Guadalajara, Jalisco con C.P.44210, representada por el C. Juan Pablo Jiménez Espinosa en su carácter de representante legal y los C. María Asunción Mares Magallanes y Luis Cervantes Contreras con el carácter de testigos y quienes son trabajadores de la misma fuente de trabajo, con el objeto de hacer constar lo siguiente: el representante de la fuente de trabajo manifiesta que el día de hoy el C. ';
-    const seg2 = data.nombre;
-    const seg3 = ' quien se desempeña como trabajador con la calidad de ';
-    const seg4 = data.puesto;
-    const seg5 = ' en la fuente de trabajo en la que se actúa. Se retiró de su lugar de trabajo obra VW Agua Azul ubicada Calz. Jesús González Gallo #450, Col. Centro. C.P.44100. Guadalajara, Jal. sin previa autorización y sin aviso alguno a su jefe directo.  Por su parte los testigos María Asunción Mares Magallanes y Luis Cervantes Contreras quienes también son trabajadores de la misma fuente de trabajo, manifiestan uno en pos de otro, estar enterados de la situación después del abandono del trabajador.';
-
     y = this.drawMixedJustified(doc, [
-      { text: seg1, bold: false },
-      { text: seg2, bold: true },
-      { text: seg3, bold: false },
-      { text: seg4, bold: true },
-      { text: seg5, bold: false },
+      { text: `En la Ciudad de ${data.ciudad || ''}, ${data.estado || ''}. Siendo las ${data.horas || ''} horas del día ${data.dia || ''} de ${data.mes || ''} del año ${data.anio || ''}. Reunidos en las oficinas de la fuente de trabajo denominada Intec de Jalisco S.A. de C.V. ubicadas en `, bold: false },
+      { text: data.domicilioEmpresa || '', bold: false },
+      { text: ', representada por el C. Juan Pablo Jiménez Espinosa en su carácter de representante legal y los C. ', bold: false },
+      { text: data.testigo1 || '', bold: true },
+      { text: ' y ', bold: false },
+      { text: data.testigo2 || '', bold: true },
+      { text: ' con el carácter de testigos y quienes son trabajadores de la misma fuente de trabajo, con el objeto de hacer constar lo siguiente: el representante de la fuente de trabajo manifiesta que el día de hoy el C. ', bold: false },
+      { text: data.nombre || '', bold: true },
+      { text: ' quien se desempeña como trabajador con la calidad de ', bold: false },
+      { text: data.puesto || '', bold: true },
+      { text: ' en la fuente de trabajo en la que se actúa. Se retiró de su lugar de trabajo obra ', bold: false },
+      { text: data.nombreObra || '', bold: true },
+      { text: ' ubicada en ', bold: false },
+      { text: data.domicilioObra || '', bold: false },
+      { text: ' sin previa autorización y sin aviso alguno a su jefe directo. Por su parte los testigos ', bold: false },
+      { text: data.testigo1 || '', bold: true },
+      { text: ' y ', bold: false },
+      { text: data.testigo2 || '', bold: true },
+      { text: ' quienes también son trabajadores de la misma fuente de trabajo, manifiestan uno en pos de otro, estar enterados de la situación después del abandono del trabajador.', bold: false },
     ], lm, y, pw, lh, fs, dark);
 
     y += 8;
 
-    // ── Párrafo de cierre ─────────────────────────────────────────────────────
     const cierre = 'No habiendo más asuntos que tratar, se da por concluida la presente acta, firmando al calce y al margen los que en ella intervinieron.';
     const cierreLines = doc.splitTextToSize(cierre, pw);
     y = this.drawJustified(doc, cierreLines, lm, y, pw, lh, fs, dark);
 
     y += 20;
 
-    // ── Firmas: grid 2×2 ──────────────────────────────────────────────────────
-    // Fila 1: PATRÓN  |  EL TRABAJADOR
-    // Fila 2: TESTIGO |  TESTIGO
     const col1X = lm + pw * 0.18;
     const col2X = lm + pw * 0.68;
     const lineHalfW = 30;
@@ -119,12 +126,9 @@ export class ReportActaAbandonoTrabajoService {
   }
 
   private drawJustified(
-    doc: jsPDF,
-    lines: string[],
-    x: number, y: number,
-    pw: number, lh: number,
-    fs: number,
-    dark: [number, number, number]
+    doc: jsPDF, lines: string[],
+    x: number, y: number, pw: number, lh: number,
+    fs: number, dark: [number, number, number]
   ): number {
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(fs);
@@ -149,46 +153,31 @@ export class ReportActaAbandonoTrabajoService {
     return y;
   }
 
-  /**
-   * Renders mixed bold/normal segments as a single justified paragraph.
-   * Bold segments (nombre, puesto) are rendered in bold, rest in normal.
-   */
   private drawMixedJustified(
     doc: jsPDF,
     segments: { text: string; bold: boolean }[],
-    x: number, y: number,
-    pw: number, lh: number,
-    fs: number,
-    dark: [number, number, number]
+    x: number, y: number, pw: number, lh: number,
+    fs: number, dark: [number, number, number]
   ): number {
-    // Build plain text and bold map
     let plain = '';
     const boldMap: boolean[] = [];
     for (const seg of segments) {
-      for (let i = 0; i < seg.text.length; i++) {
-        boldMap.push(seg.bold);
-      }
+      for (let i = 0; i < seg.text.length; i++) boldMap.push(seg.bold);
       plain += seg.text;
     }
 
-    // Word-wrap the plain text
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(fs);
     const lines = doc.splitTextToSize(plain, pw);
 
     let charCursor = 0;
-
     for (let li = 0; li < lines.length; li++) {
       const line: string = lines[li];
       const isLast = li === lines.length - 1;
       const words = line.trim().split(' ');
 
-      // Advance charCursor past leading spaces
-      while (charCursor < plain.length && plain[charCursor] === ' ' && !line.startsWith(' ')) {
-        charCursor++;
-      }
+      while (charCursor < plain.length && plain[charCursor] === ' ' && !line.startsWith(' ')) charCursor++;
 
-      // Measure each word with its actual font
       const wordMeta: { w: string; bold: boolean; width: number }[] = [];
       let tmpCursor = charCursor;
       for (const word of words) {
@@ -225,7 +214,6 @@ export class ReportActaAbandonoTrabajoService {
       charCursor += line.length + (li < lines.length - 1 ? 1 : 0);
       y += lh;
     }
-
     return y;
   }
 }

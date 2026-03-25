@@ -10,6 +10,7 @@ export interface ContratoConfidencialidadData {
   ext: string;
   colonia: string;
   municipio: string;
+  estado: string;
   cp: string;
   puesto: string;
 }
@@ -113,24 +114,27 @@ export class ReportContratoConfidencialidadService {
     // ---- Párrafo del empleado: texto completo como cadena plana para justificar ----
     // Segmentos: [texto, bold?]
     type Seg = { t: string; b: boolean };
-    const nombreVal = data.nombreEmpleado.toUpperCase();
-    const domicilio = `${data.calle} #${data.numero} – ${data.ext}`;
+    const nombreVal = (data.nombreEmpleado || '').toUpperCase();
+    const ext = data.ext ? ` Int. ${data.ext}` : '';
+    const domicilio = `${data.calle || ''} #${data.numero || ''}${ext}`;
     const segments: Seg[] = [
       { t: '"LA EMPRESA O EL PATRON"', b: true },
       { t: '; y por otra parte el C. ', b: false },
       { t: nombreVal, b: true },
       { t: ', con RFC ', b: false },
-      { t: data.rfc, b: false },
+      { t: data.rfc || '', b: false },
       { t: ', con CURP ', b: false },
-      { t: data.curp, b: false },
+      { t: data.curp || '', b: false },
       { t: ', con domicilio en ' + domicilio + ', de la colonia ', b: false },
-      { t: data.colonia, b: true },
+      { t: data.colonia || '', b: true },
       { t: ', en el municipio de ', b: false },
-      { t: data.municipio, b: true },
-      { t: ', Jalisco, C.P. ', b: false },
-      { t: data.cp, b: false },
+      { t: data.municipio || '', b: true },
+      { t: ', ', b: false },
+      { t: data.estado || '', b: true },
+      { t: ', C.P. ', b: false },
+      { t: data.cp || '', b: false },
       { t: ', con el puesto de ', b: false },
-      { t: data.puesto, b: true },
+      { t: data.puesto || '', b: true },
       { t: '., a quien dentro del presente documento se le mencionará como ', b: false },
       { t: '"EL EMPLEADO"', b: true },
       { t: ', acuerdo de voluntades que sujetan al tenor de las siguientes:', b: false },
@@ -257,7 +261,7 @@ export class ReportContratoConfidencialidadService {
 
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(11);
-    doc.text(data.nombreEmpleado.toUpperCase(), 105, y, { align: 'center' });
+    doc.text((data.nombreEmpleado || '').toUpperCase(), 105, y, { align: 'center' });
   }
 
   // Renders mixed bold/normal segments as a justified paragraph.

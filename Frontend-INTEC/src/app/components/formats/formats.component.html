@@ -655,7 +655,7 @@
               <input type="text" formControlName="ext" placeholder="ej. A (opcional)">
             </div>
           </div>
-          <div class="form-grid-3" style="margin-top: 0.75rem;">
+          <div class="form-grid-2" style="margin-top: 0.75rem;">
             <div class="form-field">
               <label>Colonia <span class="required">*</span></label>
               <input type="text" formControlName="colonia" placeholder="ej. Centro"
@@ -665,6 +665,13 @@
               <label>Municipio <span class="required">*</span></label>
               <input type="text" formControlName="municipio" placeholder="ej. Guadalajara"
                 [class.invalid]="contratoConfForm.get('municipio')?.invalid && contratoConfForm.get('municipio')?.touched">
+            </div>
+          </div>
+          <div class="form-grid-2" style="margin-top: 0.75rem;">
+            <div class="form-field">
+              <label>Estado <span class="required">*</span></label>
+              <input type="text" formControlName="estado" placeholder="ej. Jalisco"
+                [class.invalid]="contratoConfForm.get('estado')?.invalid && contratoConfForm.get('estado')?.touched">
             </div>
             <div class="form-field">
               <label>Código Postal <span class="required">*</span></label>
@@ -704,7 +711,6 @@
 
     <div class="modal-form-body">
 
-      <!-- Búsqueda de empleado registrado -->
       <div class="employee-search-wrap">
         <div class="employee-search-label">
           <i class="bi bi-person-fill"></i> Autocompletar desde empleado registrado
@@ -746,12 +752,12 @@
             </div>
             <div class="form-field">
               <label>Día <span class="required">*</span></label>
-              <input type="text" formControlName="dia" placeholder="ej. 12"
+              <input type="text" formControlName="dia" placeholder="ej. 23"
                 [class.invalid]="cartaPatronalForm.get('dia')?.invalid && cartaPatronalForm.get('dia')?.touched">
             </div>
             <div class="form-field">
               <label>Mes <span class="required">*</span></label>
-              <input type="text" formControlName="mes" placeholder="ej. marzo"
+              <input type="text" formControlName="mes" placeholder="ej. septiembre"
                 [class.invalid]="cartaPatronalForm.get('mes')?.invalid && cartaPatronalForm.get('mes')?.touched">
             </div>
             <div class="form-field">
@@ -773,8 +779,210 @@
             </div>
             <div class="form-field">
               <label>Puesto <span class="required">*</span></label>
-              <input type="text" formControlName="puesto" placeholder="ej. Albañil"
+              <input type="text" formControlName="puesto" placeholder="ej. Ayudante General"
                 [class.invalid]="cartaPatronalForm.get('puesto')?.invalid && cartaPatronalForm.get('puesto')?.touched">
+            </div>
+          </div>
+          <div class="form-grid-2" style="margin-top: 0.75rem;">
+            <div class="form-field">
+              <label>Área <span class="required">*</span></label>
+              <input type="text" formControlName="area" placeholder="ej. OPERACIONES"
+                [class.invalid]="cartaPatronalForm.get('area')?.invalid && cartaPatronalForm.get('area')?.touched">
+            </div>
+          </div>
+        </div>
+
+        <!-- Horario -->
+        <div class="form-section">
+          <div class="form-section-title">Horario laboral</div>
+          <div class="form-grid-3">
+            <div class="form-field">
+              <label>Días laborales <span class="required">*</span></label>
+              <input type="text" formControlName="diasLaborales" placeholder="ej. Lunes a Viernes"
+                [class.invalid]="cartaPatronalForm.get('diasLaborales')?.invalid && cartaPatronalForm.get('diasLaborales')?.touched">
+            </div>
+            <div class="form-field">
+              <label>Hora inicio <span class="required">*</span></label>
+              <input type="text" formControlName="horarioInicio" placeholder="ej. 9:00"
+                [class.invalid]="cartaPatronalForm.get('horarioInicio')?.invalid && cartaPatronalForm.get('horarioInicio')?.touched">
+            </div>
+            <div class="form-field">
+              <label>Hora fin <span class="required">*</span></label>
+              <input type="text" formControlName="horarioFin" placeholder="ej. 18:00"
+                [class.invalid]="cartaPatronalForm.get('horarioFin')?.invalid && cartaPatronalForm.get('horarioFin')?.touched">
+            </div>
+          </div>
+        </div>
+
+        <!-- Ingreso y NSS -->
+        <div class="form-section">
+          <div class="form-section-title">Ingreso y Seguro Social</div>
+          <div class="form-grid-2">
+            <div class="form-field">
+              <label>Ingreso mensual <span class="required">*</span></label>
+              <input type="text" formControlName="ingresoMensual" placeholder="ej. 9,428.00"
+                [class.invalid]="cartaPatronalForm.get('ingresoMensual')?.invalid && cartaPatronalForm.get('ingresoMensual')?.touched">
+            </div>
+            <div class="form-field">
+              <label>Número de afiliación NSS <span class="required">*</span></label>
+              <input type="text" formControlName="nss" placeholder="ej. 18190142655"
+                [class.invalid]="cartaPatronalForm.get('nss')?.invalid && cartaPatronalForm.get('nss')?.touched">
+            </div>
+          </div>
+        </div>
+
+        <!-- Fecha alta NSS -->
+        <div class="form-section">
+          <div class="form-section-title">Fecha de alta en el NSS</div>
+          <div class="form-grid-3">
+            <div class="form-field">
+              <label>Día <span class="required">*</span></label>
+              <input type="text" formControlName="diaAltaNss" placeholder="ej. 30"
+                [class.invalid]="cartaPatronalForm.get('diaAltaNss')?.invalid && cartaPatronalForm.get('diaAltaNss')?.touched">
+            </div>
+            <div class="form-field">
+              <label>Mes <span class="required">*</span></label>
+              <input type="text" formControlName="mesAltaNss" placeholder="ej. Octubre"
+                [class.invalid]="cartaPatronalForm.get('mesAltaNss')?.invalid && cartaPatronalForm.get('mesAltaNss')?.touched">
+            </div>
+            <div class="form-field">
+              <label>Año <span class="required">*</span></label>
+              <input type="text" formControlName="anioAltaNss" placeholder="ej. 2023"
+                [class.invalid]="cartaPatronalForm.get('anioAltaNss')?.invalid && cartaPatronalForm.get('anioAltaNss')?.touched">
+            </div>
+          </div>
+        </div>
+
+        <!-- Vacaciones -->
+        <div class="form-section">
+          <div class="form-section-title">Vacaciones</div>
+          <div class="form-grid-2">
+            <div class="form-field">
+              <label>Días de vacaciones <span class="required">*</span></label>
+              <input type="text" formControlName="diasVacaciones" placeholder="ej. 11"
+                [class.invalid]="cartaPatronalForm.get('diasVacaciones')?.invalid && cartaPatronalForm.get('diasVacaciones')?.touched">
+            </div>
+          </div>
+        </div>
+
+        <!-- Firmante -->
+        <div class="form-section">
+          <div class="form-section-title">Firmante</div>
+          <div class="form-grid-2">
+            <div class="form-field">
+              <label>Nombre <span class="required">*</span></label>
+              <input type="text" formControlName="nombreFirmante" placeholder="ej. Lic. María Asunción Mares Magallanes"
+                [class.invalid]="cartaPatronalForm.get('nombreFirmante')?.invalid && cartaPatronalForm.get('nombreFirmante')?.touched">
+            </div>
+            <div class="form-field">
+              <label>Cargo <span class="required">*</span></label>
+              <input type="text" formControlName="cargoFirmante" placeholder="ej. Coordinadora de Capital Humano"
+                [class.invalid]="cartaPatronalForm.get('cargoFirmante')?.invalid && cartaPatronalForm.get('cargoFirmante')?.touched">
+            </div>
+          </div>
+        </div>
+
+      </form>
+    </div>
+
+    <div class="modal-form-footer">
+      <button class="btn-cancel" (click)="closeModal()">Cancelar</button>
+      <button class="btn-generate" (click)="submitForm()" [disabled]="isGenerating">
+        <i class="bi bi-file-earmark-arrow-down"></i>
+        {{ isGenerating ? 'Generando...' : 'Generar PDF' }}
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal Constancia de Trabajo de Operaciones -->
+<div class="modal-overlay" *ngIf="showModal && activeFormatKey === 'constancia-trabajo-operaciones'" (click)="closeModal()">
+  <div class="modal-form" (click)="$event.stopPropagation()">
+
+    <div class="modal-form-header">
+      <h3 class="modal-form-title">
+        <i class="bi bi-file-earmark-text"></i>
+        Constancia de Trabajo de Operaciones
+      </h3>
+      <button class="modal-close" (click)="closeModal()">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <div class="modal-form-body">
+
+      <!-- Búsqueda de empleado registrado -->
+      <div class="employee-search-wrap">
+        <div class="employee-search-label">
+          <i class="bi bi-person-fill"></i> Autocompletar desde empleado registrado
+        </div>
+        <div class="employee-search-input-wrap">
+          <input
+            type="text"
+            class="employee-search-input"
+            placeholder="Buscar por nombre..."
+            [value]="employeeSearch"
+            (input)="onSearchInput($any($event.target).value)"
+            autocomplete="off">
+          <button *ngIf="employeeSearch" class="employee-search-clear" (click)="clearSearch()" type="button" title="Limpiar">
+            <i class="bi bi-x"></i>
+          </button>
+        </div>
+        <div class="employee-suggestions" *ngIf="showSuggestions">
+          <div
+            class="employee-suggestion-item"
+            *ngFor="let emp of employeeSuggestions"
+            (click)="selectEmployee(emp)">
+            <i class="bi bi-person"></i>
+            <span class="emp-name">{{ emp.name_employee }}</span>
+            <span class="emp-position">{{ emp.position }}</span>
+          </div>
+        </div>
+      </div>
+
+      <form [formGroup]="constanciaTrabajoOperacionesForm">
+
+        <!-- Fecha -->
+        <div class="form-section">
+          <div class="form-section-title">Fecha de la constancia</div>
+          <div class="form-grid-4">
+            <div class="form-field">
+              <label>Ciudad <span class="required">*</span></label>
+              <input type="text" formControlName="ciudad" placeholder="Guadalajara"
+                [class.invalid]="constanciaTrabajoOperacionesForm.get('ciudad')?.invalid && constanciaTrabajoOperacionesForm.get('ciudad')?.touched">
+            </div>
+            <div class="form-field">
+              <label>Día <span class="required">*</span></label>
+              <input type="text" formControlName="dia" placeholder="ej. 12"
+                [class.invalid]="constanciaTrabajoOperacionesForm.get('dia')?.invalid && constanciaTrabajoOperacionesForm.get('dia')?.touched">
+            </div>
+            <div class="form-field">
+              <label>Mes <span class="required">*</span></label>
+              <input type="text" formControlName="mes" placeholder="ej. marzo"
+                [class.invalid]="constanciaTrabajoOperacionesForm.get('mes')?.invalid && constanciaTrabajoOperacionesForm.get('mes')?.touched">
+            </div>
+            <div class="form-field">
+              <label>Año <span class="required">*</span></label>
+              <input type="text" formControlName="anio" placeholder="2026"
+                [class.invalid]="constanciaTrabajoOperacionesForm.get('anio')?.invalid && constanciaTrabajoOperacionesForm.get('anio')?.touched">
+            </div>
+          </div>
+        </div>
+
+        <!-- Datos del empleado -->
+        <div class="form-section">
+          <div class="form-section-title">Datos del empleado</div>
+          <div class="form-grid-2">
+            <div class="form-field">
+              <label>Nombre del empleado <span class="required">*</span></label>
+              <input type="text" formControlName="nombreEmpleado" placeholder="Nombre completo"
+                [class.invalid]="constanciaTrabajoOperacionesForm.get('nombreEmpleado')?.invalid && constanciaTrabajoOperacionesForm.get('nombreEmpleado')?.touched">
+            </div>
+            <div class="form-field">
+              <label>Puesto <span class="required">*</span></label>
+              <input type="text" formControlName="puesto" placeholder="ej. Albañil"
+                [class.invalid]="constanciaTrabajoOperacionesForm.get('puesto')?.invalid && constanciaTrabajoOperacionesForm.get('puesto')?.touched">
             </div>
           </div>
         </div>
@@ -786,34 +994,34 @@
             <div class="form-field">
               <label>Día inicio <span class="required">*</span></label>
               <input type="text" formControlName="diaInicio" placeholder="ej. 04"
-                [class.invalid]="cartaPatronalForm.get('diaInicio')?.invalid && cartaPatronalForm.get('diaInicio')?.touched">
+                [class.invalid]="constanciaTrabajoOperacionesForm.get('diaInicio')?.invalid && constanciaTrabajoOperacionesForm.get('diaInicio')?.touched">
             </div>
             <div class="form-field">
               <label>Mes inicio <span class="required">*</span></label>
               <input type="text" formControlName="mesInicio" placeholder="ej. Diciembre"
-                [class.invalid]="cartaPatronalForm.get('mesInicio')?.invalid && cartaPatronalForm.get('mesInicio')?.touched">
+                [class.invalid]="constanciaTrabajoOperacionesForm.get('mesInicio')?.invalid && constanciaTrabajoOperacionesForm.get('mesInicio')?.touched">
             </div>
             <div class="form-field">
               <label>Año inicio <span class="required">*</span></label>
               <input type="text" formControlName="anioInicio" placeholder="ej. 2025"
-                [class.invalid]="cartaPatronalForm.get('anioInicio')?.invalid && cartaPatronalForm.get('anioInicio')?.touched">
+                [class.invalid]="constanciaTrabajoOperacionesForm.get('anioInicio')?.invalid && constanciaTrabajoOperacionesForm.get('anioInicio')?.touched">
             </div>
           </div>
           <div class="form-grid-3" style="margin-top: 0.75rem;">
             <div class="form-field">
               <label>Día fin <span class="required">*</span></label>
               <input type="text" formControlName="diaFin" placeholder="ej. 24"
-                [class.invalid]="cartaPatronalForm.get('diaFin')?.invalid && cartaPatronalForm.get('diaFin')?.touched">
+                [class.invalid]="constanciaTrabajoOperacionesForm.get('diaFin')?.invalid && constanciaTrabajoOperacionesForm.get('diaFin')?.touched">
             </div>
             <div class="form-field">
               <label>Mes fin <span class="required">*</span></label>
               <input type="text" formControlName="mesFin" placeholder="ej. Enero"
-                [class.invalid]="cartaPatronalForm.get('mesFin')?.invalid && cartaPatronalForm.get('mesFin')?.touched">
+                [class.invalid]="constanciaTrabajoOperacionesForm.get('mesFin')?.invalid && constanciaTrabajoOperacionesForm.get('mesFin')?.touched">
             </div>
             <div class="form-field">
               <label>Año fin <span class="required">*</span></label>
               <input type="text" formControlName="anioFin" placeholder="ej. 2026"
-                [class.invalid]="cartaPatronalForm.get('anioFin')?.invalid && cartaPatronalForm.get('anioFin')?.touched">
+                [class.invalid]="constanciaTrabajoOperacionesForm.get('anioFin')?.invalid && constanciaTrabajoOperacionesForm.get('anioFin')?.touched">
             </div>
           </div>
         </div>
@@ -825,17 +1033,17 @@
             <div class="form-field">
               <label>Nombre <span class="required">*</span></label>
               <input type="text" formControlName="nombreFirmante" placeholder="ej. Lic. María Asunción Mares"
-                [class.invalid]="cartaPatronalForm.get('nombreFirmante')?.invalid && cartaPatronalForm.get('nombreFirmante')?.touched">
+                [class.invalid]="constanciaTrabajoOperacionesForm.get('nombreFirmante')?.invalid && constanciaTrabajoOperacionesForm.get('nombreFirmante')?.touched">
             </div>
             <div class="form-field">
               <label>Cargo <span class="required">*</span></label>
               <input type="text" formControlName="cargoFirmante" placeholder="ej. Coordinador de R.H."
-                [class.invalid]="cartaPatronalForm.get('cargoFirmante')?.invalid && cartaPatronalForm.get('cargoFirmante')?.touched">
+                [class.invalid]="constanciaTrabajoOperacionesForm.get('cargoFirmante')?.invalid && constanciaTrabajoOperacionesForm.get('cargoFirmante')?.touched">
             </div>
             <div class="form-field">
               <label>Celular <span class="required">*</span></label>
               <input type="text" formControlName="celFirmante" placeholder="ej. 3324951222"
-                [class.invalid]="cartaPatronalForm.get('celFirmante')?.invalid && cartaPatronalForm.get('celFirmante')?.touched">
+                [class.invalid]="constanciaTrabajoOperacionesForm.get('celFirmante')?.invalid && constanciaTrabajoOperacionesForm.get('celFirmante')?.touched">
             </div>
           </div>
         </div>
@@ -1213,12 +1421,19 @@
         <!-- Sección: Fecha de la carta -->
         <div class="form-section">
           <div class="form-section-title">Fecha de la carta</div>
-          <div class="form-grid-4">
+          <div class="form-grid-2">
             <div class="form-field">
               <label>Ciudad <span class="required">*</span></label>
               <input type="text" formControlName="ciudad" placeholder="Guadalajara"
                 [class.invalid]="renunciaForm.get('ciudad')?.invalid && renunciaForm.get('ciudad')?.touched">
             </div>
+            <div class="form-field">
+              <label>Estado <span class="required">*</span></label>
+              <input type="text" formControlName="estado" placeholder="ej. Jalisco"
+                [class.invalid]="renunciaForm.get('estado')?.invalid && renunciaForm.get('estado')?.touched">
+            </div>
+          </div>
+          <div class="form-grid-3" style="margin-top: 0.75rem;">
             <div class="form-field">
               <label>Día <span class="required">*</span></label>
               <input type="text" formControlName="dia" placeholder="ej. 11"
@@ -1860,6 +2075,147 @@
   </div>
 </div>
 
+<!-- Modal Solicitud de Préstamo -->
+<div class="modal-overlay" *ngIf="showModal && activeFormatKey === 'solicitud-prestamo'" (click)="closeModal()">
+  <div class="modal-form" (click)="$event.stopPropagation()">
+
+    <div class="modal-form-header">
+      <h3 class="modal-form-title">
+        <i class="bi bi-file-earmark-text"></i>
+        Solicitud de Préstamo
+      </h3>
+      <button class="modal-close" (click)="closeModal()">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <div class="modal-form-body">
+
+      <!-- Búsqueda de empleado registrado -->
+      <div class="employee-search-wrap">
+        <div class="employee-search-label">
+          <i class="bi bi-person-fill"></i> Autocompletar desde empleado registrado
+        </div>
+        <div class="employee-search-input-wrap">
+          <input
+            type="text"
+            class="employee-search-input"
+            placeholder="Buscar por nombre..."
+            [value]="employeeSearch"
+            (input)="onSearchInput($any($event.target).value)"
+            autocomplete="off">
+          <button *ngIf="employeeSearch" class="employee-search-clear" (click)="clearSearch()" type="button" title="Limpiar">
+            <i class="bi bi-x"></i>
+          </button>
+        </div>
+        <div class="employee-suggestions" *ngIf="showSuggestions">
+          <div
+            class="employee-suggestion-item"
+            *ngFor="let emp of employeeSuggestions"
+            (click)="selectEmployee(emp)">
+            <i class="bi bi-person"></i>
+            <span class="emp-name">{{ emp.name_employee }}</span>
+            <span class="emp-position">{{ emp.position }}</span>
+          </div>
+        </div>
+      </div>
+
+      <form [formGroup]="solicitudPrestamoForm">
+
+        <!-- Datos del solicitante -->
+        <div class="form-section">
+          <div class="form-section-title">Datos del solicitante</div>
+          <div class="form-grid-2">
+            <div class="form-field">
+              <label>Nombre <span class="required">*</span></label>
+              <input type="text" formControlName="nombre" placeholder="Nombre completo"
+                [class.invalid]="solicitudPrestamoForm.get('nombre')?.invalid && solicitudPrestamoForm.get('nombre')?.touched">
+            </div>
+            <div class="form-field">
+              <label>Puesto <span class="required">*</span></label>
+              <input type="text" formControlName="puesto" placeholder="ej. Albañil"
+                [class.invalid]="solicitudPrestamoForm.get('puesto')?.invalid && solicitudPrestamoForm.get('puesto')?.touched">
+            </div>
+          </div>
+          <div class="form-grid-2" style="margin-top: 0.75rem;">
+            <div class="form-field">
+              <label>Fecha de ingreso <span class="required">*</span></label>
+              <input type="text" formControlName="fechaIngreso" placeholder="ej. 15/03/2024"
+                [class.invalid]="solicitudPrestamoForm.get('fechaIngreso')?.invalid && solicitudPrestamoForm.get('fechaIngreso')?.touched">
+            </div>
+          </div>
+        </div>
+
+        <!-- Información del préstamo -->
+        <div class="form-section">
+          <div class="form-section-title">Información del préstamo</div>
+          <div class="form-grid-2">
+            <div class="form-field">
+              <label>Monto solicitado ($) <span class="required">*</span></label>
+              <input type="text" formControlName="montoSolicitado" placeholder="ej. 5000"
+                [class.invalid]="solicitudPrestamoForm.get('montoSolicitado')?.invalid && solicitudPrestamoForm.get('montoSolicitado')?.touched">
+            </div>
+            <div class="form-field">
+              <label>Monto autorizado ($) <span class="required">*</span></label>
+              <input type="text" formControlName="montoAutorizado" placeholder="ej. 4000"
+                [class.invalid]="solicitudPrestamoForm.get('montoAutorizado')?.invalid && solicitudPrestamoForm.get('montoAutorizado')?.touched">
+            </div>
+          </div>
+          <div class="form-grid-1" style="margin-top: 0.75rem;">
+            <div class="form-field">
+              <label>Motivo del préstamo <span class="required">*</span></label>
+              <input type="text" formControlName="motivoPrestamo" placeholder="Describe el motivo"
+                [class.invalid]="solicitudPrestamoForm.get('motivoPrestamo')?.invalid && solicitudPrestamoForm.get('motivoPrestamo')?.touched">
+            </div>
+          </div>
+        </div>
+
+        <!-- Plan de pagos -->
+        <div class="form-section">
+          <div class="form-section-title">Plan de pagos</div>
+          <div class="form-field" style="margin-bottom: 0.75rem;">
+            <label>Forma de pago <span class="required">*</span></label>
+            <div style="display: flex; gap: 1.5rem; margin-top: 0.4rem;">
+              <label style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer;">
+                <input type="radio" formControlName="formaPago" value="Semanal"> Semanal
+              </label>
+              <label style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer;">
+                <input type="radio" formControlName="formaPago" value="Quincenal"> Quincenal
+              </label>
+              <label style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer;">
+                <input type="radio" formControlName="formaPago" value="Mensual"> Mensual
+              </label>
+            </div>
+          </div>
+          <div class="form-grid-2">
+            <div class="form-field">
+              <label>Número de pagos <span class="required">*</span></label>
+              <input type="number" formControlName="numPagos" placeholder="ej. 10" min="1"
+                [class.invalid]="solicitudPrestamoForm.get('numPagos')?.invalid && solicitudPrestamoForm.get('numPagos')?.touched">
+            </div>
+            <div class="form-field">
+              <label>Fecha de inicio del primer pago <span class="required">*</span></label>
+              <input type="date"
+                [class.invalid]="solicitudPrestamoForm.get('fechaInicioPago')?.invalid && solicitudPrestamoForm.get('fechaInicioPago')?.touched"
+                (change)="onFechaInicioPagoChange($any($event.target).value)">
+            </div>
+          </div>
+        </div>
+
+      </form>
+    </div>
+
+    <div class="modal-form-footer">
+      <button class="btn-cancel" (click)="closeModal()">Cancelar</button>
+      <button class="btn-generate" (click)="submitForm()" [disabled]="isGenerating">
+        <i class="bi bi-file-earmark-pdf"></i>
+        {{ isGenerating ? 'Generando...' : 'Generar PDF' }}
+      </button>
+    </div>
+
+  </div>
+</div>
+
 <!-- Modal Política de Bono por Permanencia -->
 <div class="modal-overlay" *ngIf="showModal && activeFormatKey === 'politica-bono-permanencia'" (click)="closeModal()">
   <div class="modal-form" (click)="$event.stopPropagation()">
@@ -1936,6 +2292,51 @@
     <div class="modal-form-body">
       <form [formGroup]="actaAbandonoForm">
 
+        <!-- Fecha y lugar -->
+        <div class="form-section">
+          <div class="form-section-title">Fecha y lugar</div>
+          <div class="form-grid-3">
+            <div class="form-field">
+              <label>Ciudad <span class="required">*</span></label>
+              <input type="text" formControlName="ciudad" placeholder="ej. Zapopan"
+                [class.invalid]="actaAbandonoForm.get('ciudad')?.invalid && actaAbandonoForm.get('ciudad')?.touched">
+            </div>
+            <div class="form-field">
+              <label>Estado <span class="required">*</span></label>
+              <input type="text" formControlName="estado" placeholder="ej. Jalisco"
+                [class.invalid]="actaAbandonoForm.get('estado')?.invalid && actaAbandonoForm.get('estado')?.touched">
+            </div>
+            <div class="form-field">
+              <label>Hora <span class="required">*</span></label>
+              <input type="text" formControlName="horas" placeholder="ej. 13:00"
+                [class.invalid]="actaAbandonoForm.get('horas')?.invalid && actaAbandonoForm.get('horas')?.touched">
+            </div>
+          </div>
+          <div class="form-grid-3" style="margin-top: 0.75rem;">
+            <div class="form-field">
+              <label>Día <span class="required">*</span></label>
+              <input type="text" formControlName="dia" placeholder="ej. 23"
+                [class.invalid]="actaAbandonoForm.get('dia')?.invalid && actaAbandonoForm.get('dia')?.touched">
+            </div>
+            <div class="form-field">
+              <label>Mes <span class="required">*</span></label>
+              <input type="text" formControlName="mes" placeholder="ej. junio"
+                [class.invalid]="actaAbandonoForm.get('mes')?.invalid && actaAbandonoForm.get('mes')?.touched">
+            </div>
+            <div class="form-field">
+              <label>Año <span class="required">*</span></label>
+              <input type="text" formControlName="anio" placeholder="ej. 2025"
+                [class.invalid]="actaAbandonoForm.get('anio')?.invalid && actaAbandonoForm.get('anio')?.touched">
+            </div>
+          </div>
+          <div class="form-field" style="margin-top: 0.75rem;">
+            <label>Domicilio de la empresa <span class="required">*</span></label>
+            <input type="text" formControlName="domicilioEmpresa" placeholder="ej. Misioneros #2138, Col. Jardines del Country, Guadalajara, Jal."
+              [class.invalid]="actaAbandonoForm.get('domicilioEmpresa')?.invalid && actaAbandonoForm.get('domicilioEmpresa')?.touched">
+          </div>
+        </div>
+
+        <!-- Datos del trabajador -->
         <div class="form-section">
           <div class="form-section-title">Datos del trabajador</div>
           <div class="form-grid-2">
@@ -1948,6 +2349,40 @@
               <label>Puesto <span class="required">*</span></label>
               <input type="text" formControlName="puesto" placeholder="Puesto del trabajador"
                 [class.invalid]="actaAbandonoForm.get('puesto')?.invalid && actaAbandonoForm.get('puesto')?.touched">
+            </div>
+          </div>
+        </div>
+
+        <!-- Testigos -->
+        <div class="form-section">
+          <div class="form-section-title">Testigos</div>
+          <div class="form-grid-2">
+            <div class="form-field">
+              <label>Testigo 1 <span class="required">*</span></label>
+              <input type="text" formControlName="testigo1" placeholder="Nombre completo del testigo 1"
+                [class.invalid]="actaAbandonoForm.get('testigo1')?.invalid && actaAbandonoForm.get('testigo1')?.touched">
+            </div>
+            <div class="form-field">
+              <label>Testigo 2 <span class="required">*</span></label>
+              <input type="text" formControlName="testigo2" placeholder="Nombre completo del testigo 2"
+                [class.invalid]="actaAbandonoForm.get('testigo2')?.invalid && actaAbandonoForm.get('testigo2')?.touched">
+            </div>
+          </div>
+        </div>
+
+        <!-- Obra -->
+        <div class="form-section">
+          <div class="form-section-title">Obra donde ocurrió el abandono</div>
+          <div class="form-grid-2">
+            <div class="form-field">
+              <label>Nombre de la obra <span class="required">*</span></label>
+              <input type="text" formControlName="nombreObra" placeholder="ej. VW Agua Azul"
+                [class.invalid]="actaAbandonoForm.get('nombreObra')?.invalid && actaAbandonoForm.get('nombreObra')?.touched">
+            </div>
+            <div class="form-field">
+              <label>Domicilio de la obra <span class="required">*</span></label>
+              <input type="text" formControlName="domicilioObra" placeholder="ej. Calz. Jesús González Gallo #450, Col. Centro"
+                [class.invalid]="actaAbandonoForm.get('domicilioObra')?.invalid && actaAbandonoForm.get('domicilioObra')?.touched">
             </div>
           </div>
         </div>
@@ -2275,9 +2710,14 @@
           <div class="form-section-title">Lugar y fecha de firma</div>
           <div class="form-grid-2" style="margin-bottom: 0.75rem;">
             <div class="form-field">
-              <label>Ciudad de comparecencia <span class="required">*</span></label>
-              <input type="text" formControlName="ciudadComparecencia" placeholder="ej. Zapopan Jalisco"
-                [class.invalid]="contratoIndeterminadoForm.get('ciudadComparecencia')?.invalid && contratoIndeterminadoForm.get('ciudadComparecencia')?.touched">
+              <label>Municipio de comparecencia <span class="required">*</span></label>
+              <input type="text" formControlName="municipioComparecencia" placeholder="ej. Zapopan"
+                [class.invalid]="contratoIndeterminadoForm.get('municipioComparecencia')?.invalid && contratoIndeterminadoForm.get('municipioComparecencia')?.touched">
+            </div>
+            <div class="form-field">
+              <label>Estado de comparecencia <span class="required">*</span></label>
+              <input type="text" formControlName="estadoComparecencia" placeholder="ej. Jalisco"
+                [class.invalid]="contratoIndeterminadoForm.get('estadoComparecencia')?.invalid && contratoIndeterminadoForm.get('estadoComparecencia')?.touched">
             </div>
           </div>
           <div class="form-grid-2">
@@ -2286,13 +2726,13 @@
               <input type="text" formControlName="ciudad" placeholder="ej. Guadalajara"
                 [class.invalid]="contratoIndeterminadoForm.get('ciudad')?.invalid && contratoIndeterminadoForm.get('ciudad')?.touched">
             </div>
+          </div>
+          <div class="form-grid-3" style="margin-top: 0.75rem;">
             <div class="form-field">
               <label>Día <span class="required">*</span></label>
               <input type="text" formControlName="dia" placeholder="ej. 18"
                 [class.invalid]="contratoIndeterminadoForm.get('dia')?.invalid && contratoIndeterminadoForm.get('dia')?.touched">
             </div>
-          </div>
-          <div class="form-grid-2" style="margin-top: 0.75rem;">
             <div class="form-field">
               <label>Mes <span class="required">*</span></label>
               <input type="text" formControlName="mes" placeholder="ej. marzo"
@@ -2437,12 +2877,19 @@
 
         <div class="form-section">
           <div class="form-section-title">Fecha de la carta</div>
-          <div class="form-grid-3">
+          <div class="form-grid-2">
             <div class="form-field">
               <label>Ciudad <span class="required">*</span></label>
               <input type="text" formControlName="ciudad" placeholder="ej. Guadalajara"
                 [class.invalid]="cartaTerminacionContratoForm.get('ciudad')?.invalid && cartaTerminacionContratoForm.get('ciudad')?.touched">
             </div>
+            <div class="form-field">
+              <label>Estado <span class="required">*</span></label>
+              <input type="text" formControlName="estado" placeholder="ej. Jalisco"
+                [class.invalid]="cartaTerminacionContratoForm.get('estado')?.invalid && cartaTerminacionContratoForm.get('estado')?.touched">
+            </div>
+          </div>
+          <div class="form-grid-2" style="margin-top: 0.75rem;">
             <div class="form-field">
               <label>Día <span class="required">*</span></label>
               <input type="text" formControlName="dia" placeholder="ej. 18"

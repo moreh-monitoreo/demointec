@@ -3,6 +3,7 @@ import jsPDF from 'jspdf';
 
 export interface RenunciaLaboralData {
   ciudad: string;
+  estado: string;
   dia: string;
   mes: string;
   anio: string;
@@ -63,7 +64,7 @@ export class ReportRenunciaLaboralService {
     }
 
     // ---- Ciudad y fecha (alineado a la derecha) ----
-    const fechaTexto = `${data.ciudad}, Jalisco a ${data.dia} de ${data.mes} de ${data.anio}.`;
+    const fechaTexto = `${data.ciudad}, ${data.estado} a ${data.dia} de ${data.mes} de ${data.anio}.`;
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(10);
     doc.setTextColor(...black);
@@ -139,7 +140,7 @@ export class ReportRenunciaLaboralService {
     // Ciudad, Jalisco.
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(10);
-    doc.text(`${data.ciudad}, Jalisco.`, sigCenterX, y, { align: 'center' });
+    doc.text(`${data.ciudad}, ${data.estado}.`, sigCenterX, y, { align: 'center' });
     y += 18;
 
     // Línea de firma
