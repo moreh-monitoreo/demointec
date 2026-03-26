@@ -85,6 +85,30 @@ export class FormatsComponent implements OnInit {
     this.solicitudPrestamoForm.patchValue({ fechaInicioPago: `${dd}/${mm}/${yyyy}` });
   }
 
+  private isoToDisplay(date?: string): string {
+    if (!date) return '';
+    const [yyyy, mm, dd] = date.split('-');
+    if (!dd) return date;
+    return `${dd}/${mm}/${yyyy}`;
+  }
+
+  displayToIso(date?: string): string {
+    if (!date) return '';
+    const parts = date.split('/');
+    if (parts.length !== 3) return '';
+    return `${parts[2]}-${parts[1]}-${parts[0]}`;
+  }
+
+  onDateChange(form: string, field: string, value: string): void {
+    if (!value) return;
+    const [yyyy, mm, dd] = value.split('-');
+    const formatted = `${dd}/${mm}/${yyyy}`;
+    if (form === 'entrevista') this.entrevistaForm.patchValue({ [field]: formatted });
+    else if (form === 'caratula') this.caratulaForm.patchValue({ [field]: formatted });
+    else if (form === 'solicitud-prestamo') this.solicitudPrestamoForm.patchValue({ [field]: formatted });
+    else if (form === 'encuesta') this.encuestaForm.patchValue({ [field]: formatted });
+  }
+
   onSearchInput(value: string): void {
     this.employeeSearch = value;
     const q = value.trim().toLowerCase();
@@ -129,7 +153,7 @@ export class FormatsComponent implements OnInit {
       this.entrevistaForm.patchValue({
         nombreColaborador: emp.name_employee ?? '',
         puesto: emp.position ?? '',
-        fechaIngreso: emp.admission_date ?? '',
+        fechaIngreso: this.isoToDisplay(emp.admission_date),
         telefono: emp.phone ?? '',
       });
 
@@ -146,6 +170,7 @@ export class FormatsComponent implements OnInit {
         edad: emp.age ? String(emp.age) : '',
         estadoCivil: emp.marital_status ?? '',
         domicilio: emp.address ?? emp.street ?? '',
+        ingreso: this.isoToDisplay(emp.admission_date),
       });
 
     } else if (this.activeFormatKey === 'aviso-privacidad') {
@@ -162,7 +187,7 @@ export class FormatsComponent implements OnInit {
         imss: emp.nss ?? '',
         escolaridad: emp.education_level ?? '',
         correo: emp.email ?? '',
-        fechaNac: emp.birth_date ?? '',
+        fechaNac: this.isoToDisplay(emp.birth_date),
         lugarNac: emp.birth_place ?? '',
         estadoCivil: emp.marital_status ?? '',
         dependientes: emp.children_count ? String(emp.children_count) : '',
@@ -175,7 +200,7 @@ export class FormatsComponent implements OnInit {
         alergias: emp.allergies ?? '',
         contactoEmergencias: emp.emergency_contact_name ?? '',
         numeroEmergencias: emp.emergency_phone ?? '',
-        fechaIngreso: emp.admission_date ?? '',
+        fechaIngreso: this.isoToDisplay(emp.admission_date),
         puesto: emp.position ?? '',
         sd: emp.base_salary ? String(emp.base_salary) : '',
         beneficiario1: emp.beneficiary ?? '',
@@ -251,6 +276,7 @@ export class FormatsComponent implements OnInit {
       this.solicitudPrestamoForm.patchValue({
         nombre: emp.name_employee ?? '',
         puesto: emp.position ?? '',
+        fechaIngreso: this.isoToDisplay(emp.admission_date),
       });
 
     } else if (this.activeFormatKey === 'carta-terminacion-contrato') {
@@ -943,33 +969,36 @@ export class FormatsComponent implements OnInit {
     if (format.fillable) {
       this.activeFormatKey = format.key;
       this.clearSearch();
+      const now = new Date();
+      const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+      const diaActual = String(now.getDate());
+      const mesActual = meses[now.getMonth()];
+      const anioActual = String(now.getFullYear());
       this.entrevistaForm.reset();
-      this.renunciaForm.reset({ ciudad: 'Guadalajara', estado: 'Jalisco', anio: '2026' });
+      this.renunciaForm.reset({ ciudad: 'Guadalajara', estado: 'Jalisco', dia: diaActual, mes: mesActual, anio: anioActual });
       this.encuestaForm.reset();
       this.avisoForm.reset();
       this.caratulaForm.reset({ nombreEmpresa1: 'INTEC DE JALISCO S.A. DE C.V.' });
-      this.cartaPatronalForm.reset({ ciudad: 'Guadalajara', estado: 'Jalisco', anio: '2026', nombreFirmante: 'Lic. María Asunción Mares Magallanes', cargoFirmante: 'Coordinadora de Capital Humano' });
-      this.constanciaTrabajoOperacionesForm.reset({ ciudad: 'Guadalajara', anio: '2026', anioInicio: '2025', anioFin: '2026', nombreFirmante: 'Lic. María Asunción Mares Magallanes', cargoFirmante: 'Coordinador de R.H.', celFirmante: '3324951222' });
+      this.cartaPatronalForm.reset({ ciudad: 'Guadalajara', estado: 'Jalisco', dia: diaActual, mes: mesActual, anio: anioActual, nombreFirmante: 'Lic. María Asunción Mares Magallanes', cargoFirmante: 'Coordinadora de Capital Humano' });
+      this.constanciaTrabajoOperacionesForm.reset({ ciudad: 'Guadalajara', dia: diaActual, mes: mesActual, anio: anioActual, anioInicio: '2025', anioFin: anioActual, nombreFirmante: 'Lic. María Asunción Mares Magallanes', cargoFirmante: 'Coordinador de R.H.', celFirmante: '3324951222' });
       this.contratoConfForm.reset();
-      this.contratoObraForm.reset({ ciudad: 'Guadalajara', estado: 'Jalisco', anio: '2026', nacionalidad: 'Mexicana' });
-      this.contratoTiempoForm.reset({ ciudad: 'Guadalajara', estado: 'Jalisco', anio: '2026', nacionalidad: 'Mexicana', anioInicioContrato: '2026', anioFinContrato: '2026' });
+      this.contratoObraForm.reset({ ciudad: 'Guadalajara', estado: 'Jalisco', dia: diaActual, mes: mesActual, anio: anioActual, nacionalidad: 'Mexicana' });
+      this.contratoTiempoForm.reset({ ciudad: 'Guadalajara', estado: 'Jalisco', dia: diaActual, mes: mesActual, anio: anioActual, nacionalidad: 'Mexicana', anioInicioContrato: anioActual, anioFinContrato: anioActual });
       this.politicaPrestamosForm.reset();
       this.politicaBonoForm.reset();
       this.responsivaEppForm.reset();
-      this.responsivaLlavesForm.reset({ anio: '2026' });
-      this.ritForm.reset({ lugar: 'Guadalajara', anio: '2026' });
-      const now = new Date();
-      const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+      this.responsivaLlavesForm.reset({ dia: diaActual, mes: mesActual, anio: anioActual });
+      this.ritForm.reset({ lugar: 'Guadalajara', dia: diaActual, mes: mesActual, anio: anioActual });
       this.actaAbandonoForm.reset({
-        dia: String(now.getDate()),
-        mes: meses[now.getMonth()],
-        anio: String(now.getFullYear()),
+        dia: diaActual,
+        mes: mesActual,
+        anio: anioActual,
         horas: `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`,
         domicilioEmpresa: 'Misioneros número 2138 Colonia Jardines del Country en Guadalajara, Jalisco con C.P.44210',
       });
       this.anexoRitForm.reset();
-      this.contratoIndeterminadoForm.reset({ ciudad: 'Guadalajara', municipioComparecencia: 'Zapopan', estadoComparecencia: 'Jalisco', nacionalidad: 'Mexicana', anio: '2026', anioInicio: '2026' });
-      this.cartaTerminacionContratoForm.reset({ ciudad: 'Guadalajara', estado: 'Jalisco', nombreFirmante: 'Ing. Juan Pablo Jimenez Espinoza.' });
+      this.contratoIndeterminadoForm.reset({ ciudad: 'Guadalajara', municipioComparecencia: 'Zapopan', estadoComparecencia: 'Jalisco', nacionalidad: 'Mexicana', dia: diaActual, mes: mesActual, anio: anioActual, anioInicio: anioActual });
+      this.cartaTerminacionContratoForm.reset({ ciudad: 'Guadalajara', estado: 'Jalisco', dia: diaActual, mes: mesActual, nombreFirmante: 'Ing. Juan Pablo Jimenez Espinoza.' });
       this.solicitudPrestamoForm.reset({ formaPago: 'Semanal' });
       const filasArray = this.cartaResponsivaLeySillaForm.get('filas') as FormArray;
       filasArray.clear();
