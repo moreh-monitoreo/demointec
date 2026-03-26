@@ -184,10 +184,12 @@ export class ReportContratoTiempoIndeterminadoService {
     }
     y += 2;
 
+    y = this.checkPageBreak(doc, y);
     doc.setFont('helvetica', 'bold'); doc.text('3.', colNum, y); doc.setFont('helvetica', 'normal');
     y = this.drawInlineSegs(doc, [{ t: 'Que entiende que las necesidades específicas de la empresa y que dan origen a la materia de trabajo es por tiempo indeterminado.', b: false }], colBody, y, pwBody, lh, fs);
     y += 2;
 
+    y = this.checkPageBreak(doc, y);
     doc.setFont('helvetica', 'bold'); doc.text('4.', colNum, y); doc.setFont('helvetica', 'normal');
     y = this.drawInlineSegs(doc, [{ t: 'No pertenecer actualmente a ninguna agrupación sindical, ni tener ningún otro empleo y/o ocupación que pudiere representar un conflicto de intereses con el PATRÓN o ir en detrimento de su productividad en las tareas que desarrolla.', b: false }], colBody, y, pwBody, lh, fs);
     y += 4;

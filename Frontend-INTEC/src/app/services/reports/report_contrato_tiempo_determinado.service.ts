@@ -3,6 +3,7 @@ import jsPDF from 'jspdf';
 
 export interface ContratoTiempoDeterminadoData {
   ciudad: string;
+  estado: string;
   dia: string;
   mes: string;
   anio: string;
@@ -98,7 +99,7 @@ export class ReportContratoTiempoDeterminadoService {
       { t: '"EL EMPLEADO Y/O EL TRABAJADOR"', b: true },
       { t: ', en la ciudad de ', b: false },
       { t: data.ciudad, b: true },
-      { t: ', Jalisco a ', b: false },
+      { t: `, ${data.estado || ''} a `, b: false },
       { t: data.dia, b: true },
       { t: ' de ', b: false },
       { t: data.mes, b: true },
@@ -535,7 +536,7 @@ export class ReportContratoTiempoDeterminadoService {
       { t: 'Duplicado en la ciudad de ', b: false },
       { t: data.ciudad, b: true },
       { t: ', ', b: false },
-      { t: 'JALISCO', b: true },
+      { t: (data.estado || '').toUpperCase(), b: true },
       { t: ' el día ', b: false },
       { t: data.dia, b: true },
       { t: ' del mes de ', b: false },

@@ -342,12 +342,19 @@
         <!-- Datos del encabezado -->
         <div class="form-section">
           <div class="form-section-title">Fecha y lugar del contrato</div>
-          <div class="form-grid-4">
+          <div class="form-grid-2">
             <div class="form-field">
               <label>Ciudad <span class="required">*</span></label>
               <input type="text" formControlName="ciudad" placeholder="Guadalajara"
                 [class.invalid]="contratoObraForm.get('ciudad')?.invalid && contratoObraForm.get('ciudad')?.touched">
             </div>
+            <div class="form-field">
+              <label>Estado <span class="required">*</span></label>
+              <input type="text" formControlName="estado" placeholder="ej. Jalisco"
+                [class.invalid]="contratoObraForm.get('estado')?.invalid && contratoObraForm.get('estado')?.touched">
+            </div>
+          </div>
+          <div class="form-grid-3" style="margin-top: 0.75rem;">
             <div class="form-field">
               <label>Día <span class="required">*</span></label>
               <input type="text" formControlName="dia" placeholder="ej. 12"
@@ -530,7 +537,7 @@
 
         <!-- Beneficiarios -->
         <div class="form-section">
-          <div class="form-section-title">Beneficiarios (opcional)</div>
+          <div class="form-section-title">Beneficiarios</div>
           <div class="form-grid-3">
             <div class="form-field"><label>Nombre beneficiario 1</label><input type="text" formControlName="benNombre1" placeholder="Nombre completo"></div>
             <div class="form-field"><label>Parentesco</label><input type="text" formControlName="benParentesco1" placeholder="ej. Madre"></div>
@@ -744,12 +751,19 @@
         <!-- Fecha -->
         <div class="form-section">
           <div class="form-section-title">Fecha de la carta</div>
-          <div class="form-grid-4">
+          <div class="form-grid-2">
             <div class="form-field">
               <label>Ciudad <span class="required">*</span></label>
               <input type="text" formControlName="ciudad" placeholder="Guadalajara"
                 [class.invalid]="cartaPatronalForm.get('ciudad')?.invalid && cartaPatronalForm.get('ciudad')?.touched">
             </div>
+            <div class="form-field">
+              <label>Estado <span class="required">*</span></label>
+              <input type="text" formControlName="estado" placeholder="ej. Jalisco"
+                [class.invalid]="cartaPatronalForm.get('estado')?.invalid && cartaPatronalForm.get('estado')?.touched">
+            </div>
+          </div>
+          <div class="form-grid-3" style="margin-top: 0.75rem;">
             <div class="form-field">
               <label>Día <span class="required">*</span></label>
               <input type="text" formControlName="dia" placeholder="ej. 23"
@@ -833,7 +847,7 @@
 
         <!-- Fecha alta NSS -->
         <div class="form-section">
-          <div class="form-section-title">Fecha de alta en el NSS</div>
+          <div class="form-section-title">Fecha de Ingreso</div>
           <div class="form-grid-3">
             <div class="form-field">
               <label>Día <span class="required">*</span></label>
@@ -1567,12 +1581,19 @@
         <!-- Fecha de la carta -->
         <div class="form-section">
           <div class="form-section-title">Fecha del contrato</div>
-          <div class="form-grid-4">
+          <div class="form-grid-2">
             <div class="form-field">
               <label>Ciudad <span class="required">*</span></label>
               <input type="text" formControlName="ciudad" placeholder="ej. Guadalajara"
                 [class.invalid]="contratoTiempoForm.get('ciudad')?.invalid && contratoTiempoForm.get('ciudad')?.touched">
             </div>
+            <div class="form-field">
+              <label>Estado <span class="required">*</span></label>
+              <input type="text" formControlName="estado" placeholder="ej. Jalisco"
+                [class.invalid]="contratoTiempoForm.get('estado')?.invalid && contratoTiempoForm.get('estado')?.touched">
+            </div>
+          </div>
+          <div class="form-grid-3" style="margin-top: 0.75rem;">
             <div class="form-field">
               <label>Día <span class="required">*</span></label>
               <input type="text" formControlName="dia" placeholder="ej. 15"
@@ -1952,6 +1973,18 @@
               <label>Nombre del empleado <span class="required">*</span></label>
               <input type="text" formControlName="nombre" placeholder="Nombre completo del empleado"
                 [class.invalid]="responsivaEppForm.get('nombre')?.invalid && responsivaEppForm.get('nombre')?.touched">
+            </div>
+          </div>
+          <div class="form-grid-2" style="margin-top: 0.75rem;">
+            <div class="form-field">
+              <label>Ciudad <span class="required">*</span></label>
+              <input type="text" formControlName="ciudad" placeholder="ej. Guadalajara"
+                [class.invalid]="responsivaEppForm.get('ciudad')?.invalid && responsivaEppForm.get('ciudad')?.touched">
+            </div>
+            <div class="form-field">
+              <label>Estado <span class="required">*</span></label>
+              <input type="text" formControlName="estado" placeholder="ej. Jalisco"
+                [class.invalid]="responsivaEppForm.get('estado')?.invalid && responsivaEppForm.get('estado')?.touched">
             </div>
           </div>
         </div>
@@ -2776,6 +2809,22 @@
 
     <div class="modal-form-body">
       <form [formGroup]="cartaResponsivaLeySillaForm">
+
+        <div class="form-section">
+          <div class="form-section-title">Lugar</div>
+          <div class="form-grid-2">
+            <div class="form-field">
+              <label>Ciudad <span class="required">*</span></label>
+              <input type="text" formControlName="ciudad" placeholder="ej. Guadalajara"
+                [class.invalid]="cartaResponsivaLeySillaForm.get('ciudad')?.invalid && cartaResponsivaLeySillaForm.get('ciudad')?.touched">
+            </div>
+            <div class="form-field">
+              <label>Estado <span class="required">*</span></label>
+              <input type="text" formControlName="estado" placeholder="ej. Jalisco"
+                [class.invalid]="cartaResponsivaLeySillaForm.get('estado')?.invalid && cartaResponsivaLeySillaForm.get('estado')?.touched">
+            </div>
+          </div>
+        </div>
 
         <div class="form-section">
           <div class="form-section-title">Trabajadores</div>

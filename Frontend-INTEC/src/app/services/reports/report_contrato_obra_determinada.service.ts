@@ -5,6 +5,7 @@ export interface ContratoObraDeterminadaData {
   // Encabezado
   nombreEmpleado: string;
   ciudad: string;
+  estado: string;
   dia: string;
   mes: string;
   anio: string;
@@ -107,7 +108,7 @@ export class ReportContratoObraDeterminadaService {
       { t: '"EL EMPLEADO Y/O EL TRABAJADOR"', b: true },
       { t: ', en la ciudad de ', b: false },
       { t: data.ciudad, b: true },
-      { t: ', Jalisco a ', b: false },
+      { t: `, ${data.estado || ''} a `, b: false },
       { t: data.dia, b: true },
       { t: ' de ', b: false },
       { t: data.mes, b: true },

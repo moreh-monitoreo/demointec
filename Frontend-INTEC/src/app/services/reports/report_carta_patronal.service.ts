@@ -3,6 +3,7 @@ import jsPDF from 'jspdf';
 
 export interface CartaPatronalData {
   ciudad: string;
+  estado: string;
   dia: string;
   mes: string;
   anio: string;
@@ -67,7 +68,7 @@ export class ReportCartaPatronalService {
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(fs);
     doc.setTextColor(20, 20, 20);
-    const fecha = `${data.ciudad}, Jal. A ${data.dia} de ${data.mes} de ${data.anio}`;
+    const fecha = `${data.ciudad}, ${data.estado || ''} A ${data.dia} de ${data.mes} de ${data.anio}`;
     doc.text(fecha, rm, 55, { align: 'right' });
 
     let y = 72;

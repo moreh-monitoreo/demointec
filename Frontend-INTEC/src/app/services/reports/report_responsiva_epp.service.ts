@@ -12,6 +12,8 @@ export interface EppRow {
 export interface ResponsivaEppData {
   fecha: string;
   nombre: string;
+  ciudad: string;
+  estado: string;
   filas: EppRow[];
 }
 
@@ -196,7 +198,7 @@ export class ReportResponsivaEppService {
     y += 6;
 
     // ── Firmando ──────────────────────────────────────────────────────────────
-    const firma = 'Firmando de conformidad el presente en Guadalajara, Jalisco:';
+    const firma = `Firmando de conformidad el presente en ${data.ciudad || 'Guadalajara'}, ${data.estado || 'Jalisco'}:`;
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(fs);
     doc.text(firma, lm, y);

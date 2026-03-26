@@ -400,6 +400,7 @@ export class FormatsComponent implements OnInit {
 
   cartaPatronalForm: FormGroup = this.fb.group({
     ciudad: ['Guadalajara', Validators.required],
+    estado: ['Jalisco', Validators.required],
     dia: ['', Validators.required],
     mes: ['', Validators.required],
     anio: ['2026', Validators.required],
@@ -454,6 +455,7 @@ export class FormatsComponent implements OnInit {
   contratoObraForm: FormGroup = this.fb.group({
     nombreEmpleado: ['', Validators.required],
     ciudad: ['Guadalajara', Validators.required],
+    estado: ['Jalisco', Validators.required],
     dia: ['', Validators.required],
     mes: ['', Validators.required],
     anio: ['2026', Validators.required],
@@ -493,6 +495,7 @@ export class FormatsComponent implements OnInit {
 
   contratoTiempoForm: FormGroup = this.fb.group({
     ciudad: ['Guadalajara', Validators.required],
+    estado: ['Jalisco', Validators.required],
     dia: ['', Validators.required],
     mes: ['', Validators.required],
     anio: ['2026', Validators.required],
@@ -555,6 +558,8 @@ export class FormatsComponent implements OnInit {
   responsivaEppForm: FormGroup = this.fb.group({
     fecha: ['', Validators.required],
     nombre: ['', Validators.required],
+    ciudad: ['Guadalajara', Validators.required],
+    estado: ['Jalisco', Validators.required],
     fila0cantidad: [''], fila0descripcion: [''], fila0talla: [''], fila0color: [''], fila0marca: [''],
     fila1cantidad: [''], fila1descripcion: [''], fila1talla: [''], fila1color: [''], fila1marca: [''],
     fila2cantidad: [''], fila2descripcion: [''], fila2talla: [''], fila2color: [''], fila2marca: [''],
@@ -622,6 +627,8 @@ export class FormatsComponent implements OnInit {
   });
 
   cartaResponsivaLeySillaForm: FormGroup = this.fb.group({
+    ciudad: ['Guadalajara', Validators.required],
+    estado: ['Jalisco', Validators.required],
     filas: this.fb.array(this.buildLeySillaFilas(10))
   });
 
@@ -941,11 +948,11 @@ export class FormatsComponent implements OnInit {
       this.encuestaForm.reset();
       this.avisoForm.reset();
       this.caratulaForm.reset({ nombreEmpresa1: 'INTEC DE JALISCO S.A. DE C.V.' });
-      this.cartaPatronalForm.reset({ ciudad: 'Guadalajara', anio: '2026', nombreFirmante: 'Lic. María Asunción Mares Magallanes', cargoFirmante: 'Coordinadora de Capital Humano' });
+      this.cartaPatronalForm.reset({ ciudad: 'Guadalajara', estado: 'Jalisco', anio: '2026', nombreFirmante: 'Lic. María Asunción Mares Magallanes', cargoFirmante: 'Coordinadora de Capital Humano' });
       this.constanciaTrabajoOperacionesForm.reset({ ciudad: 'Guadalajara', anio: '2026', anioInicio: '2025', anioFin: '2026', nombreFirmante: 'Lic. María Asunción Mares Magallanes', cargoFirmante: 'Coordinador de R.H.', celFirmante: '3324951222' });
       this.contratoConfForm.reset();
-      this.contratoObraForm.reset({ ciudad: 'Guadalajara', anio: '2026', nacionalidad: 'Mexicana' });
-      this.contratoTiempoForm.reset({ ciudad: 'Guadalajara', anio: '2026', nacionalidad: 'Mexicana', anioInicioContrato: '2026', anioFinContrato: '2026' });
+      this.contratoObraForm.reset({ ciudad: 'Guadalajara', estado: 'Jalisco', anio: '2026', nacionalidad: 'Mexicana' });
+      this.contratoTiempoForm.reset({ ciudad: 'Guadalajara', estado: 'Jalisco', anio: '2026', nacionalidad: 'Mexicana', anioInicioContrato: '2026', anioFinContrato: '2026' });
       this.politicaPrestamosForm.reset();
       this.politicaBonoForm.reset();
       this.responsivaEppForm.reset();
@@ -1041,6 +1048,8 @@ export class FormatsComponent implements OnInit {
         await this.responsivaEppService.generate({
           fecha: ev.fecha,
           nombre: ev.nombre,
+          ciudad: ev.ciudad,
+          estado: ev.estado,
           filas: [0, 1, 2, 3, 4].map(i => ({
             cantidad: ev[`fila${i}cantidad`] ?? '',
             descripcion: ev[`fila${i}descripcion`] ?? '',
@@ -1061,6 +1070,8 @@ export class FormatsComponent implements OnInit {
         await this.contratoIndeterminadoService.generate(this.contratoIndeterminadoForm.value);
       } else if (this.activeFormatKey === 'carta-responsiva-ley-silla') {
         await this.cartaResponsivaLeySillaService.generate({
+          ciudad: this.cartaResponsivaLeySillaForm.get('ciudad')?.value ?? '',
+          estado: this.cartaResponsivaLeySillaForm.get('estado')?.value ?? '',
           filas: this.leySillaFilas.value,
         });
       } else if (this.activeFormatKey === 'carta-terminacion-contrato') {

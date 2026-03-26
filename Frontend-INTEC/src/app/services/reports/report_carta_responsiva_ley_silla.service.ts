@@ -12,6 +12,8 @@ export interface CartaResponsivaLeySillaFila {
 }
 
 export interface CartaResponsivaLeySillaData {
+  ciudad: string;
+  estado: string;
   filas: CartaResponsivaLeySillaFila[];
 }
 
@@ -91,7 +93,7 @@ export class ReportCartaResponsivaLeySillaService {
     // ── Firmando ─────────────────────────────────────────────────────────────
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(9);
-    doc.text('Firmando de conformidad el presente en Guadalajara, Jalisco:', lm, y);
+    doc.text(`Firmando de conformidad el presente en ${data.ciudad || 'Guadalajara'}, ${data.estado || 'Jalisco'}:`, lm, y);
     y += 8;
 
     // ── Tabla ────────────────────────────────────────────────────────────────
