@@ -671,6 +671,10 @@ export class FormatsComponent implements OnInit {
   });
 
   solicitudPrestamoForm: FormGroup = this.fb.group({
+    duenioOperativo: ['', Validators.required],
+    duenioEjecutivo: ['', Validators.required],
+    fechaAprobacion: ['', Validators.required],
+    entradaVigencia: ['', Validators.required],
     nombre: ['', Validators.required],
     puesto: ['', Validators.required],
     fechaIngreso: ['', Validators.required],

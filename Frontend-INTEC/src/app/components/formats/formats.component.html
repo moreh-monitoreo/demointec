@@ -2165,6 +2165,39 @@
 
       <form [formGroup]="solicitudPrestamoForm">
 
+        <!-- Datos del encabezado -->
+        <div class="form-section">
+          <div class="form-section-title">Datos del encabezado</div>
+          <div class="form-grid-2">
+            <div class="form-field">
+              <label>Dueño Operativo <span class="required">*</span></label>
+              <input type="text" formControlName="duenioOperativo" placeholder="ej. R.H."
+                [class.invalid]="solicitudPrestamoForm.get('duenioOperativo')?.invalid && solicitudPrestamoForm.get('duenioOperativo')?.touched">
+            </div>
+            <div class="form-field">
+              <label>Dueño Ejecutivo <span class="required">*</span></label>
+              <input type="text" formControlName="duenioEjecutivo" placeholder="ej. Todo el personal operativo (en obras) de"
+                [class.invalid]="solicitudPrestamoForm.get('duenioEjecutivo')?.invalid && solicitudPrestamoForm.get('duenioEjecutivo')?.touched">
+            </div>
+          </div>
+          <div class="form-grid-2" style="margin-top: 0.75rem;">
+            <div class="form-field">
+              <label>Fecha de aprobación <span class="required">*</span></label>
+              <input type="date"
+                [value]="displayToIso(solicitudPrestamoForm.get('fechaAprobacion')?.value)"
+                [class.invalid]="solicitudPrestamoForm.get('fechaAprobacion')?.invalid && solicitudPrestamoForm.get('fechaAprobacion')?.touched"
+                (change)="onDateChange('solicitud-prestamo', 'fechaAprobacion', $any($event.target).value)">
+            </div>
+            <div class="form-field">
+              <label>Entrada en vigor <span class="required">*</span></label>
+              <input type="date"
+                [value]="displayToIso(solicitudPrestamoForm.get('entradaVigencia')?.value)"
+                [class.invalid]="solicitudPrestamoForm.get('entradaVigencia')?.invalid && solicitudPrestamoForm.get('entradaVigencia')?.touched"
+                (change)="onDateChange('solicitud-prestamo', 'entradaVigencia', $any($event.target).value)">
+            </div>
+          </div>
+        </div>
+
         <!-- Datos del solicitante -->
         <div class="form-section">
           <div class="form-section-title">Datos del solicitante</div>

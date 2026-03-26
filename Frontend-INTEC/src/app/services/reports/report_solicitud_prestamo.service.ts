@@ -2,6 +2,10 @@ import { Injectable } from '@angular/core';
 import jsPDF from 'jspdf';
 
 export interface SolicitudPrestamoData {
+  duenioOperativo: string;
+  duenioEjecutivo: string;
+  fechaAprobacion: string;
+  entradaVigencia: string;
   nombre: string;
   puesto: string;
   fechaIngreso: string;
@@ -134,9 +138,12 @@ export class ReportSolicitudPrestamoService {
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7);
     doc.setTextColor(...black);
-    doc.text('Administración / R.H.', tableX + col1W / 2, row3Y + 5, { align: 'center' });
-    const ejLines = doc.splitTextToSize('Todo el personal de INTEC de Jalisco S.A. de C.V.', col2W - 2);
-    doc.text(ejLines, tableX + col1W + col2W / 2, row3Y + 3, { align: 'center' });
+    const opLines = doc.splitTextToSize(data.duenioOperativo || '', col1W - 2);
+    doc.text(opLines, tableX + col1W / 2, row3Y + 5 - (opLines.length > 1 ? 1.5 : 0), { align: 'center' });
+    const ejLines = doc.splitTextToSize(data.duenioEjecutivo || '', col2W - 2);
+    doc.text(ejLines, tableX + col1W + col2W / 2, row3Y + 5 - (ejLines.length > 1 ? 1.5 : 0), { align: 'center' });
+    doc.text(data.fechaAprobacion || '', tableX + col1W + col2W + col3W / 2, row3Y + 5, { align: 'center' });
+    doc.text(data.entradaVigencia || '', tableX + col1W + col2W + col3W + col4W / 2, row3Y + 5, { align: 'center' });
 
     // Bottom orange border
     doc.setFillColor(...orange);
