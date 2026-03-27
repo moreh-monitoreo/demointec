@@ -403,3 +403,15 @@ font-size: 17px;
         width: 100%;
     }
 }
+
+.loan-discount-badge {
+    display: inline-block;
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffc107;
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+}

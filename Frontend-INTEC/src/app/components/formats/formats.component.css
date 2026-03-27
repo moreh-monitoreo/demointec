@@ -40,6 +40,34 @@
   font-weight: 500;
 }
 
+.formats-search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.formats-search-icon {
+  position: absolute;
+  left: 0.6rem;
+  color: #999;
+  font-size: 0.85rem;
+  pointer-events: none;
+}
+
+.formats-search-input {
+  padding: 0.4rem 0.75rem 0.4rem 2rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  width: 220px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.formats-search-input:focus {
+  border-color: #1a73e8;
+}
+
 .formats-list {
   padding: 0.75rem 1.25rem;
   display: flex;

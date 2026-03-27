@@ -24,6 +24,11 @@ import { ReportCartaTerminacionContratoService } from '../../services/reports/re
 import { ReportSolicitudPrestamoService } from '../../services/reports/report_solicitud_prestamo.service';
 import { EmployeesAdapterService } from '../../adapters/employees.adapter';
 import { Employee } from '../../models/employees';
+import { LoanRequestAdapterService } from '../../adapters/loan_request.adapter';
+import { LoanPaymentAdapterService } from '../../adapters/loan_payment.adapter';
+import { LoanRequest } from '../../models/loan_request';
+import { LoanPayment } from '../../models/loan_payment';
+import { firstValueFrom } from 'rxjs';
 
 interface FormatItem {
   key: string;
@@ -65,12 +70,15 @@ export class FormatsComponent implements OnInit {
   private cartaTerminacionContratoService = inject(ReportCartaTerminacionContratoService);
   private solicitudPrestamoService = inject(ReportSolicitudPrestamoService);
   private employeesAdapter = inject(EmployeesAdapterService);
+  private loanRequestAdapter = inject(LoanRequestAdapterService);
+  private loanPaymentAdapter = inject(LoanPaymentAdapterService);
 
   // ── Autocomplete ────────────────────────────────────────────────────────────
   employees: Employee[] = [];
   employeeSearch: string = '';
   employeeSuggestions: Employee[] = [];
   showSuggestions: boolean = false;
+  selectedLoanEmployeeId: string = '';
 
   ngOnInit(): void {
     this.employeesAdapter.getList().subscribe({
@@ -273,6 +281,7 @@ export class FormatsComponent implements OnInit {
       });
 
     } else if (this.activeFormatKey === 'solicitud-prestamo') {
+      this.selectedLoanEmployeeId = emp.id_employee ?? '';
       this.solicitudPrestamoForm.patchValue({
         nombre: emp.name_employee ?? '',
         puesto: emp.position ?? '',
@@ -777,6 +786,14 @@ export class FormatsComponent implements OnInit {
     nombreRepresentante: ['', Validators.required],
   });
 
+  formatSearch = '';
+
+  get filteredFormats(): FormatItem[] {
+    const q = this.formatSearch.trim().toLowerCase();
+    if (!q) return this.formats;
+    return this.formats.filter(f => f.label.toLowerCase().includes(q));
+  }
+
   formats: FormatItem[] = [
     {
       key: 'entrevista-salida',
@@ -1111,10 +1128,83 @@ export class FormatsComponent implements OnInit {
         await this.cartaTerminacionContratoService.generate(this.cartaTerminacionContratoForm.value);
       } else if (this.activeFormatKey === 'solicitud-prestamo') {
         await this.solicitudPrestamoService.generate(this.solicitudPrestamoForm.value);
+        await this.saveLoanRequest(this.solicitudPrestamoForm.value);
       }
       this.closeModal();
     } finally {
       this.isGenerating = false;
     }
+  }
+
+  private async saveLoanRequest(formValue: any): Promise<void> {
+    const id_loan = `PREST-${Date.now()}`;
+    const loanRequest: LoanRequest = {
+      id_loan,
+      id_employee: this.selectedLoanEmployeeId,
+      operative_owner: formValue.duenioOperativo,
+      executive_owner: formValue.duenioEjecutivo,
+      approval_date: formValue.fechaAprobacion,
+      effective_date: formValue.entradaVigencia,
+      employee_name: formValue.nombre,
+      position: formValue.puesto,
+      hire_date: formValue.fechaIngreso,
+      requested_amount: Number(formValue.montoSolicitado),
+      authorized_amount: Number(formValue.montoAutorizado),
+      loan_reason: formValue.motivoPrestamo,
+      payment_method: formValue.formaPago,
+      payment_count: Number(formValue.numPagos),
+      first_payment_date: formValue.fechaInicioPago,
+      status: true,
+    };
+
+    await firstValueFrom(this.loanRequestAdapter.post(loanRequest));
+
+    const payments: LoanPayment[] = this.buildPaymentSchedule(
+      id_loan,
+      formValue.fechaInicioPago,
+      Number(formValue.numPagos),
+      Number(formValue.montoAutorizado),
+      formValue.formaPago
+    );
+
+    if (payments.length > 0) {
+      await firstValueFrom(this.loanPaymentAdapter.post(payments));
+    }
+  }
+
+  private buildPaymentSchedule(
+    id_loan: string,
+    fechaInicio: string,
+    numPagos: number,
+    authorizedAmount: number,
+    paymentMethod: string
+  ): LoanPayment[] {
+    const payments: LoanPayment[] = [];
+    const paymentAmount = Number((authorizedAmount / numPagos).toFixed(2));
+
+    const parts = fechaInicio.split('/');
+    let current: Date;
+    if (parts.length === 3) {
+      current = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+    } else {
+      current = new Date(fechaInicio);
+    }
+
+    const incrementDays = paymentMethod === 'Quincenal' ? 15 : paymentMethod === 'Mensual' ? 30 : 7;
+
+    for (let i = 0; i < numPagos; i++) {
+      const paymentDate = current.toISOString().split('T')[0];
+      payments.push({
+        id_payment: `PAG-${id_loan}-${i + 1}`,
+        id_loan,
+        payment_date: paymentDate,
+        payment_amount: paymentAmount,
+        paid: false,
+        status: true,
+      });
+      current = new Date(current.getTime() + incrementDays * 24 * 60 * 60 * 1000);
+    }
+
+    return payments;
   }
 }

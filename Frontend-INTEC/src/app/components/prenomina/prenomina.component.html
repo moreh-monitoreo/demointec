@@ -54,12 +54,13 @@
             <th *ngIf="isMultiDay">Fecha</th>
             <th>Entrada</th>
             <th>Salida</th>
+            <th>Descuento Préstamo</th>
           </tr>
         </thead>
         <tbody>
           <ng-container *ngFor="let group of groupedPrenominas">
             <tr class="project-row">
-              <td [attr.colspan]="isMultiDay ? 5 : 4">
+              <td [attr.colspan]="isMultiDay ? 6 : 5">
                 <i class="bi bi-building"></i>
                 <strong>{{ group.project }}</strong>
                 <span class="employee-count">({{ group.employees.length }})</span>
@@ -75,6 +76,12 @@
               <td *ngIf="isMultiDay">{{ item.date }}</td>
               <td>{{ item.entry_time ? item.entry_time : '---' }}</td>
               <td>{{ item.exit_time ? item.exit_time : '---' }}</td>
+              <td>
+                <span *ngIf="item.loan_discount" class="loan-discount-badge">
+                  -${{ item.loan_discount | number:'1.2-2' }}
+                </span>
+                <span *ngIf="!item.loan_discount">---</span>
+              </td>
             </tr>
           </ng-container>
         </tbody>

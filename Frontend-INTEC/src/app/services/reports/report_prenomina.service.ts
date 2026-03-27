@@ -14,7 +14,7 @@ export class ReportPrenominaService {
 
   exportToExcel(data: Prenomina[], isMultiDay: boolean, startDate: string, endDate: string): void {
     const groups = this.buildGroups(data);
-    const colCount = isMultiDay ? 6 : 5;
+    const colCount = isMultiDay ? 7 : 6;
 
     const rows: any[][] = [];
 
@@ -39,8 +39,8 @@ export class ReportPrenominaService {
 
     // Headers
     const headers = isMultiDay
-      ? ['Colaborador', 'Estatus', 'Fecha', 'Entrada', 'Salida', 'Firma']
-      : ['Colaborador', 'Estatus', 'Entrada', 'Salida', 'Firma'];
+      ? ['Colaborador', 'Estatus', 'Fecha', 'Entrada', 'Salida', 'Desc. Préstamo', 'Firma']
+      : ['Colaborador', 'Estatus', 'Entrada', 'Salida', 'Desc. Préstamo', 'Firma'];
     rows.push(headers);
 
     const headerRowIndex = rows.length - 1;
@@ -63,6 +63,7 @@ export class ReportPrenominaService {
             emp.date,
             emp.entry_time || '---',
             emp.exit_time || '---',
+            emp.loan_discount ? `$${emp.loan_discount.toFixed(2)}` : '---',
             ''
           ]);
         } else {
@@ -71,6 +72,7 @@ export class ReportPrenominaService {
             emp.status,
             emp.entry_time || '---',
             emp.exit_time || '---',
+            emp.loan_discount ? `$${emp.loan_discount.toFixed(2)}` : '---',
             ''
           ]);
         }
@@ -190,6 +192,15 @@ export class ReportPrenominaService {
       }
     };
 
+    const discountStyle: XLSX.CellStyle = {
+      font: { bold: true, sz: 9, color: { rgb: '856404' } },
+      fill: { fgColor: { rgb: 'FFF3CD' } },
+      alignment: { horizontal: 'center', vertical: 'center' },
+      border: {
+        bottom: { style: 'thin', color: { rgb: 'EEEEEE' } }
+      }
+    };
+
     // Aplicar estilos fila por fila
     for (let R = 0; R < rows.length; R++) {
       for (let C = 0; C < colCount; C++) {
@@ -211,9 +222,12 @@ export class ReportPrenominaService {
         } else if (R > headerRowIndex) {
           // Filas de datos de empleados
           if (C === 1) {
-            // Columna Estatus
             const cellValue = ws[addr].v;
             ws[addr].s = cellValue === 'En Obra' ? statusEnObraStyle : statusFaltaStyle;
+          } else if (C === colCount - 2) {
+            // Columna Desc. Préstamo
+            const cellValue = ws[addr].v;
+            ws[addr].s = cellValue && cellValue !== '---' ? discountStyle : dataCenterStyle;
           } else if (C === 0) {
             ws[addr].s = dataStyle;
           } else {
@@ -231,6 +245,7 @@ export class ReportPrenominaService {
         { wch: 14 },  // Fecha
         { wch: 12 },  // Entrada
         { wch: 12 },  // Salida
+        { wch: 16 },  // Desc. Préstamo
         { wch: 18 },  // Firma
       ];
     } else {
@@ -239,6 +254,7 @@ export class ReportPrenominaService {
         { wch: 14 },  // Estatus
         { wch: 12 },  // Entrada
         { wch: 12 },  // Salida
+        { wch: 16 },  // Desc. Préstamo
         { wch: 18 },  // Firma
       ];
     }

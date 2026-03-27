@@ -3,6 +3,8 @@ import { PrenominaRepository } from "../../domain/repository/prenomina.repositor
 import { EmployeeEntity } from "../entity/employees.entity";
 import { AttendanceEntity } from "../entity/attendances.entity";
 import { AbsenceRequestEntity } from "../entity/absence-request.entity";
+import { LoanRequestEntity } from "../entity/loan_request.entity";
+import { LoanPaymentEntity } from "../entity/loan_payment.entity";
 import { LessThanOrEqual, MoreThanOrEqual } from "typeorm";
 
 export class PrenominaAdapterRepository implements PrenominaRepository {
@@ -11,6 +13,8 @@ export class PrenominaAdapterRepository implements PrenominaRepository {
     const employeeRepo = database.getRepository(EmployeeEntity);
     const attendanceRepo = database.getRepository(AttendanceEntity);
     const absenceRepo = database.getRepository(AbsenceRequestEntity);
+    const loanRequestRepo = database.getRepository(LoanRequestEntity);
+    const loanPaymentRepo = database.getRepository(LoanPaymentEntity);
 
     const employees = await employeeRepo.find({
       where: { status: true },
@@ -29,6 +33,37 @@ export class PrenominaAdapterRepository implements PrenominaRepository {
         end_date: MoreThanOrEqual(startDate)
       }
     });
+
+    // Obtener préstamos y pagos pendientes — si las tablas aún no existen no rompe la prenómina
+    const loanPaymentMap = new Map<string, LoanPaymentEntity>();
+    try {
+      const loanRequests = await loanRequestRepo.find({
+        where: { status: true },
+        select: ['id_loan', 'id_employee'],
+      });
+
+      const loanEmployeeMap = new Map<string, string>();
+      for (const loan of loanRequests) {
+        loanEmployeeMap.set(loan.id_loan, loan.id_employee);
+      }
+
+      const loanPayments = await loanPaymentRepo
+        .createQueryBuilder('lp')
+        .where('lp.payment_date BETWEEN :startDate AND :endDate', { startDate, endDate })
+        .andWhere('lp.paid = :paid', { paid: false })
+        .andWhere('lp.status = :status', { status: true })
+        .getMany();
+
+      for (const payment of loanPayments) {
+        const idEmployee = loanEmployeeMap.get(payment.id_loan);
+        if (idEmployee) {
+          const key = `${idEmployee}_${payment.payment_date}`;
+          loanPaymentMap.set(key, payment);
+        }
+      }
+    } catch {
+      // Las tablas de préstamos aún no existen en BD — se omite el cruce
+    }
 
     const attendanceMap = new Map<string, AttendanceEntity[]>();
     for (const att of attendances) {
@@ -64,6 +99,8 @@ export class PrenominaAdapterRepository implements PrenominaRepository {
           }
         }
 
+        const loanPayment = loanPaymentMap.get(`${employee.id_employee}_${dateKey}`);
+
         results.push({
           name_employee: employee.name_employee,
           project: employee.project || '',
@@ -71,6 +108,8 @@ export class PrenominaAdapterRepository implements PrenominaRepository {
           status,
           entry_time: entrada ? entrada.hour : null,
           exit_time: salida ? salida.hour : null,
+          loan_discount: loanPayment ? Number(loanPayment.payment_amount) : null,
+          loan_id_payment: loanPayment ? loanPayment.id_payment : null,
         });
       }
     }

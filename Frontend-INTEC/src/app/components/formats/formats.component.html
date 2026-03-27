@@ -10,10 +10,19 @@
   <div class="table-container">
     <div class="table-header">
       <div class="table-info">Formatos disponibles</div>
+      <div class="formats-search-wrap">
+        <i class="bi bi-search formats-search-icon"></i>
+        <input
+          type="text"
+          class="formats-search-input"
+          placeholder="Buscar formato..."
+          [value]="formatSearch"
+          (input)="formatSearch = $any($event.target).value">
+      </div>
     </div>
 
     <div class="formats-list">
-      <div class="format-item" *ngFor="let format of formats">
+      <div class="format-item" *ngFor="let format of filteredFormats">
         <div class="format-info">
           <i class="bi {{ format.icon }} format-icon"></i>
           <div>
