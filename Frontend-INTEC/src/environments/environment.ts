@@ -1,6 +1,6 @@
 export const environment = {
 
     production: false,
-    endpoint: '/'
+    endpoint: 'https://intec-back-production.up.railway.app'
 
 };
