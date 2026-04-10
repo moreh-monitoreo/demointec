@@ -8,7 +8,6 @@ export interface SolicitudBonoPermanenciaData {
   bono: string | number;
   fechaPago: string;
   observaciones: string;
-  personaRecomendada: string;
 }
 
 @Injectable({
@@ -153,27 +152,6 @@ export class ReportSolicitudBonoPermanenciaService {
     doc.text(data.fechaIngreso || '', lm + col1 + 20, y + 5);
     y += rowH;
 
-    // ── Persona recomendada — label gris ─────────────────────────────────────
-    doc.setFillColor(...gray);
-    doc.setDrawColor(...darkGray);
-    doc.setLineWidth(0.3);
-    this.roundRect(doc, lm, y, pw, 5, 1.5, 'FD');
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(7);
-    doc.setTextColor(...blue);
-    doc.text('Persona recomendada:', lm + 2, y + 3.5);
-    y += 5;
-
-    // Valor persona recomendada — blanco
-    doc.setFillColor(...white);
-    doc.setDrawColor(...darkGray);
-    this.roundRect(doc, lm, y, pw, 5, 1.5, 'FD');
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7);
-    doc.setTextColor(...black);
-    doc.text(data.personaRecomendada || '', lm + 3, y + 3.5);
-    y += 5;
-
     // ── Cabecera 3 columnas — gris redondeada ─────────────────────────────────
     const c1 = pw / 3;
     const c2 = pw / 3;
@@ -209,21 +187,33 @@ export class ReportSolicitudBonoPermanenciaService {
     doc.text(data.fechaPago || '', lm + c1 + c2 + c3 / 2, y + 4, { align: 'center' });
     y += 6;
 
+    
     // ── Observaciones ─────────────────────────────────────────────────────────
-    doc.setFillColor(...gray);
-    doc.setDrawColor(...darkGray);
-    doc.setLineWidth(0.3);
-    this.roundRect(doc, lm, y, pw, 5.5, 1.5, 'FD');
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(7);
-    doc.setTextColor(...blue);
-    doc.text('Observaciones:', lm + 2, y + 3.8);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(...black);
-    doc.setFontSize(6.5);
-    const obsText = doc.splitTextToSize(data.observaciones || '', pw - 38);
-    doc.text(obsText[0] || '', lm + 35, y + 3.8);
-    y += 5.5 + 6;
+  doc.setFillColor(...gray);
+  doc.setDrawColor(...darkGray);
+  doc.setLineWidth(0.3);
+  this.roundRect(doc, lm, y, pw, 5.5, 1.5, 'FD');
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7);
+  doc.setTextColor(...blue);
+  doc.text('Observaciones:', lm + 2, y + 3.8);
+
+  y += 5.5;
+
+  // ── Caja blanca (valor) ───────────────────────────────────────────────────
+  doc.setFillColor(...white);
+  doc.setDrawColor(...darkGray);
+  this.roundRect(doc, lm, y, pw, 5, 1.5, 'FD');
+
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(...black);
+  doc.setFontSize(6.5);
+
+  const obsText = doc.splitTextToSize(data.observaciones || '', pw - 6);
+  doc.text(obsText[0] || '', lm + 3, y + 3.5);
+
+  y += 5 + 6; // puedes ajustar el gap si usas una variable
 
     // ── Bloques de firma ──────────────────────────────────────────────────────
     const sigW = pw * 0.38;

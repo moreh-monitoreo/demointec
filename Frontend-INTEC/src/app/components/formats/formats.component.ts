@@ -732,7 +732,6 @@ export class FormatsComponent implements OnInit {
     bono: ['', Validators.required],
     fechaPago: ['', Validators.required],
     observaciones: [''],
-    personaRecomendada: ['', Validators.required],
   });
 
   solicitudBonoRecomendacionForm: FormGroup = this.fb.group({
@@ -1277,7 +1276,7 @@ export class FormatsComponent implements OnInit {
       bond_amount: Number(formValue.bono),
       payment_date: this.toIsoSafe(formValue.fechaPago),
       observations: formValue.observaciones ?? '',
-      direct_boss_signature: formValue.personaRecomendada,
+      direct_boss_signature: '',
       rh_signature: '',
       status: true,
     };
