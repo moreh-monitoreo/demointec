@@ -6,6 +6,7 @@ import { AbsenceRequestEntity } from "../entity/absence-request.entity";
 import { LoanRequestEntity } from "../entity/loan_request.entity";
 import { LoanPaymentEntity } from "../entity/loan_payment.entity";
 import { BondApplicationEntity } from "../entity/bond_application.entity";
+import { BondRecommendationEntity } from "../entity/bond_recommendation.entity";
 import { LessThanOrEqual, MoreThanOrEqual } from "typeorm";
 
 export class PrenominaAdapterRepository implements PrenominaRepository {
@@ -17,6 +18,7 @@ export class PrenominaAdapterRepository implements PrenominaRepository {
     const loanRequestRepo = database.getRepository(LoanRequestEntity);
     const loanPaymentRepo = database.getRepository(LoanPaymentEntity);
     const bondApplicationRepo = database.getRepository(BondApplicationEntity);
+    const bondRecommendationRepo = database.getRepository(BondRecommendationEntity);
 
     const employees = await employeeRepo.find({
       where: { status: true },
@@ -84,6 +86,23 @@ export class PrenominaAdapterRepository implements PrenominaRepository {
       // La tabla bond_applications aún no existe en BD — se omite el cruce
     }
 
+    // Obtener bonos por recomendación — si la tabla aún no existe no rompe la prenómina
+    const bondRecMap = new Map<string, BondRecommendationEntity>();
+    try {
+      const bondsRec = await bondRecommendationRepo
+        .createQueryBuilder('br')
+        .where('br.payment_date BETWEEN :startDate AND :endDate', { startDate, endDate })
+        .andWhere('br.status = :status', { status: true })
+        .getMany();
+
+      for (const bondRec of bondsRec) {
+        const key = `${bondRec.id_employee}_${bondRec.payment_date}`;
+        bondRecMap.set(key, bondRec);
+      }
+    } catch {
+      // La tabla bond_recommendations aún no existe en BD — se omite el cruce
+    }
+
     const attendanceMap = new Map<string, AttendanceEntity[]>();
     for (const att of attendances) {
       const dateKey = String(att.date);
@@ -120,6 +139,10 @@ export class PrenominaAdapterRepository implements PrenominaRepository {
 
         const loanPayment = loanPaymentMap.get(`${employee.id_employee}_${dateKey}`);
         const bond = bondMap.get(`${employee.id_employee}_${dateKey}`);
+        const bondRec = bondRecMap.get(`${employee.id_employee}_${dateKey}`);
+
+        const totalBondAmount = (bond ? Number(bond.bond_amount) : 0) + (bondRec ? Number(bondRec.bond_amount) : 0);
+        const bondId = [bond ? bond.id_bond : null, bondRec ? bondRec.id_bond_rec : null].filter(Boolean).join(',') || null;
 
         results.push({
           name_employee: employee.name_employee,
@@ -130,8 +153,8 @@ export class PrenominaAdapterRepository implements PrenominaRepository {
           exit_time: salida ? salida.hour : null,
           loan_discount: loanPayment ? Number(loanPayment.payment_amount) : null,
           loan_id_payment: loanPayment ? loanPayment.id_payment : null,
-          bond_amount: bond ? Number(bond.bond_amount) : null,
-          bond_id: bond ? bond.id_bond : null,
+          bond_amount: totalBondAmount > 0 ? totalBondAmount : null,
+          bond_id: bondId,
         });
       }
     }

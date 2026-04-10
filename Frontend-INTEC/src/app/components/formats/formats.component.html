@@ -3061,6 +3061,123 @@
   </div>
 </div>
 
+<!-- Modal Solicitud de Bono por Recomendación -->
+<div class="modal-overlay" *ngIf="showModal && activeFormatKey === 'solicitud-bono-recomendacion'" (click)="closeModal()">
+  <div class="modal-form" (click)="$event.stopPropagation()">
+
+    <div class="modal-form-header">
+      <h3 class="modal-form-title">
+        <i class="bi bi-file-earmark-text"></i>
+        Solicitud de Bono por Recomendación
+      </h3>
+      <button class="modal-close" (click)="closeModal()">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <div class="modal-form-body">
+
+      <!-- Búsqueda de empleado registrado -->
+      <div class="employee-search-wrap">
+        <div class="employee-search-label">
+          <i class="bi bi-person-fill"></i> Autocompletar desde empleado registrado
+        </div>
+        <div class="employee-search-input-wrap">
+          <input
+            type="text"
+            class="employee-search-input"
+            placeholder="Buscar por nombre..."
+            [value]="employeeSearch"
+            (input)="onSearchInput($any($event.target).value)"
+            autocomplete="off">
+          <button *ngIf="employeeSearch" class="employee-search-clear" (click)="clearSearch()" type="button" title="Limpiar">
+            <i class="bi bi-x"></i>
+          </button>
+        </div>
+        <div class="employee-suggestions" *ngIf="showSuggestions">
+          <div
+            class="employee-suggestion-item"
+            *ngFor="let emp of employeeSuggestions"
+            (click)="selectEmployee(emp)">
+            <i class="bi bi-person"></i>
+            <span class="emp-name">{{ emp.name_employee }}</span>
+            <span class="emp-position">{{ emp.position }}</span>
+          </div>
+        </div>
+      </div>
+
+      <form [formGroup]="solicitudBonoRecomendacionForm">
+
+        <div class="form-section">
+          <div class="form-section-title">Datos del empleado</div>
+          <div class="form-grid-2">
+            <div class="form-field">
+              <label>Nombre del empleado <span class="required">*</span></label>
+              <input type="text" formControlName="nombreEmpleado" placeholder="Nombre completo"
+                [class.invalid]="solicitudBonoRecomendacionForm.get('nombreEmpleado')?.invalid && solicitudBonoRecomendacionForm.get('nombreEmpleado')?.touched">
+            </div>
+            <div class="form-field">
+              <label>Fecha de ingreso <span class="required">*</span></label>
+              <input type="date"
+                [value]="displayToIso(solicitudBonoRecomendacionForm.get('fechaIngreso')?.value)"
+                [class.invalid]="solicitudBonoRecomendacionForm.get('fechaIngreso')?.invalid && solicitudBonoRecomendacionForm.get('fechaIngreso')?.touched"
+                (change)="onDateChange('solicitud-bono-recomendacion', 'fechaIngreso', $any($event.target).value)">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title">Persona recomendada</div>
+          <div class="form-field">
+            <label>Nombre de la persona recomendada <span class="required">*</span></label>
+            <input type="text" formControlName="personaRecomendada" placeholder="Nombre completo"
+              [class.invalid]="solicitudBonoRecomendacionForm.get('personaRecomendada')?.invalid && solicitudBonoRecomendacionForm.get('personaRecomendada')?.touched">
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title">Información del bono</div>
+          <div class="form-grid-3">
+            <div class="form-field">
+              <label>Fecha de contratación <span class="required">*</span></label>
+              <input type="date"
+                [value]="displayToIso(solicitudBonoRecomendacionForm.get('fechaContratacion')?.value)"
+                [class.invalid]="solicitudBonoRecomendacionForm.get('fechaContratacion')?.invalid && solicitudBonoRecomendacionForm.get('fechaContratacion')?.touched"
+                (change)="onDateChange('solicitud-bono-recomendacion', 'fechaContratacion', $any($event.target).value)">
+            </div>
+            <div class="form-field">
+              <label>Bono $ <span class="required">*</span></label>
+              <input type="number" formControlName="bono" placeholder="ej. 500" min="0"
+                [class.invalid]="solicitudBonoRecomendacionForm.get('bono')?.invalid && solicitudBonoRecomendacionForm.get('bono')?.touched">
+            </div>
+            <div class="form-field">
+              <label>Fecha de pago <span class="required">*</span></label>
+              <input type="date"
+                [value]="displayToIso(solicitudBonoRecomendacionForm.get('fechaPago')?.value)"
+                [class.invalid]="solicitudBonoRecomendacionForm.get('fechaPago')?.invalid && solicitudBonoRecomendacionForm.get('fechaPago')?.touched"
+                (change)="onDateChange('solicitud-bono-recomendacion', 'fechaPago', $any($event.target).value)">
+            </div>
+          </div>
+          <div class="form-field" style="margin-top: 0.75rem;">
+            <label>Observaciones</label>
+            <input type="text" formControlName="observaciones" placeholder="Observaciones adicionales">
+          </div>
+        </div>
+
+      </form>
+    </div>
+
+    <div class="modal-form-footer">
+      <button class="btn-cancel" (click)="closeModal()">Cancelar</button>
+      <button class="btn-generate" (click)="submitForm()" [disabled]="isGenerating">
+        <i class="bi bi-file-earmark-arrow-down"></i>
+        {{ isGenerating ? 'Generando...' : 'Generar PDF' }}
+      </button>
+    </div>
+
+  </div>
+</div>
+
 <!-- Modal Solicitud de Bono por Permanencia -->
 <div class="modal-overlay" *ngIf="showModal && activeFormatKey === 'solicitud-bono-permanencia'" (click)="closeModal()">
   <div class="modal-form" (click)="$event.stopPropagation()">

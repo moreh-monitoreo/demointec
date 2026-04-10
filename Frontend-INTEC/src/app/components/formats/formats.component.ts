@@ -23,14 +23,17 @@ import { ReportCartaResponsivaLeySillaService } from '../../services/reports/rep
 import { ReportCartaTerminacionContratoService } from '../../services/reports/report_carta_terminacion_contrato.service';
 import { ReportSolicitudPrestamoService } from '../../services/reports/report_solicitud_prestamo.service';
 import { ReportSolicitudBonoPermanenciaService } from '../../services/reports/report_solicitud_bono_permanencia.service';
+import { ReportSolicitudBonoRecomendacionService } from '../../services/reports/report_solicitud_bono_recomendacion.service';
 import { EmployeesAdapterService } from '../../adapters/employees.adapter';
 import { Employee } from '../../models/employees';
 import { LoanRequestAdapterService } from '../../adapters/loan_request.adapter';
 import { LoanPaymentAdapterService } from '../../adapters/loan_payment.adapter';
 import { BondApplicationAdapterService } from '../../adapters/bond_application.adapter';
+import { BondRecommendationAdapterService } from '../../adapters/bond_recommendation.adapter';
 import { LoanRequest } from '../../models/loan_request';
 import { LoanPayment } from '../../models/loan_payment';
 import { BondApplication } from '../../models/bond_application';
+import { BondRecommendation } from '../../models/bond_recommendation';
 import { firstValueFrom } from 'rxjs';
 
 interface FormatItem {
@@ -73,10 +76,12 @@ export class FormatsComponent implements OnInit {
   private cartaTerminacionContratoService = inject(ReportCartaTerminacionContratoService);
   private solicitudPrestamoService = inject(ReportSolicitudPrestamoService);
   private solicitudBonoPermanenciaService = inject(ReportSolicitudBonoPermanenciaService);
+  private solicitudBonoRecomendacionService = inject(ReportSolicitudBonoRecomendacionService);
   private employeesAdapter = inject(EmployeesAdapterService);
   private loanRequestAdapter = inject(LoanRequestAdapterService);
   private loanPaymentAdapter = inject(LoanPaymentAdapterService);
   private bondApplicationAdapter = inject(BondApplicationAdapterService);
+  private bondRecommendationAdapter = inject(BondRecommendationAdapterService);
 
   // ── Autocomplete ────────────────────────────────────────────────────────────
   employees: Employee[] = [];
@@ -85,6 +90,7 @@ export class FormatsComponent implements OnInit {
   showSuggestions: boolean = false;
   selectedLoanEmployeeId: string = '';
   selectedBondEmployeeId: string = '';
+  selectedBondRecEmployeeId: string = '';
 
   ngOnInit(): void {
     this.employeesAdapter.getList().subscribe({
@@ -122,6 +128,7 @@ export class FormatsComponent implements OnInit {
     else if (form === 'solicitud-prestamo') this.solicitudPrestamoForm.patchValue({ [field]: formatted });
     else if (form === 'encuesta') this.encuestaForm.patchValue({ [field]: formatted });
     else if (form === 'solicitud-bono-permanencia') this.solicitudBonoPermanenciaForm.patchValue({ [field]: formatted });
+    else if (form === 'solicitud-bono-recomendacion') this.solicitudBonoRecomendacionForm.patchValue({ [field]: formatted });
   }
 
   onSearchInput(value: string): void {
@@ -298,6 +305,14 @@ export class FormatsComponent implements OnInit {
     } else if (this.activeFormatKey === 'solicitud-bono-permanencia') {
       this.selectedBondEmployeeId = emp.id_employee ?? '';
       this.solicitudBonoPermanenciaForm.patchValue({
+        nombreEmpleado: emp.name_employee ?? '',
+        fechaIngreso: this.isoToDisplay(emp.admission_date),
+        fechaContratacion: this.isoToDisplay(emp.admission_date),
+      });
+
+    } else if (this.activeFormatKey === 'solicitud-bono-recomendacion') {
+      this.selectedBondRecEmployeeId = emp.id_employee ?? '';
+      this.solicitudBonoRecomendacionForm.patchValue({
         nombreEmpleado: emp.name_employee ?? '',
         fechaIngreso: this.isoToDisplay(emp.admission_date),
         fechaContratacion: this.isoToDisplay(emp.admission_date),
@@ -720,6 +735,16 @@ export class FormatsComponent implements OnInit {
     personaRecomendada: ['', Validators.required],
   });
 
+  solicitudBonoRecomendacionForm: FormGroup = this.fb.group({
+    nombreEmpleado: ['', Validators.required],
+    fechaIngreso: ['', Validators.required],
+    personaRecomendada: ['', Validators.required],
+    fechaContratacion: ['', Validators.required],
+    bono: ['', Validators.required],
+    fechaPago: ['', Validators.required],
+    observaciones: [''],
+  });
+
   // ── Catálogo EPP ────────────────────────────────────────────────────────────
   readonly eppCatalog: Record<string, { tallas: string[]; colores: string[]; marcas: string[] }> = {
     'PLAYERA':           { tallas: ['CH','M','G','XL'],               colores: ['AZUL','GRIS','NEGRA','TINTA','AZUL REY'],                          marcas: ['YAZBEK'] },
@@ -947,6 +972,15 @@ export class FormatsComponent implements OnInit {
       fillable: true
     },
     {
+      key: 'solicitud-bono-recomendacion',
+      label: 'Solicitud de Bono por Recomendación',
+      description: 'Formato de solicitud de bono por recomendación para colaboradores',
+      icon: 'bi-file-earmark-text',
+      filePath: '',
+      fileName: '',
+      fillable: true
+    },
+    {
       key: 'renuncia-laboral',
       label: 'Renuncia Laboral',
       description: 'Formato de renuncia laboral del colaborador',
@@ -1056,6 +1090,7 @@ export class FormatsComponent implements OnInit {
       this.cartaTerminacionContratoForm.reset({ ciudad: 'Guadalajara', estado: 'Jalisco', dia: diaActual, mes: mesActual, nombreFirmante: 'Ing. Juan Pablo Jimenez Espinoza.' });
       this.solicitudPrestamoForm.reset({ formaPago: 'Semanal' });
       this.solicitudBonoPermanenciaForm.reset();
+      this.solicitudBonoRecomendacionForm.reset();
       const filasArray = this.cartaResponsivaLeySillaForm.get('filas') as FormArray;
       filasArray.clear();
       this.buildLeySillaFilas(10).forEach(g => filasArray.push(g));
@@ -1096,6 +1131,7 @@ export class FormatsComponent implements OnInit {
     if (this.activeFormatKey === 'carta-terminacion-contrato') return this.cartaTerminacionContratoForm;
     if (this.activeFormatKey === 'solicitud-prestamo') return this.solicitudPrestamoForm;
     if (this.activeFormatKey === 'solicitud-bono-permanencia') return this.solicitudBonoPermanenciaForm;
+    if (this.activeFormatKey === 'solicitud-bono-recomendacion') return this.solicitudBonoRecomendacionForm;
     return this.renunciaForm;
   }
 
@@ -1172,6 +1208,13 @@ export class FormatsComponent implements OnInit {
         } catch (err) {
           console.error('Error al guardar bono por permanencia:', err);
         }
+      } else if (this.activeFormatKey === 'solicitud-bono-recomendacion') {
+        await this.solicitudBonoRecomendacionService.generate(this.solicitudBonoRecomendacionForm.value);
+        try {
+          await this.saveBondRecommendation(this.solicitudBonoRecomendacionForm.value);
+        } catch (err) {
+          console.error('Error al guardar bono por recomendación:', err);
+        }
       }
       this.closeModal();
     } finally {
@@ -1239,6 +1282,25 @@ export class FormatsComponent implements OnInit {
       status: true,
     };
     await firstValueFrom(this.bondApplicationAdapter.post(bond));
+  }
+
+  private async saveBondRecommendation(formValue: any): Promise<void> {
+    const id_bond_rec = `BONOREC-${Date.now()}`;
+    const bond: BondRecommendation = {
+      id_bond_rec,
+      id_employee: this.selectedBondRecEmployeeId,
+      employee_name: formValue.nombreEmpleado,
+      hire_date: this.toIsoSafe(formValue.fechaIngreso),
+      recommended_person: formValue.personaRecomendada,
+      contract_date: this.toIsoSafe(formValue.fechaContratacion),
+      bond_amount: Number(formValue.bono),
+      payment_date: this.toIsoSafe(formValue.fechaPago),
+      observations: formValue.observaciones ?? '',
+      direct_boss_signature: '',
+      rh_signature: '',
+      status: true,
+    };
+    await firstValueFrom(this.bondRecommendationAdapter.post(bond));
   }
 
   private buildPaymentSchedule(

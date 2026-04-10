@@ -41,6 +41,7 @@ import inventoryCategoryRouter from './core/infrastructure/rest/routes/inventory
 import loanRequestRouter from './core/infrastructure/rest/routes/loan_request.route';
 import loanPaymentRouter from './core/infrastructure/rest/routes/loan_payment.route';
 import bondApplicationRouter from './core/infrastructure/rest/routes/bond_application.route';
+import bondRecommendationRouter from './core/infrastructure/rest/routes/bond_recommendation.route';
 
 import { RoleEntity } from './core/infrastructure/entity/roles.entity';
 import { UserEntity } from './core/infrastructure/entity/users.entity';
@@ -96,6 +97,7 @@ app.use('/api', inventoryCategoryRouter);
 app.use('/api', loanRequestRouter);
 app.use('/api', loanPaymentRouter);
 app.use('/api', bondApplicationRouter);
+app.use('/api', bondRecommendationRouter);
 
 // Serve Frontend Static Files
 app.use(express.static(path.join(__dirname, '../public')));

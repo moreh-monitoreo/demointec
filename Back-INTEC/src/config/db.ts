@@ -35,6 +35,7 @@ import { InventoryCategoryEntity } from '../core/infrastructure/entity/inventory
 import { LoanRequestEntity } from '../core/infrastructure/entity/loan_request.entity';
 import { LoanPaymentEntity } from '../core/infrastructure/entity/loan_payment.entity';
 import { BondApplicationEntity } from '../core/infrastructure/entity/bond_application.entity';
+import { BondRecommendationEntity } from '../core/infrastructure/entity/bond_recommendation.entity';
 
 dotenv.config();
 
@@ -56,7 +57,7 @@ export const AppDataSource = new DataSource({
     CommitteeDocumentEntity, AbsenceRequestEntity, DisabilityEntity, SalaryTabulatorEntity,
     InventoryEntity, InventoryUniformEntity, InventoryExtintorEntity, InventoryMovementEntity, InventoryAssignmentEntity,
     TrainingInstructionEntity, TrainingInstructionFolderEntity, InventoryCategoryEntity,
-    LoanRequestEntity, LoanPaymentEntity, BondApplicationEntity],
+    LoanRequestEntity, LoanPaymentEntity, BondApplicationEntity, BondRecommendationEntity],
 });
 
 
