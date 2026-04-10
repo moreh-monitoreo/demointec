@@ -54,7 +54,7 @@
             <th *ngIf="isMultiDay">Fecha</th>
             <th>Entrada</th>
             <th>Salida</th>
-            <th>Descuento Préstamo</th>
+            <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -77,10 +77,16 @@
               <td>{{ item.entry_time ? item.entry_time : '---' }}</td>
               <td>{{ item.exit_time ? item.exit_time : '---' }}</td>
               <td>
-                <span *ngIf="item.loan_discount" class="loan-discount-badge">
-                  -${{ item.loan_discount | number:'1.2-2' }}
+                <span *ngIf="item.loan_discount && !item.bond_amount" class="loan-discount-badge">
+                  Descuento -${{ item.loan_discount | number:'1.2-2' }}
                 </span>
-                <span *ngIf="!item.loan_discount">---</span>
+                <span *ngIf="item.bond_amount && !item.loan_discount" class="bond-amount-badge">
+                  Bono ${{ item.bond_amount | number:'1.2-2' }}
+                </span>
+                <span *ngIf="item.loan_discount && item.bond_amount" class="loan-discount-badge">
+                  Descuento -${{ item.loan_discount | number:'1.2-2' }}
+                </span>
+                <span *ngIf="!item.loan_discount && !item.bond_amount">---</span>
               </td>
             </tr>
           </ng-container>

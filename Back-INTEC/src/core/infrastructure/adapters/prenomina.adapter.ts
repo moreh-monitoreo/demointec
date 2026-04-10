@@ -5,6 +5,7 @@ import { AttendanceEntity } from "../entity/attendances.entity";
 import { AbsenceRequestEntity } from "../entity/absence-request.entity";
 import { LoanRequestEntity } from "../entity/loan_request.entity";
 import { LoanPaymentEntity } from "../entity/loan_payment.entity";
+import { BondApplicationEntity } from "../entity/bond_application.entity";
 import { LessThanOrEqual, MoreThanOrEqual } from "typeorm";
 
 export class PrenominaAdapterRepository implements PrenominaRepository {
@@ -15,6 +16,7 @@ export class PrenominaAdapterRepository implements PrenominaRepository {
     const absenceRepo = database.getRepository(AbsenceRequestEntity);
     const loanRequestRepo = database.getRepository(LoanRequestEntity);
     const loanPaymentRepo = database.getRepository(LoanPaymentEntity);
+    const bondApplicationRepo = database.getRepository(BondApplicationEntity);
 
     const employees = await employeeRepo.find({
       where: { status: true },
@@ -65,6 +67,23 @@ export class PrenominaAdapterRepository implements PrenominaRepository {
       // Las tablas de préstamos aún no existen en BD — se omite el cruce
     }
 
+    // Obtener bonos por permanencia — si la tabla aún no existe no rompe la prenómina
+    const bondMap = new Map<string, BondApplicationEntity>();
+    try {
+      const bonds = await bondApplicationRepo
+        .createQueryBuilder('ba')
+        .where('ba.payment_date BETWEEN :startDate AND :endDate', { startDate, endDate })
+        .andWhere('ba.status = :status', { status: true })
+        .getMany();
+
+      for (const bond of bonds) {
+        const key = `${bond.id_employee}_${bond.payment_date}`;
+        bondMap.set(key, bond);
+      }
+    } catch {
+      // La tabla bond_applications aún no existe en BD — se omite el cruce
+    }
+
     const attendanceMap = new Map<string, AttendanceEntity[]>();
     for (const att of attendances) {
       const dateKey = String(att.date);
@@ -100,6 +119,7 @@ export class PrenominaAdapterRepository implements PrenominaRepository {
         }
 
         const loanPayment = loanPaymentMap.get(`${employee.id_employee}_${dateKey}`);
+        const bond = bondMap.get(`${employee.id_employee}_${dateKey}`);
 
         results.push({
           name_employee: employee.name_employee,
@@ -110,6 +130,8 @@ export class PrenominaAdapterRepository implements PrenominaRepository {
           exit_time: salida ? salida.hour : null,
           loan_discount: loanPayment ? Number(loanPayment.payment_amount) : null,
           loan_id_payment: loanPayment ? loanPayment.id_payment : null,
+          bond_amount: bond ? Number(bond.bond_amount) : null,
+          bond_id: bond ? bond.id_bond : null,
         });
       }
     }

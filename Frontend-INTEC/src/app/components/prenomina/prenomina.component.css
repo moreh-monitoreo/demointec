@@ -415,3 +415,15 @@ font-size: 17px;
     font-weight: 600;
     white-space: nowrap;
 }
+
+.bond-amount-badge {
+    display: inline-block;
+    background-color: #d1f0e0;
+    color: #1a7a45;
+    border: 1px solid #28a745;
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+}

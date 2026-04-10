@@ -40,6 +40,7 @@ import trainingInstructionFolderRouter from './core/infrastructure/rest/routes/t
 import inventoryCategoryRouter from './core/infrastructure/rest/routes/inventory-category.route';
 import loanRequestRouter from './core/infrastructure/rest/routes/loan_request.route';
 import loanPaymentRouter from './core/infrastructure/rest/routes/loan_payment.route';
+import bondApplicationRouter from './core/infrastructure/rest/routes/bond_application.route';
 
 import { RoleEntity } from './core/infrastructure/entity/roles.entity';
 import { UserEntity } from './core/infrastructure/entity/users.entity';
@@ -94,6 +95,7 @@ app.use('/api', trainingInstructionFolderRouter);
 app.use('/api', inventoryCategoryRouter);
 app.use('/api', loanRequestRouter);
 app.use('/api', loanPaymentRouter);
+app.use('/api', bondApplicationRouter);
 
 // Serve Frontend Static Files
 app.use(express.static(path.join(__dirname, '../public')));

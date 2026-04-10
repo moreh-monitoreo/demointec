@@ -8,4 +8,6 @@ export interface Prenomina {
   exit_time: string | null;
   loan_discount: number | null;
   loan_id_payment: string | null;
+  bond_amount: number | null;
+  bond_id: string | null;
 }

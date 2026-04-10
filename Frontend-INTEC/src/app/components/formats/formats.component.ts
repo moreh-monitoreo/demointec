@@ -22,12 +22,15 @@ import { ReportContratoTiempoIndeterminadoService } from '../../services/reports
 import { ReportCartaResponsivaLeySillaService } from '../../services/reports/report_carta_responsiva_ley_silla.service';
 import { ReportCartaTerminacionContratoService } from '../../services/reports/report_carta_terminacion_contrato.service';
 import { ReportSolicitudPrestamoService } from '../../services/reports/report_solicitud_prestamo.service';
+import { ReportSolicitudBonoPermanenciaService } from '../../services/reports/report_solicitud_bono_permanencia.service';
 import { EmployeesAdapterService } from '../../adapters/employees.adapter';
 import { Employee } from '../../models/employees';
 import { LoanRequestAdapterService } from '../../adapters/loan_request.adapter';
 import { LoanPaymentAdapterService } from '../../adapters/loan_payment.adapter';
+import { BondApplicationAdapterService } from '../../adapters/bond_application.adapter';
 import { LoanRequest } from '../../models/loan_request';
 import { LoanPayment } from '../../models/loan_payment';
+import { BondApplication } from '../../models/bond_application';
 import { firstValueFrom } from 'rxjs';
 
 interface FormatItem {
@@ -69,9 +72,11 @@ export class FormatsComponent implements OnInit {
   private cartaResponsivaLeySillaService = inject(ReportCartaResponsivaLeySillaService);
   private cartaTerminacionContratoService = inject(ReportCartaTerminacionContratoService);
   private solicitudPrestamoService = inject(ReportSolicitudPrestamoService);
+  private solicitudBonoPermanenciaService = inject(ReportSolicitudBonoPermanenciaService);
   private employeesAdapter = inject(EmployeesAdapterService);
   private loanRequestAdapter = inject(LoanRequestAdapterService);
   private loanPaymentAdapter = inject(LoanPaymentAdapterService);
+  private bondApplicationAdapter = inject(BondApplicationAdapterService);
 
   // ── Autocomplete ────────────────────────────────────────────────────────────
   employees: Employee[] = [];
@@ -79,6 +84,7 @@ export class FormatsComponent implements OnInit {
   employeeSuggestions: Employee[] = [];
   showSuggestions: boolean = false;
   selectedLoanEmployeeId: string = '';
+  selectedBondEmployeeId: string = '';
 
   ngOnInit(): void {
     this.employeesAdapter.getList().subscribe({
@@ -115,6 +121,7 @@ export class FormatsComponent implements OnInit {
     else if (form === 'caratula') this.caratulaForm.patchValue({ [field]: formatted });
     else if (form === 'solicitud-prestamo') this.solicitudPrestamoForm.patchValue({ [field]: formatted });
     else if (form === 'encuesta') this.encuestaForm.patchValue({ [field]: formatted });
+    else if (form === 'solicitud-bono-permanencia') this.solicitudBonoPermanenciaForm.patchValue({ [field]: formatted });
   }
 
   onSearchInput(value: string): void {
@@ -286,6 +293,14 @@ export class FormatsComponent implements OnInit {
         nombre: emp.name_employee ?? '',
         puesto: emp.position ?? '',
         fechaIngreso: this.isoToDisplay(emp.admission_date),
+      });
+
+    } else if (this.activeFormatKey === 'solicitud-bono-permanencia') {
+      this.selectedBondEmployeeId = emp.id_employee ?? '';
+      this.solicitudBonoPermanenciaForm.patchValue({
+        nombreEmpleado: emp.name_employee ?? '',
+        fechaIngreso: this.isoToDisplay(emp.admission_date),
+        fechaContratacion: this.isoToDisplay(emp.admission_date),
       });
 
     } else if (this.activeFormatKey === 'carta-terminacion-contrato') {
@@ -695,6 +710,16 @@ export class FormatsComponent implements OnInit {
     fechaInicioPago: ['', Validators.required],
   });
 
+  solicitudBonoPermanenciaForm: FormGroup = this.fb.group({
+    nombreEmpleado: ['', Validators.required],
+    fechaIngreso: ['', Validators.required],
+    fechaContratacion: ['', Validators.required],
+    bono: ['', Validators.required],
+    fechaPago: ['', Validators.required],
+    observaciones: [''],
+    personaRecomendada: ['', Validators.required],
+  });
+
   // ── Catálogo EPP ────────────────────────────────────────────────────────────
   readonly eppCatalog: Record<string, { tallas: string[]; colores: string[]; marcas: string[] }> = {
     'PLAYERA':           { tallas: ['CH','M','G','XL'],               colores: ['AZUL','GRIS','NEGRA','TINTA','AZUL REY'],                          marcas: ['YAZBEK'] },
@@ -913,6 +938,15 @@ export class FormatsComponent implements OnInit {
       fillable: true
     },
     {
+      key: 'solicitud-bono-permanencia',
+      label: 'Solicitud de Bono por Permanencia',
+      description: 'Formato de solicitud de bono por permanencia para colaboradores',
+      icon: 'bi-file-earmark-text',
+      filePath: '',
+      fileName: '',
+      fillable: true
+    },
+    {
       key: 'renuncia-laboral',
       label: 'Renuncia Laboral',
       description: 'Formato de renuncia laboral del colaborador',
@@ -1021,6 +1055,7 @@ export class FormatsComponent implements OnInit {
       this.contratoIndeterminadoForm.reset({ ciudad: 'Guadalajara', municipioComparecencia: 'Zapopan', estadoComparecencia: 'Jalisco', nacionalidad: 'Mexicana', dia: diaActual, mes: mesActual, anio: anioActual, anioInicio: anioActual });
       this.cartaTerminacionContratoForm.reset({ ciudad: 'Guadalajara', estado: 'Jalisco', dia: diaActual, mes: mesActual, nombreFirmante: 'Ing. Juan Pablo Jimenez Espinoza.' });
       this.solicitudPrestamoForm.reset({ formaPago: 'Semanal' });
+      this.solicitudBonoPermanenciaForm.reset();
       const filasArray = this.cartaResponsivaLeySillaForm.get('filas') as FormArray;
       filasArray.clear();
       this.buildLeySillaFilas(10).forEach(g => filasArray.push(g));
@@ -1060,6 +1095,7 @@ export class FormatsComponent implements OnInit {
     if (this.activeFormatKey === 'carta-responsiva-ley-silla') return this.cartaResponsivaLeySillaForm;
     if (this.activeFormatKey === 'carta-terminacion-contrato') return this.cartaTerminacionContratoForm;
     if (this.activeFormatKey === 'solicitud-prestamo') return this.solicitudPrestamoForm;
+    if (this.activeFormatKey === 'solicitud-bono-permanencia') return this.solicitudBonoPermanenciaForm;
     return this.renunciaForm;
   }
 
@@ -1129,6 +1165,13 @@ export class FormatsComponent implements OnInit {
       } else if (this.activeFormatKey === 'solicitud-prestamo') {
         await this.solicitudPrestamoService.generate(this.solicitudPrestamoForm.value);
         await this.saveLoanRequest(this.solicitudPrestamoForm.value);
+      } else if (this.activeFormatKey === 'solicitud-bono-permanencia') {
+        await this.solicitudBonoPermanenciaService.generate(this.solicitudBonoPermanenciaForm.value);
+        try {
+          await this.saveBondApplication(this.solicitudBonoPermanenciaForm.value);
+        } catch (err) {
+          console.error('Error al guardar bono por permanencia:', err);
+        }
       }
       this.closeModal();
     } finally {
@@ -1170,6 +1213,32 @@ export class FormatsComponent implements OnInit {
     if (payments.length > 0) {
       await firstValueFrom(this.loanPaymentAdapter.post(payments));
     }
+  }
+
+  private toIsoSafe(date: string): string {
+    if (!date) return '';
+    // Ya está en formato yyyy-mm-dd
+    if (/^\d{4}-\d{2}-\d{2}$/.test(date)) return date;
+    // Viene en dd/mm/yyyy
+    return this.displayToIso(date);
+  }
+
+  private async saveBondApplication(formValue: any): Promise<void> {
+    const id_bond = `BONO-${Date.now()}`;
+    const bond: BondApplication = {
+      id_bond,
+      id_employee: this.selectedBondEmployeeId,
+      employee_name: formValue.nombreEmpleado,
+      hire_date: this.toIsoSafe(formValue.fechaIngreso),
+      contract_date: this.toIsoSafe(formValue.fechaContratacion),
+      bond_amount: Number(formValue.bono),
+      payment_date: this.toIsoSafe(formValue.fechaPago),
+      observations: formValue.observaciones ?? '',
+      direct_boss_signature: formValue.personaRecomendada,
+      rh_signature: '',
+      status: true,
+    };
+    await firstValueFrom(this.bondApplicationAdapter.post(bond));
   }
 
   private buildPaymentSchedule(
