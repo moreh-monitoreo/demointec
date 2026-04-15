@@ -24,6 +24,8 @@ import { ReportCartaTerminacionContratoService } from '../../services/reports/re
 import { ReportSolicitudPrestamoService } from '../../services/reports/report_solicitud_prestamo.service';
 import { ReportSolicitudBonoPermanenciaService } from '../../services/reports/report_solicitud_bono_permanencia.service';
 import { ReportSolicitudBonoRecomendacionService } from '../../services/reports/report_solicitud_bono_recomendacion.service';
+import { ReportCuestionarioMedicoService } from '../../services/reports/report_cuestionario_medico.service';
+import { ReportEvaluacionDesempenoService } from '../../services/reports/report_evaluacion_desempeno.service';
 import { EmployeesAdapterService } from '../../adapters/employees.adapter';
 import { Employee } from '../../models/employees';
 import { LoanRequestAdapterService } from '../../adapters/loan_request.adapter';
@@ -82,6 +84,8 @@ export class FormatsComponent implements OnInit {
   private loanPaymentAdapter = inject(LoanPaymentAdapterService);
   private bondApplicationAdapter = inject(BondApplicationAdapterService);
   private bondRecommendationAdapter = inject(BondRecommendationAdapterService);
+  private cuestionarioMedicoService = inject(ReportCuestionarioMedicoService);
+  private evaluacionDesempenoService = inject(ReportEvaluacionDesempenoService);
 
   // ── Autocomplete ────────────────────────────────────────────────────────────
   employees: Employee[] = [];
@@ -129,6 +133,7 @@ export class FormatsComponent implements OnInit {
     else if (form === 'encuesta') this.encuestaForm.patchValue({ [field]: formatted });
     else if (form === 'solicitud-bono-permanencia') this.solicitudBonoPermanenciaForm.patchValue({ [field]: formatted });
     else if (form === 'solicitud-bono-recomendacion') this.solicitudBonoRecomendacionForm.patchValue({ [field]: formatted });
+    else if (form === 'evaluacion-desempeno') this.evaluacionDesempenoForm.patchValue({ [field]: formatted });
   }
 
   onSearchInput(value: string): void {
@@ -324,6 +329,20 @@ export class FormatsComponent implements OnInit {
         puesto: emp.position ?? '',
       });
 
+    } else if (this.activeFormatKey === 'cuestionario-medico') {
+      const g = (emp.gender ?? '').toUpperCase();
+      const sexoNorm = g.startsWith('M') ? 'M' : g.startsWith('F') ? 'F' : '';
+      this.cuestionarioMedicoForm.patchValue({
+        nombre: emp.name_employee ?? '',
+        edad: emp.age ? String(emp.age) : '',
+        puesto: emp.position ?? '',
+        sexo: sexoNorm,
+        edoCivil: emp.marital_status ?? '',
+        imss: emp.nss ?? '',
+        telefono: emp.phone ?? '',
+        tipoSangre: emp.blood_type ?? '',
+      });
+
     } else if (this.activeFormatKey === 'contrato-tiempo-indeterminado') {
       this.contratoIndeterminadoForm.patchValue({
         nombreTrabajador: emp.name_employee ?? '',
@@ -339,6 +358,13 @@ export class FormatsComponent implements OnInit {
         rfc: emp.rfc ?? '',
         nss: emp.nss ?? '',
         puesto: emp.position ?? '',
+      });
+
+    } else if (this.activeFormatKey === 'evaluacion-desempeno') {
+      this.evaluacionDesempenoForm.patchValue({
+        nombreEmpleado: emp.name_employee ?? '',
+        puestoEmpleado: emp.position ?? '',
+        fechaIngreso: this.isoToDisplay(emp.admission_date),
       });
 
     } else if (this.activeFormatKey === 'contrato-obra-determinada') {
@@ -744,6 +770,107 @@ export class FormatsComponent implements OnInit {
     observaciones: [''],
   });
 
+  cuestionarioMedicoForm: FormGroup = this.fb.group({
+    nombre: [''],
+    edad: [''],
+    fecha: [''],
+    puesto: [''],
+    sexo: [''],
+    edoCivil: [''],
+    imss: [''],
+    telefono: [''],
+    tipoSangre: [''],
+    // Antecedentes familiares
+    afCancerSi: [false], afCancerNo: [false], afCancerPadre: [false], afCancerMadre: [false], afCancerAbuelos: [false], afCancerTios: [false], afCancerObs: [''],
+    afDiabetesSi: [false], afDiabetesNo: [false], afDiabetesPadre: [false], afDiabetesMadre: [false], afDiabetesAbuelos: [false], afDiabetesTios: [false], afDiabetesObs: [''],
+    afCorazonSi: [false], afCorazonNo: [false], afCorazonPadre: [false], afCorazonMadre: [false], afCorazonAbuelos: [false], afCorazonTios: [false], afCorazonObs: [''],
+    afHipertensionSi: [false], afHipertensionNo: [false], afHipertensionPadre: [false], afHipertensionMadre: [false], afHipertensionAbuelos: [false], afHipertensionTios: [false], afHipertensionObs: [''],
+    afConvulsionesSi: [false], afConvulsionesNo: [false], afConvulsionesPadre: [false], afConvulsionesMadre: [false], afConvulsionesAbuelos: [false], afConvulsionesTios: [false], afConvulsionesObs: [''],
+    afMentalesSi: [false], afMentalesNo: [false], afMentalesPadre: [false], afMentalesMadre: [false], afMentalesAbuelos: [false], afMentalesTios: [false], afMentalesObs: [''],
+    afTiroidesSi: [false], afTiroidesNo: [false], afTiroidesPadre: [false], afTiroidesMadre: [false], afTiroidesAbuelos: [false], afTiroidesTios: [false], afTiroidesObs: [''],
+    afDemensiaSi: [false], afDemensiaNo: [false], afDemensiaPadre: [false], afDemensiaMadre: [false], afDemensiaAbuelos: [false], afDemensiaTios: [false], afDemensiaObs: [''],
+    // Antecedentes personales patológicos
+    ppDiabetesSi: [false], ppDiabetesNo: [false],
+    ppPresionAltaSi: [false], ppPresionAltaNo: [false],
+    ppPresionBajaSi: [false], ppPresionBajaNo: [false],
+    ppCorazonSi: [false], ppCorazonNo: [false],
+    ppVaricesSi: [false], ppVaricesNo: [false],
+    ppConvulsionesSi: [false], ppConvulsionesNo: [false],
+    ppMigranasSi: [false], ppMigranasNo: [false],
+    ppHepatitisSi: [false], ppHepatitisNo: [false],
+    ppHerniasSi: [false], ppHerniasNo: [false],
+    ppAnsiedadSi: [false], ppAnsiedadNo: [false],
+    ppAsmaSi: [false], ppAsmaNo: [false],
+    ppTumoresSi: [false], ppTumoresNo: [false],
+    ppObesidadSi: [false], ppObesidadNo: [false],
+    ppColitisSi: [false], ppColitisNo: [false],
+    ppGastritisSi: [false], ppGastritisNo: [false],
+    ppVesiculaSi: [false], ppVesiculaNo: [false],
+    ppTiroidesSi: [false], ppTiroidesNo: [false],
+    ppMiopiaSi: [false], ppMiopiaNo: [false],
+    ppAstigmatismoSi: [false], ppAstigmatismoNo: [false],
+    // Hábitos
+    tabSi: [false], tabNo: [false], tabEdad: [''], tabDiario: [false], tabSemanal: [false], tabMensual: [false], tabEsporadico: [false], tabCantidad: [''],
+    alcSi: [false], alcNo: [false], alcEdad: [''], alcDiario: [false], alcSemanal: [false], alcMensual: [false], alcEsporadico: [false], alcCantidad: [''],
+    droTipo: [''], droEspecifique: [''],
+    aleTipo: [''], aleEspecifique: [''],
+    // Cirugías y lesiones
+    cirugiasSi: [false], cirugiasNo: [false], cirugiasDetalle: [''],
+    tatuajesSi: [false], tatuajesNo: [false], tatuajesDetalle: [''],
+    perforacionesSi: [false], perforacionesNo: [false], perforacionesDetalle: [''],
+    esguincesSi: [false], esguincesNo: [false], esguincesDetalle: [''],
+    luxacionesSi: [false], luxacionesNo: [false], luxacionesDetalle: [''],
+    fracturasSi: [false], fracturasNo: [false], fracturasDetalle: [''],
+    amputacionesSi: [false], amputacionesNo: [false], amputacionesDetalle: [''],
+    partosSi: [false], partosNo: [false], partosDetalle: [''],
+    cesareasSi: [false], cesareasNo: [false], cesareasDetalle: [''],
+    abortosSi: [false], abortosNo: [false], abortosDetalle: [''],
+  });
+
+  evaluacionDesempenoForm: FormGroup = this.fb.group({
+    nombreEmpleado: ['', Validators.required],
+    fechaIngreso: ['', Validators.required],
+    nombreJefe: ['', Validators.required],
+    puestoEmpleado: ['', Validators.required],
+    eficacia: [0, Validators.required],
+    eficiencia: [0, Validators.required],
+    orden: [0, Validators.required],
+    limpieza: [0, Validators.required],
+    asistenciaPuntualidad: [0, Validators.required],
+    disciplina: [0, Validators.required],
+    disponibilidad: [0, Validators.required],
+    responsabilidad: [0, Validators.required],
+    profesionalismo: [0, Validators.required],
+    innovacion: [0, Validators.required],
+    discernimiento: [0, Validators.required],
+    espirituEmpresa: [0, Validators.required],
+    comunicacion: [0, Validators.required],
+    respeto: [0, Validators.required],
+    liderazgo: [0, Validators.required],
+    espirituColaboracion: [0, Validators.required],
+    compromiso: [0, Validators.required],
+    sentidoPertenencia: [0, Validators.required],
+    comentarioEficacia: [''],
+    comentarioEficiencia: [''],
+    comentarioOrden: [''],
+    comentarioLimpieza: [''],
+    comentarioAsistenciaPuntualidad: [''],
+    comentarioDisciplina: [''],
+    comentarioDisponibilidad: [''],
+    comentarioResponsabilidad: [''],
+    comentarioProfesionalismo: [''],
+    comentarioInnovacion: [''],
+    comentarioDiscernimiento: [''],
+    comentarioEspirituEmpresa: [''],
+    comentarioComunicacion: [''],
+    comentarioRespeto: [''],
+    comentarioLiderazgo: [''],
+    comentarioEspirituColaboracion: [''],
+    comentarioCompromiso: [''],
+    comentarioSentidoPertenencia: [''],
+    acuerdos: [''],
+  });
+
   // ── Catálogo EPP ────────────────────────────────────────────────────────────
   readonly eppCatalog: Record<string, { tallas: string[]; colores: string[]; marcas: string[] }> = {
     'PLAYERA':           { tallas: ['CH','M','G','XL'],               colores: ['AZUL','GRIS','NEGRA','TINTA','AZUL REY'],                          marcas: ['YAZBEK'] },
@@ -1050,6 +1177,24 @@ export class FormatsComponent implements OnInit {
       filePath: '',
       fileName: '',
       fillable: true
+    },
+    {
+      key: 'cuestionario-medico',
+      label: 'Cuestionario Médico',
+      description: 'Cuestionario de antecedentes médicos familiares y personales del colaborador',
+      icon: 'bi-file-earmark-medical',
+      filePath: '',
+      fileName: '',
+      fillable: true
+    },
+    {
+      key: 'evaluacion-desempeno',
+      label: 'Evaluación del Desempeño',
+      description: 'Evaluación del desempeño del colaborador al término del periodo de prueba',
+      icon: 'bi-clipboard2-check',
+      filePath: '',
+      fileName: '',
+      fillable: true
     }
   ];
 
@@ -1090,6 +1235,8 @@ export class FormatsComponent implements OnInit {
       this.solicitudPrestamoForm.reset({ formaPago: 'Semanal' });
       this.solicitudBonoPermanenciaForm.reset();
       this.solicitudBonoRecomendacionForm.reset();
+      this.cuestionarioMedicoForm.reset({ nombre: '', fecha: now.toISOString().split('T')[0] });
+      this.evaluacionDesempenoForm.reset({ eficacia: 0, eficiencia: 0, orden: 0, limpieza: 0, asistenciaPuntualidad: 0, disciplina: 0, disponibilidad: 0, responsabilidad: 0, profesionalismo: 0, innovacion: 0, discernimiento: 0, espirituEmpresa: 0, comunicacion: 0, respeto: 0, liderazgo: 0, espirituColaboracion: 0, compromiso: 0, sentidoPertenencia: 0, acuerdos: '' });
       const filasArray = this.cartaResponsivaLeySillaForm.get('filas') as FormArray;
       filasArray.clear();
       this.buildLeySillaFilas(10).forEach(g => filasArray.push(g));
@@ -1131,6 +1278,8 @@ export class FormatsComponent implements OnInit {
     if (this.activeFormatKey === 'solicitud-prestamo') return this.solicitudPrestamoForm;
     if (this.activeFormatKey === 'solicitud-bono-permanencia') return this.solicitudBonoPermanenciaForm;
     if (this.activeFormatKey === 'solicitud-bono-recomendacion') return this.solicitudBonoRecomendacionForm;
+    if (this.activeFormatKey === 'cuestionario-medico') return this.cuestionarioMedicoForm;
+    if (this.activeFormatKey === 'evaluacion-desempeno') return this.evaluacionDesempenoForm;
     return this.renunciaForm;
   }
 
@@ -1213,6 +1362,18 @@ export class FormatsComponent implements OnInit {
           await this.saveBondRecommendation(this.solicitudBonoRecomendacionForm.value);
         } catch (err) {
           console.error('Error al guardar bono por recomendación:', err);
+        }
+      } else if (this.activeFormatKey === 'cuestionario-medico') {
+        try {
+          await this.cuestionarioMedicoService.generate(this.cuestionarioMedicoForm.value);
+        } catch (err) {
+          console.error('Error generando Cuestionario Médico:', err);
+        }
+      } else if (this.activeFormatKey === 'evaluacion-desempeno') {
+        try {
+          await this.evaluacionDesempenoService.generate(this.evaluacionDesempenoForm.value);
+        } catch (err) {
+          console.error('Error generando Evaluación de Desempeño:', err);
         }
       }
       this.closeModal();

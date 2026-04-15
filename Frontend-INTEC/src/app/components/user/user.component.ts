@@ -197,18 +197,15 @@ export class UserComponent implements OnInit{
       return;
     }
 
-    if (!this.selectedImageFile) {
-        this.toastr.error('Debe seleccionar una imagen de perfil.', 'Advertencia');
-      return;
-    }
-
     const formData = new FormData();
     formData.append('name_user', this.usuarioForm.value.name);
     formData.append('phone', this.usuarioForm.value.phone);
     formData.append('email', this.usuarioForm.value.email);
     formData.append('password', this.usuarioForm.value.password);
     formData.append('rol', this.usuarioForm.value.role);
-    formData.append('imagen', this.selectedImageFile);
+    if (this.selectedImageFile) {
+      formData.append('imagen', this.selectedImageFile);
+    }
 
     this.userAdapterService.post(formData).subscribe({
       next: () => {

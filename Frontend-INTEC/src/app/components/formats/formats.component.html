@@ -3285,3 +3285,668 @@
 
   </div>
 </div>
+
+<!-- Modal Cuestionario Médico -->
+<div class="modal-overlay" *ngIf="showModal && activeFormatKey === 'cuestionario-medico'" (click)="closeModal()">
+  <div class="modal-form modal-form-wide" (click)="$event.stopPropagation()">
+
+    <div class="modal-form-header">
+      <h3 class="modal-form-title">
+        <i class="bi bi-file-earmark-medical"></i>
+        Cuestionario Médico
+      </h3>
+      <button class="modal-close" (click)="closeModal()">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <div class="modal-form-body">
+
+      <div class="employee-search-wrap">
+        <div class="employee-search-label">
+          <i class="bi bi-person-fill"></i> Autocompletar desde empleado registrado
+        </div>
+        <div class="employee-search-input-wrap">
+          <input type="text" class="employee-search-input" placeholder="Buscar por nombre..."
+            [value]="employeeSearch" (input)="onSearchInput($any($event.target).value)" autocomplete="off">
+          <button *ngIf="employeeSearch" class="employee-search-clear" (click)="clearSearch()" type="button" title="Limpiar">
+            <i class="bi bi-x"></i>
+          </button>
+        </div>
+        <div class="employee-suggestions" *ngIf="showSuggestions">
+          <div class="employee-suggestion-item" *ngFor="let emp of employeeSuggestions" (click)="selectEmployee(emp)">
+            <i class="bi bi-person"></i>
+            <span class="emp-name">{{ emp.name_employee }}</span>
+            <span class="emp-position">{{ emp.position }}</span>
+          </div>
+        </div>
+      </div>
+
+      <form [formGroup]="cuestionarioMedicoForm">
+
+        <div class="form-section">
+          <div class="form-section-title">Datos generales</div>
+          <div class="form-grid-3">
+            <div class="form-field">
+              <label>Nombre <span class="required">*</span></label>
+              <input type="text" formControlName="nombre" placeholder="Nombre completo"
+                [class.invalid]="cuestionarioMedicoForm.get('nombre')?.invalid && cuestionarioMedicoForm.get('nombre')?.touched">
+            </div>
+            <div class="form-field">
+              <label>Edad</label>
+              <input type="text" formControlName="edad" placeholder="ej. 32">
+            </div>
+            <div class="form-field">
+              <label>Fecha</label>
+              <input type="date" formControlName="fecha">
+            </div>
+            <div class="form-field">
+              <label>Puesto</label>
+              <input type="text" formControlName="puesto" placeholder="Puesto de trabajo">
+            </div>
+            <div class="form-field">
+              <label>Sexo</label>
+              <select formControlName="sexo">
+                <option value="">Seleccionar...</option>
+                <option value="M">Masculino</option>
+                <option value="F">Femenino</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label>Estado civil</label>
+              <input type="text" formControlName="edoCivil" placeholder="ej. Soltero">
+            </div>
+            <div class="form-field">
+              <label>Número de IMSS</label>
+              <input type="text" formControlName="imss" placeholder="NSS">
+            </div>
+            <div class="form-field">
+              <label>Número telefónico</label>
+              <input type="text" formControlName="telefono" placeholder="ej. 3312345678">
+            </div>
+            <div class="form-field">
+              <label>Tipo de sangre</label>
+              <input type="text" formControlName="tipoSangre" placeholder="ej. O+">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title">Antecedentes familiares</div>
+          <div class="cm-table-wrap">
+            <table class="cm-table">
+              <thead>
+                <tr>
+                  <th class="cm-th-condicion">Condición</th>
+                  <th class="cm-th-check">SI</th>
+                  <th class="cm-th-check">NO</th>
+                  <th class="cm-th-check">Padre</th>
+                  <th class="cm-th-check">Madre</th>
+                  <th class="cm-th-check">Abuelos</th>
+                  <th class="cm-th-check">Tíos</th>
+                  <th class="cm-th-obs">Observaciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Cáncer</td><td class="cm-td-check"><input type="checkbox" formControlName="afCancerSi"></td><td class="cm-td-check"><input type="checkbox" formControlName="afCancerNo"></td><td class="cm-td-check"><input type="checkbox" formControlName="afCancerPadre"></td><td class="cm-td-check"><input type="checkbox" formControlName="afCancerMadre"></td><td class="cm-td-check"><input type="checkbox" formControlName="afCancerAbuelos"></td><td class="cm-td-check"><input type="checkbox" formControlName="afCancerTios"></td><td><input type="text" formControlName="afCancerObs" class="cm-obs-input"></td></tr>
+                <tr><td>Diabetes</td><td class="cm-td-check"><input type="checkbox" formControlName="afDiabetesSi"></td><td class="cm-td-check"><input type="checkbox" formControlName="afDiabetesNo"></td><td class="cm-td-check"><input type="checkbox" formControlName="afDiabetesPadre"></td><td class="cm-td-check"><input type="checkbox" formControlName="afDiabetesMadre"></td><td class="cm-td-check"><input type="checkbox" formControlName="afDiabetesAbuelos"></td><td class="cm-td-check"><input type="checkbox" formControlName="afDiabetesTios"></td><td><input type="text" formControlName="afDiabetesObs" class="cm-obs-input"></td></tr>
+                <tr><td>Enfermedades del corazón</td><td class="cm-td-check"><input type="checkbox" formControlName="afCorazonSi"></td><td class="cm-td-check"><input type="checkbox" formControlName="afCorazonNo"></td><td class="cm-td-check"><input type="checkbox" formControlName="afCorazonPadre"></td><td class="cm-td-check"><input type="checkbox" formControlName="afCorazonMadre"></td><td class="cm-td-check"><input type="checkbox" formControlName="afCorazonAbuelos"></td><td class="cm-td-check"><input type="checkbox" formControlName="afCorazonTios"></td><td><input type="text" formControlName="afCorazonObs" class="cm-obs-input"></td></tr>
+                <tr><td>Hipertensión</td><td class="cm-td-check"><input type="checkbox" formControlName="afHipertensionSi"></td><td class="cm-td-check"><input type="checkbox" formControlName="afHipertensionNo"></td><td class="cm-td-check"><input type="checkbox" formControlName="afHipertensionPadre"></td><td class="cm-td-check"><input type="checkbox" formControlName="afHipertensionMadre"></td><td class="cm-td-check"><input type="checkbox" formControlName="afHipertensionAbuelos"></td><td class="cm-td-check"><input type="checkbox" formControlName="afHipertensionTios"></td><td><input type="text" formControlName="afHipertensionObs" class="cm-obs-input"></td></tr>
+                <tr><td>Convulsiones</td><td class="cm-td-check"><input type="checkbox" formControlName="afConvulsionesSi"></td><td class="cm-td-check"><input type="checkbox" formControlName="afConvulsionesNo"></td><td class="cm-td-check"><input type="checkbox" formControlName="afConvulsionesPadre"></td><td class="cm-td-check"><input type="checkbox" formControlName="afConvulsionesMadre"></td><td class="cm-td-check"><input type="checkbox" formControlName="afConvulsionesAbuelos"></td><td class="cm-td-check"><input type="checkbox" formControlName="afConvulsionesTios"></td><td><input type="text" formControlName="afConvulsionesObs" class="cm-obs-input"></td></tr>
+                <tr><td>Enfermedades mentales</td><td class="cm-td-check"><input type="checkbox" formControlName="afMentalesSi"></td><td class="cm-td-check"><input type="checkbox" formControlName="afMentalesNo"></td><td class="cm-td-check"><input type="checkbox" formControlName="afMentalesPadre"></td><td class="cm-td-check"><input type="checkbox" formControlName="afMentalesMadre"></td><td class="cm-td-check"><input type="checkbox" formControlName="afMentalesAbuelos"></td><td class="cm-td-check"><input type="checkbox" formControlName="afMentalesTios"></td><td><input type="text" formControlName="afMentalesObs" class="cm-obs-input"></td></tr>
+                <tr><td>Tiroides</td><td class="cm-td-check"><input type="checkbox" formControlName="afTiroidesSi"></td><td class="cm-td-check"><input type="checkbox" formControlName="afTiroidesNo"></td><td class="cm-td-check"><input type="checkbox" formControlName="afTiroidesPadre"></td><td class="cm-td-check"><input type="checkbox" formControlName="afTiroidesMadre"></td><td class="cm-td-check"><input type="checkbox" formControlName="afTiroidesAbuelos"></td><td class="cm-td-check"><input type="checkbox" formControlName="afTiroidesTios"></td><td><input type="text" formControlName="afTiroidesObs" class="cm-obs-input"></td></tr>
+                <tr><td>Demensias</td><td class="cm-td-check"><input type="checkbox" formControlName="afDemensiaSi"></td><td class="cm-td-check"><input type="checkbox" formControlName="afDemensiaNo"></td><td class="cm-td-check"><input type="checkbox" formControlName="afDemensiaPadre"></td><td class="cm-td-check"><input type="checkbox" formControlName="afDemensiaMadre"></td><td class="cm-td-check"><input type="checkbox" formControlName="afDemensiaAbuelos"></td><td class="cm-td-check"><input type="checkbox" formControlName="afDemensiaTios"></td><td><input type="text" formControlName="afDemensiaObs" class="cm-obs-input"></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title">Antecedentes personales patológicos</div>
+          <div class="cm-table-wrap">
+            <table class="cm-table">
+              <thead>
+                <tr>
+                  <th class="cm-th-patologia">Patología</th>
+                  <th class="cm-th-check">SI</th>
+                  <th class="cm-th-check">NO</th>
+                  <th class="cm-th-patologia">Patología</th>
+                  <th class="cm-th-check">SI</th>
+                  <th class="cm-th-check">NO</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Diabetes</td><td class="cm-td-check"><input type="checkbox" formControlName="ppDiabetesSi"></td><td class="cm-td-check"><input type="checkbox" formControlName="ppDiabetesNo"></td><td>Asma</td><td class="cm-td-check"><input type="checkbox" formControlName="ppAsmaSi"></td><td class="cm-td-check"><input type="checkbox" formControlName="ppAsmaNo"></td></tr>
+                <tr><td>Presión alta</td><td class="cm-td-check"><input type="checkbox" formControlName="ppPresionAltaSi"></td><td class="cm-td-check"><input type="checkbox" formControlName="ppPresionAltaNo"></td><td>Tumores</td><td class="cm-td-check"><input type="checkbox" formControlName="ppTumoresSi"></td><td class="cm-td-check"><input type="checkbox" formControlName="ppTumoresNo"></td></tr>
+                <tr><td>Presión baja</td><td class="cm-td-check"><input type="checkbox" formControlName="ppPresionBajaSi"></td><td class="cm-td-check"><input type="checkbox" formControlName="ppPresionBajaNo"></td><td>Obesidad</td><td class="cm-td-check"><input type="checkbox" formControlName="ppObesidadSi"></td><td class="cm-td-check"><input type="checkbox" formControlName="ppObesidadNo"></td></tr>
+                <tr><td>Enfermedades del corazón</td><td class="cm-td-check"><input type="checkbox" formControlName="ppCorazonSi"></td><td class="cm-td-check"><input type="checkbox" formControlName="ppCorazonNo"></td><td>Colitis</td><td class="cm-td-check"><input type="checkbox" formControlName="ppColitisSi"></td><td class="cm-td-check"><input type="checkbox" formControlName="ppColitisNo"></td></tr>
+                <tr><td>Várices / Insuf. venosa</td><td class="cm-td-check"><input type="checkbox" formControlName="ppVaricesSi"></td><td class="cm-td-check"><input type="checkbox" formControlName="ppVaricesNo"></td><td>Gastritis</td><td class="cm-td-check"><input type="checkbox" formControlName="ppGastritisSi"></td><td class="cm-td-check"><input type="checkbox" formControlName="ppGastritisNo"></td></tr>
+                <tr><td>Convulsiones</td><td class="cm-td-check"><input type="checkbox" formControlName="ppConvulsionesSi"></td><td class="cm-td-check"><input type="checkbox" formControlName="ppConvulsionesNo"></td><td>Piedras en la vesícula</td><td class="cm-td-check"><input type="checkbox" formControlName="ppVesiculaSi"></td><td class="cm-td-check"><input type="checkbox" formControlName="ppVesiculaNo"></td></tr>
+                <tr><td>Hepatitis</td><td class="cm-td-check"><input type="checkbox" formControlName="ppHepatitisSi"></td><td class="cm-td-check"><input type="checkbox" formControlName="ppHepatitisNo"></td><td>Tiroides</td><td class="cm-td-check"><input type="checkbox" formControlName="ppTiroidesSi"></td><td class="cm-td-check"><input type="checkbox" formControlName="ppTiroidesNo"></td></tr>
+                <tr><td>Hernias</td><td class="cm-td-check"><input type="checkbox" formControlName="ppHerniasSi"></td><td class="cm-td-check"><input type="checkbox" formControlName="ppHerniasNo"></td><td>Miopía</td><td class="cm-td-check"><input type="checkbox" formControlName="ppMiopiaSi"></td><td class="cm-td-check"><input type="checkbox" formControlName="ppMiopiaNo"></td></tr>
+                <tr><td>Ansiedad / Depresión</td><td class="cm-td-check"><input type="checkbox" formControlName="ppAnsiedadSi"></td><td class="cm-td-check"><input type="checkbox" formControlName="ppAnsiedadNo"></td><td>Astigmatismo</td><td class="cm-td-check"><input type="checkbox" formControlName="ppAstigmatismoSi"></td><td class="cm-td-check"><input type="checkbox" formControlName="ppAstigmatismoNo"></td></tr>
+                <tr><td>Migraña</td><td class="cm-td-check"><input type="checkbox" formControlName="ppMigranasSi"></td><td class="cm-td-check"><input type="checkbox" formControlName="ppMigranasNo"></td><td></td><td></td><td></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title">Hábitos y estilo de vida</div>
+          <div class="cm-table-wrap">
+            <table class="cm-table">
+              <thead>
+                <tr>
+                  <th class="cm-th-condicion">Hábito</th>
+                  <th class="cm-th-check">SI</th>
+                  <th class="cm-th-check">NO</th>
+                  <th style="min-width:60px">Edad inicio</th>
+                  <th class="cm-th-check">Diario</th>
+                  <th class="cm-th-check">Semanal</th>
+                  <th class="cm-th-check">Mensual</th>
+                  <th class="cm-th-check">Esporádico</th>
+                  <th style="min-width:60px">Cantidad</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Tabaquismo</td><td class="cm-td-check"><input type="checkbox" formControlName="tabSi"></td><td class="cm-td-check"><input type="checkbox" formControlName="tabNo"></td><td><input type="text" formControlName="tabEdad" class="cm-short-input"></td><td class="cm-td-check"><input type="checkbox" formControlName="tabDiario"></td><td class="cm-td-check"><input type="checkbox" formControlName="tabSemanal"></td><td class="cm-td-check"><input type="checkbox" formControlName="tabMensual"></td><td class="cm-td-check"><input type="checkbox" formControlName="tabEsporadico"></td><td><input type="text" formControlName="tabCantidad" class="cm-short-input"></td></tr>
+                <tr><td>Alcoholismo</td><td class="cm-td-check"><input type="checkbox" formControlName="alcSi"></td><td class="cm-td-check"><input type="checkbox" formControlName="alcNo"></td><td><input type="text" formControlName="alcEdad" class="cm-short-input"></td><td class="cm-td-check"><input type="checkbox" formControlName="alcDiario"></td><td class="cm-td-check"><input type="checkbox" formControlName="alcSemanal"></td><td class="cm-td-check"><input type="checkbox" formControlName="alcMensual"></td><td class="cm-td-check"><input type="checkbox" formControlName="alcEsporadico"></td><td><input type="text" formControlName="alcCantidad" class="cm-short-input"></td></tr>
+                <tr class="cm-subheader-row"><th colspan="3">SUSTANCIA/ALERGIA</th><th colspan="3">TIPO</th><th colspan="3">ESPECIFIQUE</th></tr>
+                <tr><td>Drogas</td><td colspan="2"></td><td colspan="3"><span class="cm-inline-label">Marihuana / Solventes / Cocaína</span></td><td colspan="3"><div class="cm-inline-field"><span class="cm-inline-label">Otra:</span><input type="text" formControlName="droEspecifique" class="cm-obs-input"></div></td></tr>
+                <tr><td>Alergias</td><td colspan="2"></td><td colspan="3"><span class="cm-inline-label">Polvo / Pelo animal / Medicamentos</span></td><td colspan="3"><div class="cm-inline-field"><span class="cm-inline-label">Otra:</span><input type="text" formControlName="aleEspecifique" class="cm-obs-input"></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title">Cirugías, lesiones y gineco-obstétricos</div>
+          <div class="cm-table-wrap">
+            <table class="cm-table">
+              <thead>
+                <tr>
+                  <th class="cm-th-condicion">Categoría</th>
+                  <th class="cm-th-check">SI</th>
+                  <th class="cm-th-check">NO</th>
+                  <th>Detalle</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Cirugías</td><td class="cm-td-check"><input type="checkbox" formControlName="cirugiasSi"></td><td class="cm-td-check"><input type="checkbox" formControlName="cirugiasNo"></td><td><input type="text" formControlName="cirugiasDetalle" class="cm-obs-input"></td></tr>
+                <tr><td>Tatuajes</td><td class="cm-td-check"><input type="checkbox" formControlName="tatuajesSi"></td><td class="cm-td-check"><input type="checkbox" formControlName="tatuajesNo"></td><td><input type="text" formControlName="tatuajesDetalle" class="cm-obs-input"></td></tr>
+                <tr><td>Perforaciones</td><td class="cm-td-check"><input type="checkbox" formControlName="perforacionesSi"></td><td class="cm-td-check"><input type="checkbox" formControlName="perforacionesNo"></td><td><input type="text" formControlName="perforacionesDetalle" class="cm-obs-input"></td></tr>
+                <tr><td>Esguinces</td><td class="cm-td-check"><input type="checkbox" formControlName="esguincesSi"></td><td class="cm-td-check"><input type="checkbox" formControlName="esguincesNo"></td><td><input type="text" formControlName="esguincesDetalle" class="cm-obs-input"></td></tr>
+                <tr><td>Luxaciones</td><td class="cm-td-check"><input type="checkbox" formControlName="luxacionesSi"></td><td class="cm-td-check"><input type="checkbox" formControlName="luxacionesNo"></td><td><input type="text" formControlName="luxacionesDetalle" class="cm-obs-input"></td></tr>
+                <tr><td>Fracturas</td><td class="cm-td-check"><input type="checkbox" formControlName="fracturasSi"></td><td class="cm-td-check"><input type="checkbox" formControlName="fracturasNo"></td><td><input type="text" formControlName="fracturasDetalle" class="cm-obs-input"></td></tr>
+                <tr><td>Amputaciones</td><td class="cm-td-check"><input type="checkbox" formControlName="amputacionesSi"></td><td class="cm-td-check"><input type="checkbox" formControlName="amputacionesNo"></td><td><input type="text" formControlName="amputacionesDetalle" class="cm-obs-input"></td></tr>
+                <tr><td>Partos</td><td class="cm-td-check"><input type="checkbox" formControlName="partosSi"></td><td class="cm-td-check"><input type="checkbox" formControlName="partosNo"></td><td><input type="text" formControlName="partosDetalle" class="cm-obs-input"></td></tr>
+                <tr><td>Cesáreas</td><td class="cm-td-check"><input type="checkbox" formControlName="cesareasSi"></td><td class="cm-td-check"><input type="checkbox" formControlName="cesareasNo"></td><td><input type="text" formControlName="cesareasDetalle" class="cm-obs-input"></td></tr>
+                <tr><td>Abortos</td><td class="cm-td-check"><input type="checkbox" formControlName="abortosSi"></td><td class="cm-td-check"><input type="checkbox" formControlName="abortosNo"></td><td><input type="text" formControlName="abortosDetalle" class="cm-obs-input"></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </form>
+    </div>
+
+    <div class="modal-form-footer">
+      <button class="btn-cancel" (click)="closeModal()">Cancelar</button>
+      <button class="btn-generate" (click)="submitForm()" [disabled]="isGenerating">
+        <i class="bi bi-file-earmark-arrow-down"></i>
+        {{ isGenerating ? 'Generando...' : 'Generar PDF' }}
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal Evaluacion del Desempeno -->
+<div class="modal-overlay" *ngIf="showModal && activeFormatKey === 'evaluacion-desempeno'" (click)="closeModal()">
+  <div class="modal-form modal-form-wide ed-modal" (click)="$event.stopPropagation()">
+
+    <div class="modal-form-header ed-header">
+      <div class="ed-header-left">
+        <div class="ed-header-icon"><i class="bi bi-bar-chart-line-fill"></i></div>
+        <div>
+          <h3 class="modal-form-title">Evaluación de Desempeño</h3>
+          <span class="ed-header-subtitle">Formulario de evaluación del colaborador</span>
+        </div>
+      </div>
+      <button class="modal-close" (click)="closeModal()"><i class="bi bi-x-lg"></i></button>
+    </div>
+
+    <div class="modal-form-body ed-body">
+
+      <!-- Búsqueda de empleado -->
+      <div class="employee-search-wrap">
+        <div class="employee-search-label">
+          <i class="bi bi-person-fill"></i> Autocompletar desde empleado registrado
+        </div>
+        <div class="employee-search-input-wrap">
+          <input type="text" class="employee-search-input" placeholder="Buscar por nombre..."
+            [value]="employeeSearch" (input)="onSearchInput($any($event.target).value)" autocomplete="off">
+          <button *ngIf="employeeSearch" class="employee-search-clear" (click)="clearSearch()" type="button" title="Limpiar">
+            <i class="bi bi-x"></i>
+          </button>
+        </div>
+        <div class="employee-suggestions" *ngIf="showSuggestions">
+          <div class="employee-suggestion-item" *ngFor="let emp of employeeSuggestions" (click)="selectEmployee(emp)">
+            <i class="bi bi-person"></i>
+            <span class="emp-name">{{ emp.name_employee }}</span>
+            <span class="emp-position">{{ emp.position }}</span>
+          </div>
+        </div>
+      </div>
+
+      <form [formGroup]="evaluacionDesempenoForm">
+
+        <!-- Datos generales -->
+        <div class="ed-section">
+          <div class="ed-section-header">
+            <i class="bi bi-person-badge"></i> Datos del Colaborador
+          </div>
+          <div class="ed-info-grid">
+            <div class="form-field">
+              <label>Nombre del empleado <span class="required">*</span></label>
+              <input type="text" formControlName="nombreEmpleado" placeholder="Nombre completo"
+                [class.invalid]="evaluacionDesempenoForm.get('nombreEmpleado')?.invalid && evaluacionDesempenoForm.get('nombreEmpleado')?.touched">
+            </div>
+            <div class="form-field">
+              <label>Fecha de ingreso <span class="required">*</span></label>
+              <input type="date"
+                [value]="displayToIso(evaluacionDesempenoForm.get('fechaIngreso')?.value)"
+                [class.invalid]="evaluacionDesempenoForm.get('fechaIngreso')?.invalid && evaluacionDesempenoForm.get('fechaIngreso')?.touched"
+                (change)="onDateChange('evaluacion-desempeno', 'fechaIngreso', $any($event.target).value)">
+            </div>
+            <div class="form-field">
+              <label>Jefe inmediato <span class="required">*</span></label>
+              <input type="text" formControlName="nombreJefe" placeholder="Nombre del jefe"
+                [class.invalid]="evaluacionDesempenoForm.get('nombreJefe')?.invalid && evaluacionDesempenoForm.get('nombreJefe')?.touched">
+            </div>
+            <div class="form-field">
+              <label>Puesto del empleado <span class="required">*</span></label>
+              <input type="text" formControlName="puestoEmpleado" placeholder="Cargo"
+                [class.invalid]="evaluacionDesempenoForm.get('puestoEmpleado')?.invalid && evaluacionDesempenoForm.get('puestoEmpleado')?.touched">
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabla de factores -->
+        <div class="ed-section">
+          
+
+          <!-- Calidad en el trabajo -->
+          <div class="ed-objective-block">
+            <div class="ed-objective-label">Calidad en el trabajo</div>
+            <table class="ed-factor-table">
+              <thead>
+                <tr>
+                  <th class="ed-th-factor">Factor</th>
+                  <th class="ed-th-calif">Calificación</th>
+                  <th class="ed-th-comment">Comentario</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="ed-td-factor">Eficacia</td>
+                  <td class="ed-td-calif">
+                    <select formControlName="eficacia">
+                      <option value="0">-- Seleccionar --</option>
+                      <option value="1">1 - Pocas veces cumple el objetivo</option>
+                      <option value="2">2 - Cumple las tareas pero no llega al resultado esperado</option>
+                      <option value="3">3 - Cumple con el objetivo y a menor costo</option>
+                    </select>
+                  </td>
+                  <td class="ed-td-comment">
+                    <input type="text" formControlName="comentarioEficacia" placeholder="Observación...">
+                  </td>
+                </tr>
+                <tr>
+                  <td class="ed-td-factor">Eficiencia</td>
+                  <td class="ed-td-calif">
+                    <select formControlName="eficiencia">
+                      <option value="0">-- Seleccionar --</option>
+                      <option value="1">1 - Pocas veces cumple con la totalidad del trabajo</option>
+                      <option value="2">2 - Cumple la totalidad pero fuera del tiempo previsto</option>
+                      <option value="3">3 - Realiza su trabajo con exactitud y en el tiempo previsto</option>
+                    </select>
+                  </td>
+                  <td class="ed-td-comment">
+                    <input type="text" formControlName="comentarioEficiencia" placeholder="Observación...">
+                  </td>
+                </tr>
+                <tr>
+                  <td class="ed-td-factor">Orden</td>
+                  <td class="ed-td-calif">
+                    <select formControlName="orden">
+                      <option value="0">-- Seleccionar --</option>
+                      <option value="1">1 - Trata de ser ordenado pero no lo logra</option>
+                      <option value="2">2 - Normalmente es ordenado</option>
+                      <option value="3">3 - Demuestra orden y organizacion en sus funciones</option>
+                    </select>
+                  </td>
+                  <td class="ed-td-comment">
+                    <input type="text" formControlName="comentarioOrden" placeholder="Observación...">
+                  </td>
+                </tr>
+                <tr>
+                  <td class="ed-td-factor">Limpieza</td>
+                  <td class="ed-td-calif">
+                    <select formControlName="limpieza">
+                      <option value="0">-- Seleccionar --</option>
+                      <option value="1">1 - Algunas veces</option>
+                      <option value="2">2 - Regularmente</option>
+                      <option value="3">3 - Proyecta pulcritud en su persona y en los trabajos que realiza</option>
+                    </select>
+                  </td>
+                  <td class="ed-td-comment">
+                    <input type="text" formControlName="comentarioLimpieza" placeholder="Observación...">
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Cooperación y Actitud -->
+          <div class="ed-objective-block">
+            <div class="ed-objective-label">Cooperación y Actitud</div>
+            <table class="ed-factor-table">
+              <thead>
+                <tr>
+                  <th class="ed-th-factor">Factor</th>
+                  <th class="ed-th-calif">Calificación</th>
+                  <th class="ed-th-comment">Comentario</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="ed-td-factor">Asistencia y Puntualidad</td>
+                  <td class="ed-td-calif">
+                    <select formControlName="asistenciaPuntualidad">
+                      <option value="0">-- Seleccionar --</option>
+                      <option value="1">1 - Asiste regularmente y casi siempre es puntual</option>
+                      <option value="2">2 - No falta pero a veces inicia despues de la hora</option>
+                      <option value="3">3 - Es puntual, no falta y cumple totalmente con la jornada</option>
+                    </select>
+                  </td>
+                  <td class="ed-td-comment">
+                    <input type="text" formControlName="comentarioAsistenciaPuntualidad" placeholder="Observación...">
+                  </td>
+                </tr>
+                <tr>
+                  <td class="ed-td-factor">Disciplina</td>
+                  <td class="ed-td-calif">
+                    <select formControlName="disciplina">
+                      <option value="0">-- Seleccionar --</option>
+                      <option value="1">1 - Insuficiente</option>
+                      <option value="2">2 - Regularmente</option>
+                      <option value="3">3 - Acata las normas, procura que los demas lo hagan</option>
+                    </select>
+                  </td>
+                  <td class="ed-td-comment">
+                    <input type="text" formControlName="comentarioDisciplina" placeholder="Observación...">
+                  </td>
+                </tr>
+                <tr>
+                  <td class="ed-td-factor">Disponibilidad</td>
+                  <td class="ed-td-calif">
+                    <select formControlName="disponibilidad">
+                      <option value="0">-- Seleccionar --</option>
+                      <option value="1">1 - Realiza solamente las funciones encomendadas</option>
+                      <option value="2">2 - Muestra disposicion algunas veces</option>
+                      <option value="3">3 - Siempre muestra disponibilidad independientemente de sus funciones</option>
+                    </select>
+                  </td>
+                  <td class="ed-td-comment">
+                    <input type="text" formControlName="comentarioDisponibilidad" placeholder="Observación...">
+                  </td>
+                </tr>
+                <tr>
+                  <td class="ed-td-factor">Responsabilidad</td>
+                  <td class="ed-td-calif">
+                    <select formControlName="responsabilidad">
+                      <option value="0">-- Seleccionar --</option>
+                      <option value="1">1 - No asume completamente su responsabilidad</option>
+                      <option value="2">2 - Asume su responsabilidad la mayoria de las veces</option>
+                      <option value="3">3 - Responde plena y totalmente por los resultados</option>
+                    </select>
+                  </td>
+                  <td class="ed-td-comment">
+                    <input type="text" formControlName="comentarioResponsabilidad" placeholder="Observación...">
+                  </td>
+                </tr>
+                <tr>
+                  <td class="ed-td-factor">Profesionalismo</td>
+                  <td class="ed-td-calif">
+                    <select formControlName="profesionalismo">
+                      <option value="0">-- Seleccionar --</option>
+                      <option value="1">1 - Muestra honestidad en sus actividades</option>
+                      <option value="2">2 - Cuenta con valores firmes en cuanto a etica profesional</option>
+                      <option value="3">3 - Total apego a la etica, integridad y honestidad</option>
+                    </select>
+                  </td>
+                  <td class="ed-td-comment">
+                    <input type="text" formControlName="comentarioProfesionalismo" placeholder="Observación...">
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Iniciativa -->
+          <div class="ed-objective-block">
+            <div class="ed-objective-label">Iniciativa</div>
+            <table class="ed-factor-table">
+              <thead>
+                <tr>
+                  <th class="ed-th-factor">Factor</th>
+                  <th class="ed-th-calif">Calificación</th>
+                  <th class="ed-th-comment">Comentario</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="ed-td-factor">Innovación</td>
+                  <td class="ed-td-calif">
+                    <select formControlName="innovacion">
+                      <option value="0">-- Seleccionar --</option>
+                      <option value="1">1 - Muestra poco interes en proponer nuevas ideas</option>
+                      <option value="2">2 - En ocasiones propone soluciones</option>
+                      <option value="3">3 - Constantemente busca nuevas y mejores formas de desempeno</option>
+                    </select>
+                  </td>
+                  <td class="ed-td-comment">
+                    <input type="text" formControlName="comentarioInnovacion" placeholder="Observación...">
+                  </td>
+                </tr>
+                <tr>
+                  <td class="ed-td-factor">Discernimiento</td>
+                  <td class="ed-td-calif">
+                    <select formControlName="discernimiento">
+                      <option value="0">-- Seleccionar --</option>
+                      <option value="1">1 - Solamente sigue instrucciones</option>
+                      <option value="2">2 - Analiza y acata instrucciones</option>
+                      <option value="3">3 - Toma decisiones claras y fundamentadas ante problemas</option>
+                    </select>
+                  </td>
+                  <td class="ed-td-comment">
+                    <input type="text" formControlName="comentarioDiscernimiento" placeholder="Observación...">
+                  </td>
+                </tr>
+                <tr>
+                  <td class="ed-td-factor">Espíritu de empresa</td>
+                  <td class="ed-td-calif">
+                    <select formControlName="espirituEmpresa">
+                      <option value="0">-- Seleccionar --</option>
+                      <option value="1">1 - Tiene facilidad para emprender las tareas con originalidad</option>
+                      <option value="2">2 - Normalmente emprende tareas propuestas por el</option>
+                      <option value="3">3 - Desarrolla, se hace cargo de proyectos y toma riesgos calculados</option>
+                    </select>
+                  </td>
+                  <td class="ed-td-comment">
+                    <input type="text" formControlName="comentarioEspirituEmpresa" placeholder="Observación...">
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Relaciones Interpersonales -->
+          <div class="ed-objective-block">
+            <div class="ed-objective-label">Relaciones Interpersonales</div>
+            <table class="ed-factor-table">
+              <thead>
+                <tr>
+                  <th class="ed-th-factor">Factor</th>
+                  <th class="ed-th-calif">Calificación</th>
+                  <th class="ed-th-comment">Comentario</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="ed-td-factor">Comunicación</td>
+                  <td class="ed-td-calif">
+                    <select formControlName="comunicacion">
+                      <option value="0">-- Seleccionar --</option>
+                      <option value="1">1 - Muestra poco interes para relacionarse con los demas</option>
+                      <option value="2">2 - Buenas relaciones pero no alcanza objetivos de equipo</option>
+                      <option value="3">3 - Habilidad para comunicarse y lograr metas comunes</option>
+                    </select>
+                  </td>
+                  <td class="ed-td-comment">
+                    <input type="text" formControlName="comentarioComunicacion" placeholder="Observación...">
+                  </td>
+                </tr>
+                <tr>
+                  <td class="ed-td-factor">Respeto</td>
+                  <td class="ed-td-calif">
+                    <select formControlName="respeto">
+                      <option value="0">-- Seleccionar --</option>
+                      <option value="1">1 - Casi siempre muestra respeto hacia los demas</option>
+                      <option value="2">2 - Siempre es respetuoso con los demas</option>
+                      <option value="3">3 - Perfecto conocimiento del respeto a las personas, tiempo y lugar</option>
+                    </select>
+                  </td>
+                  <td class="ed-td-comment">
+                    <input type="text" formControlName="comentarioRespeto" placeholder="Observación...">
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Trabajo en Equipo -->
+          <div class="ed-objective-block">
+            <div class="ed-objective-label">Trabajo en Equipo</div>
+            <table class="ed-factor-table">
+              <thead>
+                <tr>
+                  <th class="ed-th-factor">Factor</th>
+                  <th class="ed-th-calif">Calificación</th>
+                  <th class="ed-th-comment">Comentario</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="ed-td-factor">Liderazgo</td>
+                  <td class="ed-td-calif">
+                    <select formControlName="liderazgo">
+                      <option value="0">-- Seleccionar --</option>
+                      <option value="1">1 - Necesita supervision directa en el desempeno de sus labores</option>
+                      <option value="2">2 - Se integra con facilidad en los equipos de trabajo</option>
+                      <option value="3">3 - Es capaz de influir y promover el desarrollo del personal</option>
+                    </select>
+                  </td>
+                  <td class="ed-td-comment">
+                    <input type="text" formControlName="comentarioLiderazgo" placeholder="Observación...">
+                  </td>
+                </tr>
+                <tr>
+                  <td class="ed-td-factor">Espíritu de colaboración</td>
+                  <td class="ed-td-calif">
+                    <select formControlName="espirituColaboracion">
+                      <option value="0">-- Seleccionar --</option>
+                      <option value="1">1 - Prefiere trabajar solo</option>
+                      <option value="2">2 - Trabaja en equipo pero no logra los objetivos del equipo</option>
+                      <option value="3">3 - Contribuye a lograr los objetivos con respeto y colaboracion</option>
+                    </select>
+                  </td>
+                  <td class="ed-td-comment">
+                    <input type="text" formControlName="comentarioEspirituColaboracion" placeholder="Observación...">
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Lealtad Institucional -->
+          <div class="ed-objective-block">
+            <div class="ed-objective-label">Lealtad Institucional</div>
+            <table class="ed-factor-table">
+              <thead>
+                <tr>
+                  <th class="ed-th-factor">Factor</th>
+                  <th class="ed-th-calif">Calificación</th>
+                  <th class="ed-th-comment">Comentario</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="ed-td-factor">Compromiso</td>
+                  <td class="ed-td-calif">
+                    <select formControlName="compromiso">
+                      <option value="0">-- Seleccionar --</option>
+                      <option value="1">1 - Asume el compromiso porque no tiene otra alternativa</option>
+                      <option value="2">2 - Asume sus compromisos con responsabilidad</option>
+                      <option value="3">3 - Plena conviccion de cumplir y hacer cumplir la mision</option>
+                    </select>
+                  </td>
+                  <td class="ed-td-comment">
+                    <input type="text" formControlName="comentarioCompromiso" placeholder="Observación...">
+                  </td>
+                </tr>
+                <tr>
+                  <td class="ed-td-factor">Sentido de Pertenencia</td>
+                  <td class="ed-td-calif">
+                    <select formControlName="sentidoPertenencia">
+                      <option value="0">-- Seleccionar --</option>
+                      <option value="1">1 - Esta en la empresa solo porque necesita el trabajo</option>
+                      <option value="2">2 - Le agrada trabajar en la organizacion por desarrollarse profesionalmente</option>
+                      <option value="3">3 - Vive los valores de la organizacion plenamente</option>
+                    </select>
+                  </td>
+                  <td class="ed-td-comment">
+                    <input type="text" formControlName="comentarioSentidoPertenencia" placeholder="Observación...">
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+
+        <!-- Compromisos y acuerdos -->
+        <div class="ed-section">
+          <div class="ed-section-header">
+            <i class="bi bi-journal-text"></i> Compromisos y Acuerdos
+          </div>
+          <div class="form-field">
+            <label>Acuerdos tomados con el empleado sobre oportunidades de mejora</label>
+            <textarea formControlName="acuerdos" rows="3" placeholder="Descripcion de acuerdos tomados..."></textarea>
+          </div>
+        </div>
+
+      </form>
+    </div>
+
+    <div class="modal-form-footer">
+      <button class="btn-cancel" (click)="closeModal()">Cancelar</button>
+      <button class="btn-generate" (click)="submitForm()" [disabled]="isGenerating">
+        <i class="bi bi-file-earmark-arrow-down"></i>
+        {{ isGenerating ? 'Generando...' : 'Generar PDF' }}
+      </button>
+    </div>
+
+  </div>
+</div>
