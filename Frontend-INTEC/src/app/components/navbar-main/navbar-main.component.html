@@ -6,106 +6,162 @@
       <button class="menu-toggle" (click)="toggleSidebar()">☰</button>
     </div>
     <nav class="nav-links">
+
+      <!-- Operaciones -->
       <div class="nav-item">
-        <a (click)="toggleSubmenu('operaciones')" class="nav-link" (click)="expandSidebarIfCollapsed()">
+        <a (click)="handleModuleClick('operaciones', 'Operaciones')" class="nav-link" [class.nav-link-locked]="!canModule('Operaciones')">
           <i class="bi bi-person-badge icon-box"></i>
           <span class="menu-text">Operaciones</span>
+          <i class="bi bi-lock-fill lock-icon menu-text" *ngIf="!canModule('Operaciones')"></i>
         </a>
         <div class="submenu" [class.open]="isSubmenuOpen['operaciones']">
-          <a routerLink="/dashboard/obras" routerLinkActive="active"><span class="menu-text">Seguimiento de
-              obras</span></a>
+          <div class="no-access-msg" *ngIf="!canModule('Operaciones')">
+            <i class="bi bi-shield-x"></i> Sin acceso a este módulo
+          </div>
+          <ng-container *ngIf="canModule('Operaciones')">
+            <a *ngIf="canRoute('/dashboard/obras')" routerLink="/dashboard/obras" routerLinkActive="active">
+              <span class="menu-text">Seguimiento de obras</span></a>
+          </ng-container>
         </div>
       </div>
+
+      <!-- Inventarios -->
       <div class="nav-item">
-        <a (click)="toggleSubmenu('inventarios')" class="nav-link" (click)="expandSidebarIfCollapsed()">
+        <a (click)="handleModuleClick('inventarios', 'Inventarios')" class="nav-link" [class.nav-link-locked]="!canModule('Inventarios')">
           <i class="bi bi-box-seam icon-box"></i>
           <span class="menu-text">Inventarios</span>
+          <i class="bi bi-lock-fill lock-icon menu-text" *ngIf="!canModule('Inventarios')"></i>
         </a>
         <div class="submenu" [class.open]="isSubmenuOpen['inventarios']">
-          <a routerLink="/dashboard/herramientas" routerLinkActive="active"><span class="menu-text">Catálogo de
-              Herramientas</span></a>
-          <a routerLink="/dashboard/materiales" routerLinkActive="active"><span class="menu-text">Catálogo de
-              Materiales</span></a>
-          <a routerLink="/dashboard/partidas" routerLinkActive="active"><span class="menu-text">Partidas</span></a>
-          <a routerLink="/dashboard/subpartidas" routerLinkActive="active"><span
-              class="menu-text">Subpartidas</span></a>
+          <div class="no-access-msg" *ngIf="!canModule('Inventarios')">
+            <i class="bi bi-shield-x"></i> Sin acceso a este módulo
+          </div>
+          <ng-container *ngIf="canModule('Inventarios')">
+            <a *ngIf="canRoute('/dashboard/herramientas')" routerLink="/dashboard/herramientas" routerLinkActive="active">
+              <span class="menu-text">Catálogo de Herramientas</span></a>
+            <a *ngIf="canRoute('/dashboard/materiales')" routerLink="/dashboard/materiales" routerLinkActive="active">
+              <span class="menu-text">Catálogo de Materiales</span></a>
+            <a *ngIf="canRoute('/dashboard/partidas')" routerLink="/dashboard/partidas" routerLinkActive="active">
+              <span class="menu-text">Partidas</span></a>
+            <a *ngIf="canRoute('/dashboard/subpartidas')" routerLink="/dashboard/subpartidas" routerLinkActive="active">
+              <span class="menu-text">Subpartidas</span></a>
+          </ng-container>
         </div>
       </div>
+
+      <!-- Compras -->
       <div class="nav-item">
-        <a (click)="toggleSubmenu('compras')" class="nav-link" (click)="expandSidebarIfCollapsed()">
+        <a (click)="handleModuleClick('compras', 'Compras')" class="nav-link" [class.nav-link-locked]="!canModule('Compras')">
           <i class="bi bi-cart icon-box"></i>
           <span class="menu-text">Compras</span>
+          <i class="bi bi-lock-fill lock-icon menu-text" *ngIf="!canModule('Compras')"></i>
         </a>
         <div class="submenu" [class.open]="isSubmenuOpen['compras']">
-          <a routerLink="/dashboard/solicitudes" routerLinkActive="active"><span class="menu-text">Solicitudes de
-              compra</span></a>
-          <a routerLinkActive="active"><span class="menu-text">Gestión de proveedores</span></a>
+          <div class="no-access-msg" *ngIf="!canModule('Compras')">
+            <i class="bi bi-shield-x"></i> Sin acceso a este módulo
+          </div>
+          <ng-container *ngIf="canModule('Compras')">
+            <a *ngIf="canRoute('/dashboard/solicitudes')" routerLink="/dashboard/solicitudes" routerLinkActive="active">
+              <span class="menu-text">Solicitudes de compra</span></a>
+          </ng-container>
         </div>
       </div>
+
+      <!-- Ventas -->
       <div class="nav-item">
-        <a (click)="toggleSubmenu('ventas')" class="nav-link" (click)="expandSidebarIfCollapsed()">
+        <a (click)="handleModuleClick('ventas', 'Ventas')" class="nav-link" [class.nav-link-locked]="!canModule('Ventas')">
           <i class="bi bi-cash-coin icon-box"></i>
           <span class="menu-text">Ventas</span>
+          <i class="bi bi-lock-fill lock-icon menu-text" *ngIf="!canModule('Ventas')"></i>
         </a>
         <div class="submenu" [class.open]="isSubmenuOpen['ventas']">
-          <a routerLinkActive="active"><span class="menu-text">Gestión de clientes</span></a>
-          <a routerLinkActive="active"><span class="menu-text">Ventas por clientes/proyectos</span></a>
-          <a routerLinkActive="active"><span class="menu-text">Cotizaciones</span></a>
+          <div class="no-access-msg" *ngIf="!canModule('Ventas')">
+            <i class="bi bi-shield-x"></i> Sin acceso a este módulo
+          </div>
         </div>
       </div>
+
+      <!-- Finanzas -->
       <div class="nav-item">
-        <a (click)="toggleSubmenu('finanzas')" class="nav-link" (click)="expandSidebarIfCollapsed()">
+        <a (click)="handleModuleClick('finanzas', 'Finanzas')" class="nav-link" [class.nav-link-locked]="!canModule('Finanzas')">
           <i class="bi bi-bank icon-box"></i>
           <span class="menu-text">Finanzas</span>
+          <i class="bi bi-lock-fill lock-icon menu-text" *ngIf="!canModule('Finanzas')"></i>
         </a>
         <div class="submenu" [class.open]="isSubmenuOpen['finanzas']">
-          <a routerLinkActive="active"><span class="menu-text">Control de ingresos y egresos</span></a>
-          <a routerLinkActive="active"><span class="menu-text">Conciliación bancaria</span></a>
-          <a routerLinkActive="active"><span class="menu-text">Reporte Financieros</span></a>
+          <div class="no-access-msg" *ngIf="!canModule('Finanzas')">
+            <i class="bi bi-shield-x"></i> Sin acceso a este módulo
+          </div>
         </div>
       </div>
+
+      <!-- Recursos Humanos -->
       <div class="nav-item">
-        <a (click)="toggleSubmenu('humanos')" class="nav-link" (click)="expandSidebarIfCollapsed()">
+        <a (click)="handleModuleClick('humanos', 'Recursos Humanos')" class="nav-link" [class.nav-link-locked]="!canModule('Recursos Humanos')">
           <i class="bi bi-people icon-box"></i>
           <span class="menu-text">Recursos Humanos</span>
+          <i class="bi bi-lock-fill lock-icon menu-text" *ngIf="!canModule('Recursos Humanos')"></i>
         </a>
         <div class="submenu" [class.open]="isSubmenuOpen['humanos']">
-          <a routerLink="/dashboard/descripciones-puestos" routerLinkActive="active"><span
-              class="menu-text">Descripciones de Puestos</span></a>
-          <a routerLink="/dashboard/colaboradores" routerLinkActive="active"><span class="menu-text">Gestión de
-              colaboradores</span></a>
-          <a routerLink="/dashboard/asistencias" routerLinkActive="active"><span class="menu-text">Control
-              asistencia</span></a>
-          <a routerLink="/dashboard/relaciones-laborales" routerLinkActive="active"><span class="menu-text">Relaciones
-              Laborales</span></a>
-          <a routerLink="/dashboard/repositorio-documental" routerLinkActive="active"><span
-              class="menu-text">Repositorio Documental</span></a>
-          <a routerLink="/dashboard/permisos-vacaciones" routerLinkActive="active"><span class="menu-text">Permisos y
-              Vacaciones</span></a>
-          <a routerLink="/dashboard/control-bajas" routerLinkActive="active"><span class="menu-text">Control de bajas
-              del personal</span></a>
-          <a routerLink="/dashboard/prenomina" routerLinkActive="active"><span class="menu-text">Prenomina</span></a>
-          <a routerLink="/dashboard/asignar-obras" routerLinkActive="active"><span class="menu-text">Asignar Obras</span></a>
-          <a routerLink="/dashboard/comisiones-mixtas" routerLinkActive="active"><span class="menu-text">Comisiones Mixtas</span></a>
-          <a routerLink="/dashboard/reporte-salarios" routerLinkActive="active"><span class="menu-text">Tabulador de Salarios</span></a>
-          <a routerLink="/dashboard/analisis-plantillas" routerLinkActive="active"><span class="menu-text">Plantillas</span></a>
-          <a routerLink="/dashboard/inventario-rh" routerLinkActive="active"><span class="menu-text">Inventario</span></a>
-          <a routerLink="/dashboard/capacitaciones" routerLinkActive="active"><span class="menu-text">Capacitación y Adiestramiento</span></a>
-          <a routerLink="/dashboard/formatos" routerLinkActive="active"><span class="menu-text">Formatos</span></a>
+          <div class="no-access-msg" *ngIf="!canModule('Recursos Humanos')">
+            <i class="bi bi-shield-x"></i> Sin acceso a este módulo
+          </div>
+          <ng-container *ngIf="canModule('Recursos Humanos')">
+            <a *ngIf="canRoute('/dashboard/descripciones-puestos')" routerLink="/dashboard/descripciones-puestos" routerLinkActive="active">
+              <span class="menu-text">Descripciones de Puestos</span></a>
+            <a *ngIf="canRoute('/dashboard/colaboradores')" routerLink="/dashboard/colaboradores" routerLinkActive="active">
+              <span class="menu-text">Gestión de colaboradores</span></a>
+            <a *ngIf="canRoute('/dashboard/asistencias')" routerLink="/dashboard/asistencias" routerLinkActive="active">
+              <span class="menu-text">Control asistencia</span></a>
+            <a *ngIf="canRoute('/dashboard/relaciones-laborales')" routerLink="/dashboard/relaciones-laborales" routerLinkActive="active">
+              <span class="menu-text">Relaciones Laborales</span></a>
+            <a *ngIf="canRoute('/dashboard/repositorio-documental')" routerLink="/dashboard/repositorio-documental" routerLinkActive="active">
+              <span class="menu-text">Repositorio Documental</span></a>
+            <a *ngIf="canRoute('/dashboard/permisos-vacaciones')" routerLink="/dashboard/permisos-vacaciones" routerLinkActive="active">
+              <span class="menu-text">Permisos y Vacaciones</span></a>
+            <a *ngIf="canRoute('/dashboard/control-bajas')" routerLink="/dashboard/control-bajas" routerLinkActive="active">
+              <span class="menu-text">Control de bajas del personal</span></a>
+            <a *ngIf="canRoute('/dashboard/prenomina')" routerLink="/dashboard/prenomina" routerLinkActive="active">
+              <span class="menu-text">Prenomina</span></a>
+            <a *ngIf="canRoute('/dashboard/asignar-obras')" routerLink="/dashboard/asignar-obras" routerLinkActive="active">
+              <span class="menu-text">Asignar Obras</span></a>
+            <a *ngIf="canRoute('/dashboard/comisiones-mixtas')" routerLink="/dashboard/comisiones-mixtas" routerLinkActive="active">
+              <span class="menu-text">Comisiones Mixtas</span></a>
+            <a *ngIf="canRoute('/dashboard/reporte-salarios')" routerLink="/dashboard/reporte-salarios" routerLinkActive="active">
+              <span class="menu-text">Tabulador de Salarios</span></a>
+            <a *ngIf="canRoute('/dashboard/analisis-plantillas')" routerLink="/dashboard/analisis-plantillas" routerLinkActive="active">
+              <span class="menu-text">Plantillas</span></a>
+            <a *ngIf="canRoute('/dashboard/inventario-rh')" routerLink="/dashboard/inventario-rh" routerLinkActive="active">
+              <span class="menu-text">Inventario</span></a>
+            <a *ngIf="canRoute('/dashboard/capacitaciones')" routerLink="/dashboard/capacitaciones" routerLinkActive="active">
+              <span class="menu-text">Capacitación y Adiestramiento</span></a>
+            <a *ngIf="canRoute('/dashboard/formatos')" routerLink="/dashboard/formatos" routerLinkActive="active">
+              <span class="menu-text">Formatos</span></a>
+          </ng-container>
         </div>
       </div>
+
+      <!-- Configuración -->
       <div class="nav-item">
-        <a (click)="toggleSubmenu('configuracion')" class="nav-link" (click)="expandSidebarIfCollapsed()">
+        <a (click)="handleModuleClick('configuracion', 'Configuración')" class="nav-link" [class.nav-link-locked]="!canModule('Configuración')">
           <i class="bi bi-gear icon-box"></i>
           <span class="menu-text">Configuración</span>
+          <i class="bi bi-lock-fill lock-icon menu-text" *ngIf="!canModule('Configuración')"></i>
         </a>
         <div class="submenu" [class.open]="isSubmenuOpen['configuracion']">
-          <a routerLink="/dashboard/usuarios" routerLinkActive="active"><span class="menu-text">Gestión de
-              Usuarios</span></a>
+          <div class="no-access-msg" *ngIf="!canModule('Configuración')">
+            <i class="bi bi-shield-x"></i> Sin acceso a este módulo
+          </div>
+          <ng-container *ngIf="canModule('Configuración')">
+            <a *ngIf="canRoute('/dashboard/usuarios')" routerLink="/dashboard/usuarios" routerLinkActive="active">
+              <span class="menu-text">Gestión de Usuarios</span></a>
+            <a *ngIf="canRoute('/dashboard/administrar-roles')" routerLink="/dashboard/administrar-roles" routerLinkActive="active">
+              <span class="menu-text">Administrar Roles</span></a>
+          </ng-container>
         </div>
       </div>
-    </nav>
 
+    </nav>
   </aside>
 
   <!-- Contenido principal -->

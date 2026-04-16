@@ -5,6 +5,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { PLATFORM_ID, Inject } from '@angular/core';
 import { EmployeesAdapterService } from '../../adapters/employees.adapter';
 import { ToastrService } from 'ngx-toastr';
+import { PermissionsService } from '../../services/permissions.service';
 
 
 @Component({
@@ -28,7 +29,8 @@ export class NavbarMainComponent implements OnInit {
     @Inject(PLATFORM_ID) private platformId: Object,
     private employeesAdapter: EmployeesAdapterService,
     private toastr: ToastrService,
-    private router: Router
+    private router: Router,
+    private permissionsService: PermissionsService
   ) { }
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
@@ -153,6 +155,24 @@ export class NavbarMainComponent implements OnInit {
         el.style.display = 'inline';
       });
     }
+  }
+
+  canModule(moduleName: string): boolean {
+    return this.permissionsService.canAccessModule(moduleName);
+  }
+
+  canRoute(route: string): boolean {
+    return this.permissionsService.canAccessRoute(route);
+  }
+
+  handleModuleClick(menu: string, moduleName: string): void {
+    this.expandSidebarIfCollapsed();
+    if (!this.permissionsService.canAccessModule(moduleName)) {
+      // Abre el submenú solo para mostrar el mensaje de sin acceso
+      this.isSubmenuOpen[menu] = !this.isSubmenuOpen[menu];
+      return;
+    }
+    this.toggleSubmenu(menu);
   }
 
   logout(): void {

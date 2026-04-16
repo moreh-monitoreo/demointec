@@ -1,0 +1,519 @@
+/* ─── Layout ─────────────────────────────────────────────────────────────── */
+.content-container {
+  padding: 1rem;
+  background-color: #eff2f7;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  background-color: #eff2f7;
+}
+
+.page-title {
+  font-size: 1.5rem;
+  font-weight: 300;
+  color: #333;
+  margin: 0;
+}
+
+/* ─── Botón principal ────────────────────────────────────────────────────── */
+.btn-primary {
+  background-color: #F58525;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  color: white;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+.btn-primary:hover { background-color: #ecaa2f; }
+
+/* ─── Filtros ────────────────────────────────────────────────────────────── */
+.filters-section {
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,.1);
+  border-top: 1px solid #eee;
+  background-color: #f8f9fa;
+}
+.filters-row {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.filter-group label {
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: #555;
+}
+.filter-input {
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  min-width: 220px;
+}
+.btn-filter {
+  background-color: #54ADEC;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  color: white;
+  cursor: pointer;
+  height: 2.3rem;
+}
+.btn-filter:hover { background-color: #4299d1; }
+
+/* ─── Tabla ──────────────────────────────────────────────────────────────── */
+.table-container {
+  background-color: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0,0,0,.1);
+}
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #eee;
+  background-color: #f8f9fa;
+}
+.table-info { color: #666; font-size: 0.9rem; }
+.table-responsive { overflow-x: auto; }
+
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+.users-table th {
+  background-color: #f8f9fa;
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: #555;
+  border-bottom: 2px solid #eee;
+}
+.users-table td {
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid #eee;
+  vertical-align: middle;
+}
+.users-table tbody tr:hover { background-color: #f8f9fa; }
+
+/* ─── Role name cell ─────────────────────────────────────────────────────── */
+.role-name-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.role-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+.role-name-text { font-weight: 600; color: #333; }
+
+/* ─── Status badges ──────────────────────────────────────────────────────── */
+.status-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+.status-active  { background-color: #d4edda; color: #155724; }
+.status-inactive { background-color: #f8d7da; color: #721c24; }
+
+/* ─── Botón de permisos ──────────────────────────────────────────────────── */
+.btn-permissions {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  border: none;
+  padding: 0.35rem 0.85rem;
+  border-radius: 20px;
+  color: white;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: opacity 0.2s;
+}
+.btn-permissions:hover { opacity: 0.85; }
+
+/* ─── Action buttons ─────────────────────────────────────────────────────── */
+.action-buttons { display: flex; gap: 0.5rem; }
+.btn-action {
+  padding: 0.5rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  transition: background-color 0.3s;
+}
+.btn-edit  { background-color: #fff3cd; color: #856404; }
+.btn-edit:hover  { background-color: #ffeaa7; }
+.btn-delete { background-color: #f8d7da; color: #721c24; }
+.btn-delete:hover { background-color: #f5c6cb; }
+
+/* ─── Empty state ────────────────────────────────────────────────────────── */
+.empty-state {
+  text-align: center;
+  padding: 3rem;
+  color: #aaa;
+}
+.empty-state i { font-size: 3rem; display: block; margin-bottom: 0.5rem; }
+
+/* ─── Paginación ─────────────────────────────────────────────────────────── */
+.pagination-container {
+  display: flex;
+  justify-content: flex-end;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #eee;
+  background-color: #f8f9fa;
+}
+.pagination { display: flex; gap: 0.25rem; }
+.pagination button {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #ddd;
+  background-color: white;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+}
+.pagination button:hover { background-color: #f8f9fa; }
+.pagination button.active { background-color: #2a1cf8; color: white; border-color: #2a1cf8; }
+.pagination button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ─── Modales ────────────────────────────────────────────────────────────── */
+.modal-header {
+  background-color: #58b5f3;
+  color: white;
+  min-height: 56px;
+  border-radius: 6px 6px 0 0;
+}
+.modal-title { color: white; font-size: 17px; }
+
+.modal-header-edit { background-color: #f0ad48; }
+
+.modal-header-permissions {
+  background: linear-gradient(135deg, #1e3a5f 0%, #2d6a9f 100%);
+  min-height: 64px;
+}
+.permissions-modal-title {
+  display: flex;
+  align-items: center;
+  font-size: 1.1rem;
+}
+
+/* ══════════════════════════════════════════════════════════
+   MODAL DE PERMISOS — Diseño tipo checklist árbol
+   ══════════════════════════════════════════════════════════ */
+
+/* ─── Modal shell ────────────────────────────────────────── */
+.perm-modal-content {
+  border: none;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* ─── Header ─────────────────────────────────────────────── */
+.perm-modal-header {
+  background: linear-gradient(135deg, #1a3a5c 0%, #2e6da4 100%);
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  border-bottom: none;
+}
+.perm-header-inner {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+.perm-header-icon {
+  width: 42px; height: 42px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.15);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.3rem; color: #fff;
+}
+.modal-title { color: #fff; font-size: 1rem; font-weight: 700; }
+.perm-role-subtitle { color: rgba(255,255,255,0.75); font-size: 0.82rem; }
+
+/* ─── Toolbar ────────────────────────────────────────────── */
+.perm-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 1.5rem;
+  background: #f0f6ff;
+  border-bottom: 1px solid #d6e4f7;
+  font-size: 0.82rem;
+  color: #3a5a80;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.perm-toolbar-left { display: flex; align-items: center; flex: 1; }
+.perm-global-count {
+  background: #1e3a5f;
+  color: #fff;
+  padding: 0.25rem 0.85rem;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ─── Body ───────────────────────────────────────────────── */
+.perm-body {
+  background: #f4f7fb;
+  padding: 1.25rem;
+  overflow-y: auto;
+}
+
+/* ─── Grid de tarjetas ───────────────────────────────────── */
+.perm-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 1rem;
+}
+
+/* ─── Tarjeta de módulo ──────────────────────────────────── */
+.perm-card {
+  background: #fff;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.perm-card-active {
+  border-color: #2e6da4;
+  box-shadow: 0 2px 10px rgba(46,109,164,0.15);
+}
+
+/* ─── Header de la tarjeta ───────────────────────────────── */
+.perm-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 0.9rem;
+  background: #f1f5fb;
+  border-bottom: 1px solid #e2e8f0;
+  transition: background 0.2s;
+}
+.perm-card-header-active {
+  background: #ddeeff;
+  border-bottom-color: #b0d0f0;
+}
+
+.perm-module-label {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  cursor: pointer;
+  margin: 0;
+  user-select: none;
+  flex: 1;
+}
+.perm-module-name {
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: #1a2e47;
+  line-height: 1.2;
+}
+
+.perm-mod-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: #e2e8f0;
+  color: #718096;
+  padding: 0.15rem 0.55rem;
+  border-radius: 20px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background 0.2s, color 0.2s;
+}
+.perm-mod-badge-on {
+  background: #1e3a5f;
+  color: #fff;
+}
+
+/* ─── Checkboxes ─────────────────────────────────────────── */
+.perm-cb {
+  width: 1rem; height: 1rem;
+  cursor: pointer;
+  accent-color: #1e3a5f;
+  flex-shrink: 0;
+  border-radius: 3px;
+}
+.perm-cb:disabled { cursor: not-allowed; opacity: 0.35; }
+.perm-cb-module  { width: 1.1rem; height: 1.1rem; accent-color: #1e3a5f; }
+.perm-cb-all     { accent-color: #2e6da4; }
+.perm-cb-section { accent-color: #2e8b6a; }
+
+/* ─── Fila "Todos" ───────────────────────────────────────── */
+.perm-all-row {
+  display: flex;
+  align-items: center;
+  padding: 0.45rem 0.9rem 0.35rem;
+  background: #f8fafd;
+  border-bottom: 1px dashed #d0dcea;
+}
+.perm-all-label {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  cursor: pointer;
+  margin: 0;
+  user-select: none;
+}
+.perm-all-text {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #2e6da4;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ─── Divisor ────────────────────────────────────────────── */
+.perm-divider { height: 1px; background: #e8edf5; }
+
+/* ─── Lista de apartados ─────────────────────────────────── */
+.perm-sections-list {
+  display: flex;
+  flex-direction: column;
+  padding: 0.25rem 0;
+}
+
+.perm-section-row {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.38rem 0.9rem 0.38rem 1.1rem;
+  cursor: pointer;
+  user-select: none;
+  margin: 0;
+  transition: background 0.12s;
+  border-bottom: 1px solid #f4f6fa;
+  font-size: 0.83rem;
+  color: #4a5568;
+}
+.perm-section-row:last-child { border-bottom: none; }
+.perm-section-row:hover:not(.perm-row-disabled) { background: #eef5ff; }
+.perm-section-checked { background: #eafaf3; color: #1a5c3a; font-weight: 600; }
+.perm-section-checked:hover { background: #d8f5e8; }
+
+/* ─── Estado deshabilitado ───────────────────────────────── */
+.perm-row-disabled {
+  opacity: 0.38;
+  pointer-events: none;
+  cursor: default;
+}
+
+/* ─── Sin apartados ──────────────────────────────────────── */
+.perm-section-name { flex: 1; }
+
+.perm-no-sections {
+  padding: 0.6rem 0.9rem;
+  font-size: 0.78rem;
+  color: #a0aec0;
+  font-style: italic;
+}
+
+/* ─── Estado vacío ───────────────────────────────────────── */
+.perm-empty {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: #a0aec0;
+}
+.perm-empty-icon { font-size: 3.5rem; margin-bottom: 0.75rem; }
+.perm-empty-title { font-size: 1rem; font-weight: 600; color: #718096; margin-bottom: 0.35rem; }
+.perm-empty-sub { font-size: 0.85rem; color: #a0aec0; }
+.perm-empty-sub code {
+  background: #edf2f7; padding: 0.1rem 0.4rem;
+  border-radius: 4px; font-size: 0.8rem; color: #2d6a9f;
+}
+
+/* ─── Footer ─────────────────────────────────────────────── */
+.perm-footer {
+  display: flex;
+  align-items: center;
+  background: #f0f4fa;
+  border-top: 1px solid #d6e0ef;
+  padding: 0.85rem 1.5rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.perm-footer-count {
+  font-size: 0.83rem;
+  color: #1e3a5f;
+  font-weight: 600;
+  flex: 1;
+}
+.perm-footer-actions { display: flex; gap: 0.65rem; margin-left: auto; }
+
+.perm-btn-save {
+  background: linear-gradient(135deg, #1a3a5c 0%, #2e6da4 100%);
+  border: none;
+  color: white;
+  padding: 0.55rem 1.5rem;
+  border-radius: 7px;
+  font-weight: 700;
+  font-size: 0.88rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  transition: opacity 0.2s, transform 0.15s;
+}
+.perm-btn-save:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); }
+.perm-btn-save:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+/* ─── Responsive ─────────────────────────────────────────── */
+@media (max-width: 576px) {
+  .perm-grid { grid-template-columns: 1fr; }
+  .perm-toolbar { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+}
+
+/* ─── Status switch ──────────────────────────────────────────────────────── */
+.status-switch { display: flex; align-items: center; gap: 10px; }
+.form-check-input { width: 3em; height: 1.5em; }
+
+/* ─── Responsive ─────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .content-container { padding: 1rem; }
+  .page-header { flex-direction: column; gap: 1rem; align-items: flex-start; }
+  .filters-row { flex-direction: column; align-items: stretch; }
+  .filter-input { min-width: unset; }
+  .modules-grid { grid-template-columns: 1fr; }
+}

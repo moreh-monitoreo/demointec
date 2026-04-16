@@ -36,6 +36,9 @@ import { LoanRequestEntity } from '../core/infrastructure/entity/loan_request.en
 import { LoanPaymentEntity } from '../core/infrastructure/entity/loan_payment.entity';
 import { BondApplicationEntity } from '../core/infrastructure/entity/bond_application.entity';
 import { BondRecommendationEntity } from '../core/infrastructure/entity/bond_recommendation.entity';
+import { ModuleEntity } from '../core/infrastructure/entity/module.entity';
+import { SectionEntity } from '../core/infrastructure/entity/section.entity';
+import { ModulePermissionEntity } from '../core/infrastructure/entity/module-permission.entity';
 
 dotenv.config();
 
@@ -57,7 +60,8 @@ export const AppDataSource = new DataSource({
     CommitteeDocumentEntity, AbsenceRequestEntity, DisabilityEntity, SalaryTabulatorEntity,
     InventoryEntity, InventoryUniformEntity, InventoryExtintorEntity, InventoryMovementEntity, InventoryAssignmentEntity,
     TrainingInstructionEntity, TrainingInstructionFolderEntity, InventoryCategoryEntity,
-    LoanRequestEntity, LoanPaymentEntity, BondApplicationEntity, BondRecommendationEntity],
+    LoanRequestEntity, LoanPaymentEntity, BondApplicationEntity, BondRecommendationEntity,
+    ModuleEntity, SectionEntity, ModulePermissionEntity],
 });
 
 

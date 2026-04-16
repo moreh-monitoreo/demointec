@@ -1,0 +1,327 @@
+<div class="content-container">
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Administrar Roles</h1>
+    </div>
+    <a (click)="setCreateMode()" class="btn-primary" data-bs-toggle="modal" data-bs-target="#agregarRolModal">
+      <i class="bi bi-plus-circle"></i>
+      Nuevo Rol
+    </a>
+  </div>
+
+  <!-- Filtros -->
+  <div class="filters-section">
+    <div class="filters-row">
+      <div class="filter-group">
+        <label for="search">Buscar</label>
+        <input type="text" id="search" class="filter-input" placeholder="Nombre del rol..."
+          [(ngModel)]="searchTerm" (input)="applyFilters()">
+      </div>
+      <button class="btn-filter" (click)="clearFilters()" title="Limpiar filtros">
+        <i class="bi bi-list-ul"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Tabla -->
+  <div class="table-container">
+    <div class="table-header">
+      <div class="table-info">
+        Mostrando {{ roles.length }} de {{ allRoles.length }} roles
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="users-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Nombre del Rol</th>
+            <th>Estado</th>
+            <th>Permisos</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let role of roles; let i = index">
+            <td class="text-muted" style="font-size:0.85rem;">{{ (currentPage - 1) * itemsPerPage + i + 1 }}</td>
+            <td>
+              <div class="role-name-cell">
+                <div class="role-icon">
+                  <i class="bi bi-shield-lock"></i>
+                </div>
+                <span class="role-name-text">{{ role.name_role }}</span>
+              </div>
+            </td>
+            <td>
+              <span class="status-badge" [ngClass]="role.status ? 'status-active' : 'status-inactive'">
+                {{ role.status ? 'Activo' : 'Inactivo' }}
+              </span>
+            </td>
+            <td>
+              <button class="btn-permissions" (click)="openPermissionsModal(role)" title="Configurar permisos">
+                <i class="bi bi-sliders"></i>
+                Configurar permisos
+              </button>
+            </td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn-action btn-edit" (click)="openEditModal(role)" title="Editar">
+                  <i class="bi bi-pencil"></i>
+                </button>
+                <button class="btn-action btn-delete" (click)="deleteRole(role)" title="Eliminar">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="roles.length === 0">
+            <td colspan="5" class="empty-state">
+              <i class="bi bi-shield-x"></i>
+              <p>No se encontraron roles</p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Paginación -->
+    <div class="pagination-container" *ngIf="totalPages > 1">
+      <div class="pagination">
+        <button [disabled]="currentPage === 1" (click)="setPage(currentPage - 1)">
+          <i class="bi bi-chevron-left"></i>
+        </button>
+        <button *ngFor="let page of pages" [class.active]="page === currentPage" (click)="setPage(page)">
+          {{ page }}
+        </button>
+        <button [disabled]="currentPage === totalPages" (click)="setPage(currentPage + 1)">
+          <i class="bi bi-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Agregar Rol -->
+<div class="modal fade" id="agregarRolModal" tabindex="-1" aria-labelledby="agregarRolModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-md">
+    <div class="modal-content">
+      <div class="modal-header justify-content-center">
+        <h5 class="modal-title" id="agregarRolModalLabel">Nuevo Rol</h5>
+        <button type="button" class="btn-close position-absolute end-0 me-3" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body p-4">
+        <form [formGroup]="roleForm" (ngSubmit)="createRole()">
+          <div class="mb-4">
+            <label class="form-label fw-semibold">Nombre del Rol</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-shield-lock-fill"></i></span>
+              <input formControlName="name_role" type="text" class="form-control" placeholder="Ej. Recursos Humanos, Administrador...">
+            </div>
+            @if (roleForm.get('name_role')?.invalid && roleForm.get('name_role')?.touched) {
+              <div class="text-danger mt-1">
+                @if (roleForm.get('name_role')?.hasError('required')) {
+                  <small>El nombre del rol es requerido</small>
+                }
+                @if (roleForm.get('name_role')?.hasError('minlength')) {
+                  <small>Mínimo 2 caracteres</small>
+                }
+              </div>
+            }
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-semibold">Estado</label>
+            <div class="form-check form-switch status-switch">
+              <input class="form-check-input" type="checkbox" formControlName="status" id="statusCreate">
+              <label class="form-check-label" for="statusCreate">
+                {{ roleForm.get('status')?.value ? 'Activo' : 'Inactivo' }}
+              </label>
+            </div>
+          </div>
+
+          <div class="text-center mt-4">
+            <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-success px-4">
+              <i class="bi bi-check-circle-fill me-1"></i> Guardar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Editar Rol -->
+<div class="modal fade" id="editarRolModal" tabindex="-1" aria-labelledby="editarRolModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-md">
+    <div class="modal-content">
+      <div class="modal-header modal-header-edit justify-content-center">
+        <h5 class="modal-title" id="editarRolModalLabel">Editar Rol</h5>
+        <button type="button" class="btn-close position-absolute end-0 me-3" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body p-4" *ngIf="selectedRole">
+        <form [formGroup]="roleForm" (ngSubmit)="updateRole()">
+          <div class="mb-4">
+            <label class="form-label fw-semibold">Nombre del Rol</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-shield-lock-fill"></i></span>
+              <input formControlName="name_role" type="text" class="form-control">
+            </div>
+            @if (roleForm.get('name_role')?.invalid && roleForm.get('name_role')?.touched) {
+              <div class="text-danger mt-1">
+                <small>El nombre del rol es requerido</small>
+              </div>
+            }
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-semibold">Estado</label>
+            <div class="form-check form-switch status-switch">
+              <input class="form-check-input" type="checkbox" formControlName="status" id="statusEdit">
+              <label class="form-check-label" for="statusEdit">
+                {{ roleForm.get('status')?.value ? 'Activo' : 'Inactivo' }}
+              </label>
+            </div>
+          </div>
+
+          <div class="text-center mt-4">
+            <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary px-4">
+              <i class="bi bi-check-circle-fill me-1"></i> Guardar Cambios
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Permisos -->
+<div class="modal fade" id="permisosRolModal" tabindex="-1" aria-labelledby="permisosRolModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-fullscreen-lg-down modal-xl modal-dialog-scrollable">
+    <div class="modal-content perm-modal-content">
+
+      <!-- Header -->
+      <div class="modal-header perm-modal-header">
+        <div class="perm-header-inner">
+          <div class="perm-header-icon"><i class="bi bi-shield-lock-fill"></i></div>
+          <div>
+            <h5 class="modal-title mb-0">Configurar Permisos</h5>
+            <small class="perm-role-subtitle">Rol: <strong>{{ selectedRoleForPermissions?.name_role }}</strong></small>
+          </div>
+        </div>
+        <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="perm-toolbar">
+        <div class="perm-toolbar-left">
+          <i class="bi bi-info-circle me-2 text-primary"></i>
+          <span>Activa el módulo y selecciona los apartados. Puedes usar <strong>Todos</strong> para marcar/desmarcar todos los apartados de un módulo.</span>
+        </div>
+        <div class="perm-toolbar-right" *ngIf="moduleTree.length > 0">
+          <span class="perm-global-count">
+            <i class="bi bi-check2-square me-1"></i>
+            <strong>{{ getTotalEnabledSections() }}</strong> apartado(s) activo(s)
+          </span>
+        </div>
+      </div>
+
+      <!-- Body -->
+      <div class="modal-body perm-body">
+
+        <!-- Sin datos -->
+        <div class="perm-empty" *ngIf="moduleTree.length === 0">
+          <div class="perm-empty-icon"><i class="bi bi-exclamation-circle"></i></div>
+          <p class="perm-empty-title">No hay módulos disponibles</p>
+          <p class="perm-empty-sub">Ejecuta <code>GET /seed-modules</code> en el backend para cargar los módulos y apartados del sistema.</p>
+        </div>
+
+        <!-- Grid de módulos -->
+        <div class="perm-grid" *ngIf="moduleTree.length > 0">
+
+          @for (item of moduleTree; track item.module.id_module) {
+            @if (item.sections.length > 0) {
+          <div class="perm-card"
+               [class.perm-card-active]="item.moduleEnabled">
+
+            <!-- Cabecera del módulo -->
+            <div class="perm-card-header" [class.perm-card-header-active]="item.moduleEnabled">
+              <label class="perm-module-label" [for]="'mod-' + item.module.id_module">
+                <input
+                  class="perm-cb perm-cb-module"
+                  type="checkbox"
+                  [(ngModel)]="item.moduleEnabled"
+                  (change)="onModuleToggle(item)"
+                  [id]="'mod-' + item.module.id_module">
+                <span class="perm-module-name">{{ item.module.name_module }}</span>
+              </label>
+              <span class="perm-mod-badge" [class.perm-mod-badge-on]="item.moduleEnabled && getEnabledSectionsCount(item) > 0">
+                {{ getEnabledSectionsCount(item) }}/{{ item.sections.length }}
+              </span>
+            </div>
+
+            <!-- "Todos" checkbox -->
+            <div class="perm-all-row" *ngIf="item.sections.length > 0"
+                 [class.perm-row-disabled]="!item.moduleEnabled">
+              <label class="perm-all-label" [for]="'all-' + item.module.id_module">
+                <input
+                  class="perm-cb perm-cb-all"
+                  type="checkbox"
+                  [checked]="getEnabledSectionsCount(item) === item.sections.length && item.sections.length > 0"
+                  [indeterminate]="getEnabledSectionsCount(item) > 0 && getEnabledSectionsCount(item) < item.sections.length"
+                  (change)="toggleAllSections(item, $event)"
+                  [disabled]="!item.moduleEnabled"
+                  [id]="'all-' + item.module.id_module">
+                <span class="perm-all-text">Todos</span>
+              </label>
+            </div>
+
+            <!-- Divisor -->
+            <div class="perm-divider" *ngIf="item.sections.length > 0"></div>
+
+            <!-- Lista de apartados -->
+            <div class="perm-sections-list" *ngIf="item.sections.length > 0">
+              <label
+                class="perm-section-row"
+                *ngFor="let section of item.sections"
+                [for]="'sec-' + section.id_section"
+                [class.perm-row-disabled]="!item.moduleEnabled"
+                [class.perm-section-checked]="item.sectionStates[section.id_section] && item.moduleEnabled">
+                <input
+                  class="perm-cb perm-cb-section"
+                  type="checkbox"
+                  [(ngModel)]="item.sectionStates[section.id_section]"
+                  (change)="onSectionToggle(item, section.id_section)"
+                  [disabled]="!item.moduleEnabled"
+                  [id]="'sec-' + section.id_section">
+                <span class="perm-section-name">{{ section.name_section }}</span>
+              </label>
+            </div>
+
+          </div>
+          } }
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="modal-footer perm-footer">
+        <span class="perm-footer-count" *ngIf="moduleTree.length > 0">
+          <i class="bi bi-check-circle-fill me-1 text-success"></i>
+          {{ getTotalEnabledSections() }} apartado(s) seleccionado(s) de {{ getTotalSections() }}
+        </span>
+        <div class="perm-footer-actions">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="perm-btn-save" (click)="savePermissions()" [disabled]="isSavingPermissions">
+            <span *ngIf="isSavingPermissions" class="spinner-border spinner-border-sm me-2" role="status"></span>
+            <i *ngIf="!isSavingPermissions" class="bi bi-floppy-fill me-2"></i>
+            {{ isSavingPermissions ? 'Guardando...' : 'Guardar Permisos' }}
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
