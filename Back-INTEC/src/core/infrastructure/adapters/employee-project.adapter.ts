@@ -10,6 +10,7 @@ export class EmployeeProjectAdapterRepository implements EmployeeProjectReposito
     const repository = database.getRepository(EmployeeEntity);
     return repository.find({
       select: ['id_employee', 'name_employee', 'email','project', 'status'],
+      where: { is_dev: false },
     });
   }
 

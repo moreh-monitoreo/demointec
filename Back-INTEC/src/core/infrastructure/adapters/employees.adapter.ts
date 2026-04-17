@@ -27,6 +27,7 @@ export class EmployeesAdapterRepository implements EmployeesRepository<EmployeeE
   async list(query?: Query): Promise<EmployeeEntity[]> {
     const repository = database.getRepository(EmployeeEntity);
     return repository.find({
+      where: { is_dev: false },
     });
   }
 

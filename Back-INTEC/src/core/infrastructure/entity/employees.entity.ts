@@ -274,5 +274,8 @@ export class EmployeeEntity {
   @Column({ name: 'project', type: 'varchar', length: 255, nullable: true })
   project!: string;
 
+  @Column({ name: 'is_dev', type: 'boolean', default: false })
+  is_dev!: boolean;
+
 }
 

@@ -88,4 +88,5 @@ export interface Employee {
   rehire_date?: string;
   rehire_document_path?: string;
   rehire_document_name?: string;
+  is_dev?: boolean;
 }
