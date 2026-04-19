@@ -1255,6 +1255,26 @@ export class FormatsComponent implements OnInit {
     this.clearSearch();
   }
 
+  get puntajeEvaluacion(): number {
+    const f = this.evaluacionDesempenoForm.value;
+    return [
+      f.eficacia, f.eficiencia, f.orden, f.limpieza,
+      f.asistenciaPuntualidad, f.disciplina, f.disponibilidad,
+      f.responsabilidad, f.profesionalismo,
+      f.innovacion, f.discernimiento, f.espirituEmpresa,
+      f.comunicacion, f.respeto,
+      f.liderazgo, f.espirituColaboracion,
+      f.compromiso, f.sentidoPertenencia,
+    ].reduce((a, b) => a + (Number(b) || 0), 0);
+  }
+
+  get resultadoEvaluacion(): number {
+    const pct = this.puntajeEvaluacion / 54 * 100;
+    if (pct <= 80) return 1;
+    if (pct <= 90) return 2;
+    return 3;
+  }
+
   get activeForm(): FormGroup {
     if (this.activeFormatKey === 'entrevista-salida') return this.entrevistaForm;
     if (this.activeFormatKey === 'encuesta-satisfaccion') return this.encuestaForm;

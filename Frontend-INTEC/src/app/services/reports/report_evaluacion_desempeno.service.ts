@@ -645,6 +645,20 @@ export class ReportEvaluacionDesempenoService {
     const promTextH = promLines.length * 3.5;
     doc.text(promLines, lm + resLabelW + 2, resContentY + (resTotalH - promTextH) / 2 + 3.5);
 
+    // ── Calcular total antes de dibujar resultados ─────────────────────────
+    const total = [
+      data.eficacia, data.eficiencia, data.orden, data.limpieza,
+      data.asistenciaPuntualidad, data.disciplina, data.disponibilidad,
+      data.responsabilidad, data.profesionalismo,
+      data.innovacion, data.discernimiento, data.espirituEmpresa,
+      data.comunicacion, data.respeto,
+      data.liderazgo, data.espirituColaboracion,
+      data.compromiso, data.sentidoPertenencia,
+    ].reduce((a, b) => a + (Number(b) || 0), 0);
+
+    const pct = total / 54 * 100;
+    const resultadoIdx = pct <= 80 ? 0 : pct <= 90 ? 1 : 2;
+
     // 3. Sub-filas de porcentajes (alineadas con columna Parámetro)
     const resRows = [
       'Hasta 80 % de cumplimiento',
@@ -669,6 +683,13 @@ export class ReportEvaluacionDesempenoService {
       doc.rect(resExtraX + cVp,        ry, cVa,  resRowH, 'FD');
       doc.setFillColor(...white);
       doc.rect(resExtraX + cVp + cVa,  ry, cCom, resRowH, 'FD');
+      // X en la celda Va de la fila que corresponde al resultado
+      if (i === resultadoIdx) {
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(9);
+        doc.setTextColor(200, 0, 0);
+        doc.text('X', resExtraX + cVp + cVa / 2, ry + resRowH / 2 + 1.5, { align: 'center' });
+      }
     });
 
     // 5. Celda "Resultados" (merged, dibujada al final para tapar bordes internos)
@@ -684,15 +705,6 @@ export class ReportEvaluacionDesempenoService {
     y = resStartY + resBlockH;
 
     // ── TOTAL DE PUNTOS ────────────────────────────────────────────────────
-    const total = [
-      data.eficacia, data.eficiencia, data.orden, data.limpieza,
-      data.asistenciaPuntualidad, data.disciplina, data.disponibilidad,
-      data.responsabilidad, data.profesionalismo,
-      data.innovacion, data.discernimiento, data.espirituEmpresa,
-      data.comunicacion, data.respeto,
-      data.liderazgo, data.espirituColaboracion,
-      data.compromiso, data.sentidoPertenencia,
-    ].reduce((a, b) => a + (Number(b) || 0), 0);
 
     const totalH = 7;
     const totalValX = lm + cObj + cFact + cParam;
@@ -766,7 +778,7 @@ export class ReportEvaluacionDesempenoService {
     doc.setFontSize(6);
     doc.setTextColor(...black);
     doc.text(
-      ['MARQUE CON UNA (√) EL RANGO EN QUE', 'SE UBICA LA CALIFICACION OBTENIDA'],
+      ['MARQUE CON UNA (X) EL RANGO EN QUE', 'SE UBICA LA CALIFICACION OBTENIDA'],
       lm + tLeftW / 2, y + 3.5, { align: 'center' }
     );
 
@@ -828,6 +840,13 @@ export class ReportEvaluacionDesempenoService {
           doc.text(wLines, cell.x + cell.w / 2, y + (rowH - wH) / 2 + 3, { align: 'center' });
         } else {
           doc.text(cell.val, cell.x + cell.w / 2, y + rowH / 2 + 1.5, { align: 'center' });
+        }
+        // Palomita en columna vacía de la fila que corresponde al puntaje
+        if (inRange && cell.x === tX3) {
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(10);
+          doc.setTextColor(0, 100, 0);
+          doc.text('X', cell.x + cell.w / 2, y + rowH / 2 + 1.5, { align: 'center' });
         }
       });
 

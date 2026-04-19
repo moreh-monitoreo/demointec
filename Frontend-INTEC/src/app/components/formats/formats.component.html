@@ -3926,6 +3926,40 @@
 
         </div>
 
+        <!-- Puntaje total y Resultados -->
+        <div class="ed-section">
+          <div class="ed-section-header">
+            <i class="bi bi-calculator"></i> Puntaje Total y Resultados
+          </div>
+          <div class="ed-score-row">
+            <span class="ed-score-label">Puntaje acumulado:</span>
+            <span class="ed-score-value">{{ puntajeEvaluacion }} / 54</span>
+          </div>
+          <table class="ed-results-table">
+            <thead>
+              <tr>
+                <th colspan="2" class="ed-results-th-actuacion">Actuación</th>
+                <th class="ed-results-th-x">Resultado</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td rowspan="3" class="ed-results-td-label">Promedio de los objetivos obtenidos en los últimos dos trimestres anteriores a la presente</td>
+                <td>Hasta 80 % de cumplimiento</td>
+                <td class="ed-results-td-x">{{ resultadoEvaluacion === 1 ? 'X' : '' }}</td>
+              </tr>
+              <tr>
+                <td>De 81 A 90% de cumplimiento</td>
+                <td class="ed-results-td-x">{{ resultadoEvaluacion === 2 ? 'X' : '' }}</td>
+              </tr>
+              <tr>
+                <td>DE 91 A 100 % de cumplimiento</td>
+                <td class="ed-results-td-x">{{ resultadoEvaluacion === 3 ? 'X' : '' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
         <!-- Compromisos y acuerdos -->
         <div class="ed-section">
           <div class="ed-section-header">
