@@ -82,7 +82,7 @@ export class EmployeesComponent implements OnInit {
       employee_code: [''],
       email: ['', [Validators.required, Validators.email]],
       phone: ['', Validators.required],
-      role: ['', Validators.required],
+      role: [''],
       admission_date: [''],
       imss_registration_date: [''],
       position: ['', Validators.required], // Added Validators.required

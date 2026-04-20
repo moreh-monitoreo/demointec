@@ -596,10 +596,6 @@
                     <option *ngFor="let role of roles" [value]="role.name_role">{{ role.name_role }}</option>
                   </select>
                 </div>
-                <div *ngIf="employeesForm.get('role')?.invalid && employeesForm.get('role')?.touched"
-                  class="text-danger mt-1">
-                  <small>El rol es requerido</small>
-                </div>
               </div>
               <div class="row">
                 <div class="col-md-6">
@@ -1638,10 +1634,6 @@
                     <option value="">Seleccione un rol</option>
                     <option *ngFor="let role of roles" [value]="role.name_role">{{ role.name_role }}</option>
                   </select>
-                </div>
-                <div *ngIf="employeesForm.get('role')?.invalid && employeesForm.get('role')?.touched"
-                  class="text-danger mt-1">
-                  <small>El rol es requerido</small>
                 </div>
               </div>
               <label class="form-label fw-bold">Permisos</label>
