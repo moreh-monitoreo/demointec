@@ -55,14 +55,17 @@ export class LoginController {
         const sectionRepo = database.getRepository(SectionEntity);
 
         const [rawPerms, modules, sections] = await Promise.all([
-          permRepo.find({ where: { role_id: roleId } }),
+          permRepo.createQueryBuilder('mp')
+            .where('mp.role_id = :roleId', { roleId })
+            .getMany(),
           moduleRepo.find({ where: { status: true } }),
           sectionRepo.find({ where: { status: true } }),
         ]);
 
+
         // Build structured permissions: [{ module, sections[] }]
         const structured = modules.map(mod => {
-          const modPerm = rawPerms.find(p => p.module_id === mod.id_module && p.section_id === null);
+          const modPerm = rawPerms.find(p => p.module_id === mod.id_module && p.section_id == null);
           const modSections = sections.filter(s => s.module_id === mod.id_module);
 
           const sectionPerms = modSections.map(sec => {

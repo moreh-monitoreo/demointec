@@ -16,10 +16,9 @@ export class RoleAdapterRepository implements RoleRepository<RoleEntity> {
     const role = roleRepository.create({
       ...data,
     });
-    await roleRepository.save(role);
+    const saved = await roleRepository.save(role);
     return roleRepository.findOneOrFail({
-      where: { id_role: data.id_role },
-
+      where: { id_role: saved.id_role },
     });
     }
   

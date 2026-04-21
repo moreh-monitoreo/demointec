@@ -45,6 +45,7 @@ export class EmployeesComponent implements OnInit {
   genderOptions = ['Masculino', 'Femenino'];
   maritalStatusOptions = ['Soltero(a)', 'Casado(a)', 'Viudo(a)', 'Divorciado(a)', 'Unión Libre'];
   educationLevelOptions = ['Primaria', 'Secundaria', 'Bachillerato', 'Estudios profesionales', 'Postgrado'];
+  shirtSizeOptions = ['CH', 'M', 'G', 'XL'];
 
   childrenCountOptions = ['0', '1', '2', '3', '4', '5 o más'];
   beneficiariesCountOptions = [0, 1, 2, 3];
@@ -78,14 +79,14 @@ export class EmployeesComponent implements OnInit {
     private salaryTabulatorAdapter: SalaryTabulatorAdapterService
   ) {
     this.employeesForm = this.fb.group({
-      name_employee: ['', Validators.required],
+      name_employee: [''],
       employee_code: [''],
-      email: ['', [Validators.required, Validators.email]],
-      phone: ['', Validators.required],
+      email: ['', Validators.email],
+      phone: [''],
       role: [''],
       admission_date: [''],
       imss_registration_date: [''],
-      position: ['', Validators.required], // Added Validators.required
+      position: [''],
       entry_time: [''],
       exit_time: [''],
       location: [''],
@@ -677,13 +678,8 @@ export class EmployeesComponent implements OnInit {
       this.toastr.error('No hay empleado seleccionado para editar', 'Error');
       return;
     }
-    const nameControl = this.employeesForm.get('name_employee');
-    const emailControl = this.employeesForm.get('email');
-    const phoneControl = this.employeesForm.get('phone');
-    const positionControl = this.employeesForm.get('position');
-
-    if (!nameControl?.value || !emailControl?.value || !phoneControl?.value || !positionControl?.value) {
-      this.toastr.error('Llenar todos los campos requeridos', 'Advertencia');
+    if (this.employeesForm.invalid) {
+      this.toastr.error('Revisa los campos del formulario', 'Advertencia');
       this.markFormGroupTouched(this.employeesForm);
       return;
     }
@@ -1080,12 +1076,13 @@ export class EmployeesComponent implements OnInit {
 
 
   exportToExcel(): void {
-    if (!this.employees || this.employees.length === 0) {
+    const source = this.allEmployees;
+    if (!source || source.length === 0) {
       this.toastr.warning('No hay datos para exportar', 'Advertencia');
       return;
     }
 
-    const dataToExport = this.employees.map(emp => ({
+    const dataToExport = source.map(emp => ({
       'ID Colaborador': emp.employee_code,
       'Nombre': emp.name_employee,
       'Email': emp.email,

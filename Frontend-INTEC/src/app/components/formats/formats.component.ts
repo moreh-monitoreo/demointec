@@ -367,6 +367,11 @@ export class FormatsComponent implements OnInit {
         fechaIngreso: this.isoToDisplay(emp.admission_date),
       });
 
+    } else if (this.activeFormatKey === 'responsiva-epp') {
+      this.responsivaEppForm.patchValue({
+        nombre: emp.name_employee ?? '',
+      });
+
     } else if (this.activeFormatKey === 'contrato-obra-determinada') {
       this.contratoObraForm.patchValue({
         nombreEmpleado: emp.name_employee ?? '',
@@ -651,12 +656,26 @@ export class FormatsComponent implements OnInit {
     nombre: ['', Validators.required],
     ciudad: ['Guadalajara', Validators.required],
     estado: ['Jalisco', Validators.required],
-    fila0cantidad: [''], fila0descripcion: [''], fila0talla: [''], fila0color: [''], fila0marca: [''],
-    fila1cantidad: [''], fila1descripcion: [''], fila1talla: [''], fila1color: [''], fila1marca: [''],
-    fila2cantidad: [''], fila2descripcion: [''], fila2talla: [''], fila2color: [''], fila2marca: [''],
-    fila3cantidad: [''], fila3descripcion: [''], fila3talla: [''], fila3color: [''], fila3marca: [''],
-    fila4cantidad: [''], fila4descripcion: [''], fila4talla: [''], fila4color: [''], fila4marca: [''],
+    filas: this.fb.array(this.buildEppFilas(5)),
   });
+
+  private buildEppFilas(count: number) {
+    return Array.from({ length: count }, () =>
+      this.fb.group({ cantidad: [''], descripcion: [''], talla: [''], color: [''], marca: [''] })
+    );
+  }
+
+  get eppFilas(): FormArray {
+    return this.responsivaEppForm.get('filas') as FormArray;
+  }
+
+  addEppFila(): void {
+    this.eppFilas.push(this.fb.group({ cantidad: [''], descripcion: [''], talla: [''], color: [''], marca: [''] }));
+  }
+
+  removeEppFila(i: number): void {
+    if (this.eppFilas.length > 1) this.eppFilas.removeAt(i);
+  }
 
   responsivaLlavesForm: FormGroup = this.fb.group({
     dia: ['', Validators.required],
@@ -888,16 +907,16 @@ export class FormatsComponent implements OnInit {
 
   onEppArticleChange(rowIndex: number, article: string): void {
     const entry = article ? this.eppCatalog[article] : null;
-    this.responsivaEppForm.patchValue({
-      [`fila${rowIndex}descripcion`]: article,
-      [`fila${rowIndex}talla`]: entry && entry.tallas.length === 0 ? 'N/A' : '',
-      [`fila${rowIndex}color`]: entry && entry.colores.length === 0 ? 'N/A' : '',
-      [`fila${rowIndex}marca`]: entry && entry.marcas.length === 0 ? 'N/A' : '',
+    this.eppFilas.at(rowIndex).patchValue({
+      descripcion: article,
+      talla: entry && entry.tallas.length === 0 ? 'N/A' : '',
+      color: entry && entry.colores.length === 0 ? 'N/A' : '',
+      marca: entry && entry.marcas.length === 0 ? 'N/A' : '',
     });
   }
 
   getEppOptions(rowIndex: number, field: 'tallas' | 'colores' | 'marcas'): string[] {
-    const article = this.responsivaEppForm.get(`fila${rowIndex}descripcion`)?.value as string;
+    const article = this.eppFilas.at(rowIndex)?.get('descripcion')?.value as string;
     if (!article || !this.eppCatalog[article]) return [];
     return this.eppCatalog[article][field];
   }
@@ -1219,7 +1238,10 @@ export class FormatsComponent implements OnInit {
       this.contratoTiempoForm.reset({ ciudad: 'Guadalajara', estado: 'Jalisco', dia: diaActual, mes: mesActual, anio: anioActual, nacionalidad: 'Mexicana', anioInicioContrato: anioActual, anioFinContrato: anioActual });
       this.politicaPrestamosForm.reset();
       this.politicaBonoForm.reset();
-      this.responsivaEppForm.reset();
+      const eppFilasArray = this.responsivaEppForm.get('filas') as FormArray;
+      eppFilasArray.clear();
+      this.buildEppFilas(5).forEach(g => eppFilasArray.push(g));
+      this.responsivaEppForm.patchValue({ fecha: now.toISOString().split('T')[0], ciudad: 'Guadalajara', estado: 'Jalisco', nombre: '' });
       this.responsivaLlavesForm.reset({ dia: diaActual, mes: mesActual, anio: anioActual });
       this.ritForm.reset({ lugar: 'Guadalajara', dia: diaActual, mes: mesActual, anio: anioActual });
       this.actaAbandonoForm.reset({
@@ -1340,12 +1362,12 @@ export class FormatsComponent implements OnInit {
           nombre: ev.nombre,
           ciudad: ev.ciudad,
           estado: ev.estado,
-          filas: [0, 1, 2, 3, 4].map(i => ({
-            cantidad: ev[`fila${i}cantidad`] ?? '',
-            descripcion: ev[`fila${i}descripcion`] ?? '',
-            talla: ev[`fila${i}talla`] ?? '',
-            color: ev[`fila${i}color`] ?? '',
-            marca: ev[`fila${i}marca`] ?? '',
+          filas: (ev.filas as { cantidad: string; descripcion: string; talla: string; color: string; marca: string }[]).map(f => ({
+            cantidad: f.cantidad ?? '',
+            descripcion: f.descripcion ?? '',
+            talla: f.talla ?? '',
+            color: f.color ?? '',
+            marca: f.marca ?? '',
           })),
         });
       } else if (this.activeFormatKey === 'responsiva-llaves') {

@@ -13,7 +13,7 @@ export class RoleController {
     try {
       const body = req.body;
       const role = await this.roleRepository.create(body);
-      res.status(200).json({ message: 'Agregado correctamente' });
+      res.status(200).json({ message: 'Agregado correctamente', role });
     } catch (error) {
       res.status(500).json({ message: 'Error al crear el rol', error });
     }

@@ -18,15 +18,20 @@ export class RolePermissionsAdapterRepository implements RolePermissionsReposito
 
   async getPermissionsByRole(roleId: string | number): Promise<ModulePermissionEntity[]> {
     const repo = database.getRepository(ModulePermissionEntity);
-    return repo.find({
-      where: { role_id: Number(roleId) },
-      relations: ['module', 'section'],
-    });
+    return repo.createQueryBuilder('mp')
+      .leftJoinAndSelect('mp.module', 'module')
+      .leftJoinAndSelect('mp.section', 'section')
+      .where('mp.role_id = :roleId', { roleId: Number(roleId) })
+      .getMany();
   }
 
   async savePermissions(roleId: string | number, permissions: { module_id: number; section_id?: number; can_access: boolean }[]): Promise<void> {
     const repo = database.getRepository(ModulePermissionEntity);
-    await repo.delete({ role_id: Number(roleId) });
+    await repo.createQueryBuilder()
+      .delete()
+      .from(ModulePermissionEntity)
+      .where('role_id = :roleId', { roleId: Number(roleId) })
+      .execute();
 
     const entities = permissions.map(p => {
       const entity = repo.create({

@@ -26,9 +26,9 @@ export class SectionEntity {
   @Column({ name: 'status', type: 'boolean', default: true })
   status!: boolean;
 
-  @ManyToOne(() => ModuleEntity, module => module.permissions)
+  @ManyToOne(() => ModuleEntity, module => module.sections)
   @JoinColumn({ name: 'module_id' })
-  module!: ModuleEntity;
+  moduleEntity!: ModuleEntity;
 
   @Column({ name: 'module_id', type: 'int' })
   module_id!: number;

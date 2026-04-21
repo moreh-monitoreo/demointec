@@ -5,6 +5,7 @@ import {
   OneToMany,
 } from 'typeorm';
 import { ModulePermissionEntity } from './module-permission.entity';
+import { SectionEntity } from './section.entity';
 
 @Entity({ name: 'modules' })
 export class ModuleEntity {
@@ -25,4 +26,7 @@ export class ModuleEntity {
 
   @OneToMany(() => ModulePermissionEntity, mp => mp.module)
   permissions!: ModulePermissionEntity[];
+
+  @OneToMany(() => SectionEntity, s => s.moduleEntity)
+  sections!: SectionEntity[];
 }

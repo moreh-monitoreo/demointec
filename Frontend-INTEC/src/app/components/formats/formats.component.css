@@ -324,6 +324,46 @@
 .epp-table td select option[value=""] {
   color: #aaa;
 }
+.epp-table td:last-child {
+  width: 36px;
+  text-align: center;
+  padding: 2px 4px;
+}
+.btn-add-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #2a7ae4;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 5px 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-add-row:hover {
+  background: #1d65c4;
+}
+.btn-remove-row {
+  background: none;
+  border: none;
+  color: #e53e3e;
+  cursor: pointer;
+  padding: 3px 6px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  transition: background 0.15s, color 0.15s;
+}
+.btn-remove-row:hover:not(:disabled) {
+  background: #fff5f5;
+  color: #c53030;
+}
+.btn-remove-row:disabled {
+  color: #ccc;
+  cursor: not-allowed;
+}
 
 .form-grid-3 {
   display: grid;

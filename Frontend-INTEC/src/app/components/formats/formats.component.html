@@ -1978,6 +1978,36 @@
     </div>
 
     <div class="modal-form-body">
+
+      <!-- Búsqueda de empleado registrado -->
+      <div class="employee-search-wrap">
+        <div class="employee-search-label">
+          <i class="bi bi-person-fill"></i> Autocompletar desde empleado registrado
+        </div>
+        <div class="employee-search-input-wrap">
+          <input
+            type="text"
+            class="employee-search-input"
+            placeholder="Buscar por nombre..."
+            [value]="employeeSearch"
+            (input)="onSearchInput($any($event.target).value)"
+            autocomplete="off">
+          <button *ngIf="employeeSearch" class="employee-search-clear" (click)="clearSearch()" type="button" title="Limpiar">
+            <i class="bi bi-x"></i>
+          </button>
+        </div>
+        <div class="employee-suggestions" *ngIf="showSuggestions">
+          <div
+            class="employee-suggestion-item"
+            *ngFor="let emp of employeeSuggestions"
+            (click)="selectEmployee(emp)">
+            <i class="bi bi-person"></i>
+            <span class="emp-name">{{ emp.name_employee }}</span>
+            <span class="emp-position">{{ emp.position }}</span>
+          </div>
+        </div>
+      </div>
+
       <form [formGroup]="responsivaEppForm">
 
         <div class="form-section">
@@ -2009,7 +2039,12 @@
         </div>
 
         <div class="form-section">
-          <div class="form-section-title">Dotación de EPP</div>
+          <div class="form-section-title" style="display:flex;align-items:center;justify-content:space-between;">
+            Dotación de EPP
+            <button type="button" class="btn-add-row" (click)="addEppFila()" title="Agregar fila">
+              <i class="bi bi-plus-lg"></i> Agregar fila
+            </button>
+          </div>
           <table class="epp-table">
             <thead>
               <tr>
@@ -2018,38 +2053,45 @@
                 <th>Talla</th>
                 <th>Color</th>
                 <th>Marca</th>
+                <th></th>
               </tr>
             </thead>
-            <tbody>
-              <tr *ngFor="let i of [0,1,2,3,4]">
-                <td><input type="text" [formControlName]="'fila'+i+'cantidad'" placeholder="—"></td>
+            <tbody formArrayName="filas">
+              <tr *ngFor="let fila of eppFilas.controls; let i = index" [formGroupName]="i">
+                <td><input type="text" formControlName="cantidad" placeholder="—"></td>
                 <td>
-                  <select [formControlName]="'fila'+i+'descripcion'"
+                  <select formControlName="descripcion"
                     (change)="onEppArticleChange(i, $any($event.target).value)">
                     <option value="">— Seleccionar —</option>
                     <option *ngFor="let art of eppArticles" [value]="art">{{ art }}</option>
                   </select>
                 </td>
                 <td>
-                  <select *ngIf="getEppOptions(i, 'tallas').length > 0" [formControlName]="'fila'+i+'talla'">
+                  <select *ngIf="getEppOptions(i, 'tallas').length > 0" formControlName="talla">
                     <option value="">— —</option>
                     <option *ngFor="let t of getEppOptions(i, 'tallas')" [value]="t">{{ t }}</option>
                   </select>
                   <input *ngIf="getEppOptions(i, 'tallas').length === 0" type="text" value="N/A" disabled>
                 </td>
                 <td>
-                  <select *ngIf="getEppOptions(i, 'colores').length > 0" [formControlName]="'fila'+i+'color'">
+                  <select *ngIf="getEppOptions(i, 'colores').length > 0" formControlName="color">
                     <option value="">— —</option>
                     <option *ngFor="let c of getEppOptions(i, 'colores')" [value]="c">{{ c }}</option>
                   </select>
                   <input *ngIf="getEppOptions(i, 'colores').length === 0" type="text" value="N/A" disabled>
                 </td>
                 <td>
-                  <select *ngIf="getEppOptions(i, 'marcas').length > 0" [formControlName]="'fila'+i+'marca'">
+                  <select *ngIf="getEppOptions(i, 'marcas').length > 0" formControlName="marca">
                     <option value="">— —</option>
                     <option *ngFor="let m of getEppOptions(i, 'marcas')" [value]="m">{{ m }}</option>
                   </select>
                   <input *ngIf="getEppOptions(i, 'marcas').length === 0" type="text" value="N/A" disabled>
+                </td>
+                <td>
+                  <button type="button" class="btn-remove-row" (click)="removeEppFila(i)"
+                    [disabled]="eppFilas.length === 1" title="Eliminar fila">
+                    <i class="bi bi-trash"></i>
+                  </button>
                 </td>
               </tr>
             </tbody>

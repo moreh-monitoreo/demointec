@@ -163,10 +163,6 @@
                 <input formControlName="name_employee" type="text" class="form-control"
                   placeholder="Ingresa nombre del empleado">
               </div>
-              <div *ngIf="employeesForm.get('name_employee')?.invalid && employeesForm.get('name_employee')?.touched"
-                class="text-danger mt-1">
-                <small>El nombre es requerido</small>
-              </div>
             </div>
             <!-- Email -->
             <div class="mb-3">
@@ -176,7 +172,7 @@
               </div>
               <div *ngIf="employeesForm.get('email')?.invalid && employeesForm.get('email')?.touched"
                 class="text-danger mt-1">
-                <small>El email es requerido y debe ser válido</small>
+                <small>El email debe ser válido</small>
               </div>
             </div>
             <!-- Teléfono -->
@@ -184,10 +180,6 @@
               <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-telephone"></i></span>
                 <input formControlName="phone" type="text" class="form-control" placeholder="Ingresa teléfono">
-              </div>
-              <div *ngIf="employeesForm.get('phone')?.invalid && employeesForm.get('phone')?.touched"
-                class="text-danger mt-1">
-                <small>El teléfono es requerido</small>
               </div>
             </div>
 
@@ -486,7 +478,10 @@
             <div class="row">
               <div class="col-md-4 mb-3">
                 <label class="form-label">Talla</label>
-                <input formControlName="shirt_size" type="text" class="form-control">
+                <select formControlName="shirt_size" class="form-select">
+                  <option value="">Seleccione...</option>
+                  <option *ngFor="let size of shirtSizeOptions" [value]="size">{{ size }}</option>
+                </select>
               </div>
               <div class="col-md-8 mb-3">
                 <label class="form-label">Enfermedades (Crónicas/Cirugías)</label>
@@ -1186,10 +1181,6 @@
                 <input formControlName="name_employee" type="text" class="form-control"
                   placeholder="Ingresa nombre del empleado">
               </div>
-              <div *ngIf="employeesForm.get('name_employee')?.invalid && employeesForm.get('name_employee')?.touched"
-                class="text-danger mt-1">
-                <small>El nombre es requerido</small>
-              </div>
             </div>
             <!-- Email -->
             <div class="mb-3">
@@ -1199,7 +1190,7 @@
               </div>
               <div *ngIf="employeesForm.get('email')?.invalid && employeesForm.get('email')?.touched"
                 class="text-danger mt-1">
-                <small>El email es requerido y debe ser válido</small>
+                <small>El email debe ser válido</small>
               </div>
             </div>
             <!-- Teléfono -->
@@ -1207,10 +1198,6 @@
               <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-telephone"></i></span>
                 <input formControlName="phone" type="text" class="form-control" placeholder="Ingresa teléfono">
-              </div>
-              <div *ngIf="employeesForm.get('phone')?.invalid && employeesForm.get('phone')?.touched"
-                class="text-danger mt-1">
-                <small>El teléfono es requerido</small>
               </div>
             </div>
 
@@ -1509,7 +1496,10 @@
             <div class="row">
               <div class="col-md-4 mb-3">
                 <label class="form-label">Talla</label>
-                <input formControlName="shirt_size" type="text" class="form-control">
+                <select formControlName="shirt_size" class="form-select">
+                  <option value="">Seleccione...</option>
+                  <option *ngFor="let size of shirtSizeOptions" [value]="size">{{ size }}</option>
+                </select>
               </div>
               <div class="col-md-8 mb-3">
                 <label class="form-label">Enfermedades (Crónicas/Alergias)</label>
