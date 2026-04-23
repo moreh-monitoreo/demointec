@@ -91,7 +91,7 @@ export class JobDescriptionComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        this.hasPermission = this.permissionsService.getFlag('pDescripcionesPuestos');
+        this.hasPermission = !this.permissionsService.hasPermissionsConfigured() || this.permissionsService.canAccessRoute('/dashboard/descripciones-puestos');
         this.loadJobDescriptions();
     }
 

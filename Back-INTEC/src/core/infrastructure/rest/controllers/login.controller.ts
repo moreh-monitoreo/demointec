@@ -31,17 +31,47 @@ export class LoginController {
         role_id: user.role_id.name_role,
         role_id_num: user.role_id.id_role,
         photo: user.photo ? `data:image/png;base64,${user.photo.toString('base64')}` : null,
-        pPermisosVacaciones: '0',
+        pAut1: '0', pAut2: '0', pAut3: '0',
+        pCapSol: '0', pComSol: '0', pControlSol: '0',
+        pEdCats: '0', pEdSol: '0', pEstadisticas: '0',
+        pHistorial: '0', pUsuarios: '0', pVerCats: '0',
+        pEliminarDocsRH: '0', pDescripcionesPuestos: '0',
+        pPermisosVacaciones: '0', pAlertaContratos: '0',
         permissions: []
       };
 
       // Fetch Employee Permissions
       try {
-        const employeeRepo = database.getRepository(EmployeeEntity);
-        const employee = await employeeRepo.findOne({ where: { email: user.email } });
-        if (employee) {
-          responseUser.pPermisosVacaciones = employee.pPermisosVacaciones;
-          responseUser.pAlertaContratos = employee.pAlertaContratos;
+        const isAdmin = user.role_id.name_role === 'Admin';
+        if (isAdmin) {
+          responseUser.pAut1 = '1'; responseUser.pAut2 = '1'; responseUser.pAut3 = '1';
+          responseUser.pCapSol = '1'; responseUser.pComSol = '1'; responseUser.pControlSol = '1';
+          responseUser.pEdCats = '1'; responseUser.pEdSol = '1'; responseUser.pEstadisticas = '1';
+          responseUser.pHistorial = '1'; responseUser.pUsuarios = '1'; responseUser.pVerCats = '1';
+          responseUser.pEliminarDocsRH = '1'; responseUser.pDescripcionesPuestos = '1';
+          responseUser.pPermisosVacaciones = '1'; responseUser.pAlertaContratos = '1';
+        } else {
+          const employeeRepo = database.getRepository(EmployeeEntity);
+          const employee = await employeeRepo.findOne({ where: { email: user.email } });
+          if (employee) {
+            responseUser.pAut1 = employee.pAut1;
+            responseUser.pAut2 = employee.pAut2;
+            responseUser.pAut3 = employee.pAut3;
+            responseUser.pCapSol = employee.pCapSol;
+            responseUser.pComSol = employee.pComSol;
+            responseUser.pControlSol = employee.pControlSol;
+            responseUser.pEdCats = employee.pEdCats;
+            responseUser.pEdSol = employee.pEdSol;
+            responseUser.pEstadisticas = employee.pEstadisticas;
+            responseUser.pHistorial = employee.pHistorial;
+            responseUser.pUsuarios = employee.pUsuarios;
+            responseUser.pVerCats = employee.pVerCats;
+            responseUser.pEliminarDocsRH = employee.pEliminarDocsRH;
+            responseUser.pDescripcionesPuestos = employee.pDescripcionesPuestos;
+            responseUser.pPermisosVacaciones = employee.pPermisosVacaciones;
+            responseUser.pAlertaContratos = employee.pAlertaContratos;
+            responseUser.id_employee = employee.id_employee;
+          }
         }
       } catch (err) {
         console.error('Error fetching linked employee for permissions', err);

@@ -68,7 +68,7 @@ export class DocumentRepositoryComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        this.canDelete = this.permissionsService.getFlag('pEliminarDocsRH');
+        this.canDelete = !this.permissionsService.hasPermissionsConfigured() || this.permissionsService.canAccessRoute('/dashboard/repositorio-documental');
         this.loadEmployees();
         this.searchForm.get('searchTerm')?.valueChanges.subscribe(val => this.filterEmployees(val));
         this.resetDocumentsList();

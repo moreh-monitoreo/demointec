@@ -141,7 +141,7 @@ export class PermissionsVacationsComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        this.canManage = this.permissionsService.getFlag('pPermisosVacaciones');
+        this.canManage = !this.permissionsService.hasPermissionsConfigured() || this.permissionsService.canAccessRoute('/dashboard/permisos-vacaciones');
         this.loadEmployees();
     }
 
