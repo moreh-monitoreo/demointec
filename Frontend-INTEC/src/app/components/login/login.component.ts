@@ -47,7 +47,6 @@ export class LoginComponent implements OnInit {
     }
 
     const { email, password } = this.loginForm.value;
-    console.log(email, password);
 
     this.loginService.login(email, password).subscribe({
       next: (response) => {
