@@ -5,6 +5,7 @@ import { ToastrService } from 'ngx-toastr';
 import { EmployeesAdapterService } from '../../adapters/employees.adapter';
 import { EmployeeDocumentsAdapterService, EmployeeDocument } from '../../adapters/employee-documents.adapter';
 import { Employee } from '../../models/employees';
+import { PermissionsService } from '../../services/permissions.service';
 
 interface DocumentRow {
     name: string;
@@ -58,7 +59,8 @@ export class DocumentRepositoryComponent implements OnInit {
         private fb: FormBuilder,
         private employeesService: EmployeesAdapterService,
         private docService: EmployeeDocumentsAdapterService,
-        private toastr: ToastrService
+        private toastr: ToastrService,
+        private permissionsService: PermissionsService
     ) {
         this.searchForm = this.fb.group({
             searchTerm: ['']
@@ -66,6 +68,7 @@ export class DocumentRepositoryComponent implements OnInit {
     }
 
     ngOnInit(): void {
+        this.canDelete = this.permissionsService.getFlag('pEliminarDocsRH');
         this.loadEmployees();
         this.searchForm.get('searchTerm')?.valueChanges.subscribe(val => this.filterEmployees(val));
         this.resetDocumentsList();
@@ -84,23 +87,9 @@ export class DocumentRepositoryComponent implements OnInit {
             next: (data) => {
                 this.employees = data;
                 this.filteredEmployees = [];
-                this.checkPermission();
             },
             error: (err) => console.error(err)
         });
-    }
-
-    checkPermission() {
-        if (typeof localStorage === 'undefined') return;
-        const userStr = localStorage.getItem('user');
-        if (userStr) {
-            const user = JSON.parse(userStr);
-            // Find employee record for current logged in user
-            const currentEmp = this.employees.find(e => e.email === user.email);
-            if (currentEmp) {
-                this.canDelete = currentEmp.pEliminarDocsRH === '1';
-            }
-        }
     }
 
     filterEmployees(term: string) {

@@ -56,4 +56,15 @@ export class PermissionsService {
     if (!mod || !mod.can_access) return [];
     return mod.sections.filter(s => s.can_access).map(s => s.route_section);
   }
+
+  /** Lee un flag de permiso granular (pXxx) directamente del usuario en localStorage */
+  getFlag(flag: string): boolean {
+    if (!isPlatformBrowser(this.platformId)) return false;
+    try {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      return user[flag] === '1' || user[flag] === true;
+    } catch {
+      return false;
+    }
+  }
 }

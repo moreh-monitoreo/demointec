@@ -12,6 +12,7 @@ import { AbsenceRequest } from '../../models/absence-request';
 import { Disability } from '../../models/disability';
 import { UploadAdapterService } from '../../adapters/upload.adapter';
 import { ToastrService } from 'ngx-toastr';
+import { PermissionsService } from '../../services/permissions.service';
 import { ReportPermissionsVacationsService } from '../../services/reports/report_permissions_vacations.service';
 import { ReportPermisoPdfService } from '../../services/reports/report_permiso_pdf.service';
 import { ReportVacacionesPdfService } from '../../services/reports/report_vacaciones_pdf.service';
@@ -109,7 +110,8 @@ export class PermissionsVacationsComponent implements OnInit {
         private toastr: ToastrService,
         private reportService: ReportPermissionsVacationsService,
         private permisoPdfService: ReportPermisoPdfService,
-        private vacacionesPdfService: ReportVacacionesPdfService
+        private vacacionesPdfService: ReportVacacionesPdfService,
+        private permissionsService: PermissionsService
     ) {
         this.requestForm = this.fb.group({
             employeeId: ['', Validators.required],
@@ -139,6 +141,7 @@ export class PermissionsVacationsComponent implements OnInit {
     }
 
     ngOnInit(): void {
+        this.canManage = this.permissionsService.getFlag('pPermisosVacaciones');
         this.loadEmployees();
     }
 
@@ -191,30 +194,6 @@ export class PermissionsVacationsComponent implements OnInit {
     processEmployees(employees: Employee[], savedRequests: RequestRecord[]): void {
         const currentYear = this.currentYear;
         const previousYear = this.previousYear;
-
-        // Check Permissions (Live Update)
-        if (typeof localStorage !== 'undefined') {
-            const userStr = localStorage.getItem('user');
-            if (userStr) {
-                try {
-                    const user = JSON.parse(userStr);
-                    const currentUserEmail = user.email;
-
-                    // Find current user in the fresh employees list
-                    const currentEmployee = employees.find(e => e.email === currentUserEmail);
-
-                    if (currentEmployee) {
-                        // Use fresh permission from DB
-                        this.canManage = currentEmployee.pPermisosVacaciones === '1';
-                    } else {
-                        // Fallback to localStorage if not found in list (e.g. admin not in employee list)
-                        this.canManage = user.pPermisosVacaciones === '1';
-                    }
-                } catch (e) {
-                    console.error('Error parsing user for permissions', e);
-                }
-            }
-        }
 
         this.allRows = employees
             .filter(emp => emp.status)

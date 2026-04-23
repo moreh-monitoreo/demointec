@@ -2,8 +2,8 @@ import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
 import { JobDescriptionAdapterService, JobDescription, Activity, Responsibility, ChangeLogEntry } from '../../adapters/job-description.adapter';
-import { EmployeesAdapterService } from '../../adapters/employees.adapter';
 import { ToastrService } from 'ngx-toastr';
+import { PermissionsService } from '../../services/permissions.service';
 
 @Component({
     selector: 'app-job-description',
@@ -52,10 +52,10 @@ export class JobDescriptionComponent implements OnInit {
     travelOptions = ['Indispensable', 'No requerido', 'Ocasional'];
 
     private adapter = inject(JobDescriptionAdapterService);
-    private employeesAdapter = inject(EmployeesAdapterService);
     private fb = inject(FormBuilder);
     private toastr = inject(ToastrService);
     private cdr = inject(ChangeDetectorRef);
+    private permissionsService = inject(PermissionsService);
 
     constructor() {
         this.jobForm = this.fb.group({
@@ -91,41 +91,8 @@ export class JobDescriptionComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        this.checkPermissions();
+        this.hasPermission = this.permissionsService.getFlag('pDescripcionesPuestos');
         this.loadJobDescriptions();
-    }
-
-    checkPermissions() {
-        if (typeof localStorage !== 'undefined') {
-            const userStr = localStorage.getItem('user');
-            if (userStr) {
-                const user = JSON.parse(userStr);
-                const userId = user.id_employee || user.id || user.uid;
-                if (userId) {
-                    this.employeesAdapter.get(userId).subscribe({
-                        next: (freshUser) => this.updatePermissions(user, freshUser),
-                        error: (err) => console.error('Error verifying permissions by ID', err)
-                    });
-                } else if (user.email) {
-                    this.employeesAdapter.getList().subscribe({
-                        next: (employees) => {
-                            const freshUser = employees.find(e => e.email === user.email);
-                            if (freshUser) {
-                                this.updatePermissions(user, freshUser);
-                            }
-                        },
-                        error: (err) => console.error('Error verifying permissions by email', err)
-                    });
-                }
-            }
-        }
-    }
-
-    private updatePermissions(currentUser: any, freshUser: any) {
-        this.hasPermission = (freshUser.pDescripcionesPuestos as any) == '1' || (freshUser.pDescripcionesPuestos as any) === true;
-        const mergedUser = { ...currentUser, ...freshUser };
-        localStorage.setItem('user', JSON.stringify(mergedUser));
-        this.cdr.detectChanges();
     }
 
     loadJobDescriptions() {
