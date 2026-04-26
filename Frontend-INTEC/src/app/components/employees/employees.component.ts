@@ -392,9 +392,9 @@ export class EmployeesComponent implements OnInit {
       id_employee: this.generateUUID(),
       name_employee: formVal.name_employee,
       employee_code: formVal.employee_code,
-      email: formVal.email,
-      phone: formVal.phone,
-      role: formVal.role,
+      email: formVal.email || null,
+      phone: formVal.phone || null,
+      role: formVal.role || null,
       admission_date: formVal.admission_date,
       imss_registration_date: formVal.imss_registration_date,
       position: formVal.position,
@@ -402,12 +402,12 @@ export class EmployeesComponent implements OnInit {
       exit_time: formVal.exit_time,
       location: formVal.location,
       gender: formVal.gender,
-      age: formVal.age,
+      age: formVal.age !== '' && formVal.age !== null ? Number(formVal.age) : null,
       marital_status: formVal.marital_status,
       education_level: formVal.education_level,
       education_status: formVal.education_status,
       ine_code: formVal.ine_code,
-      address: `Calle: ${formVal.street || ''} No. Ext: ${formVal.outdoor_number || ''} No. Int: ${formVal.interior_number || ''} Col: ${formVal.colony || ''} CP: ${formVal.zip_code || ''} ${formVal.city || ''}, ${formVal.state || ''}`, // Fallback formatted address
+      address: `Calle: ${formVal.street || ''} No. Ext: ${formVal.outdoor_number || ''} No. Int: ${formVal.interior_number || ''} Col: ${formVal.colony || ''} CP: ${formVal.zip_code || ''} ${formVal.city || ''}, ${formVal.state || ''}`,
 
       street: formVal.street,
       outdoor_number: formVal.outdoor_number,
@@ -416,16 +416,13 @@ export class EmployeesComponent implements OnInit {
       zip_code: formVal.zip_code,
       city: formVal.city,
       state: formVal.state,
-      contract_type: formVal.contract_type, // Map contract_type (Create) 
-      // User request 4: "el domicilio se debe conformar de... Estado" -> address state.
-      // User request 5: "lugar de nacimiento que se desplieguen todos los estados".
-
-      birth_place: formVal.birth_place, // This should now come from dropdown
+      contract_type: formVal.contract_type,
+      birth_place: formVal.birth_place,
       birth_date: formVal.birth_date,
       nss: formVal.nss,
       rfc: formVal.rfc,
       curp: formVal.curp,
-      children_count: formVal.children_count,
+      children_count: formVal.children_count !== '' && formVal.children_count !== null ? Number(formVal.children_count) : null,
       child1_name: formVal.child1_name,
       child1_birth_date: formVal.child1_birth_date,
       child2_name: formVal.child2_name,
@@ -436,7 +433,7 @@ export class EmployeesComponent implements OnInit {
       child4_birth_date: formVal.child4_birth_date,
       child5_name: formVal.child5_name,
       child5_birth_date: formVal.child5_birth_date,
-      beneficiaries_count: formVal.beneficiaries_count,
+      beneficiaries_count: formVal.beneficiaries_count !== '' && formVal.beneficiaries_count !== null ? Number(formVal.beneficiaries_count) : null,
       beneficiary: formVal.beneficiary,
       beneficiary_relationship: formVal.beneficiary_relationship,
       beneficiary_percentage: formVal.beneficiary_percentage,
@@ -696,9 +693,9 @@ export class EmployeesComponent implements OnInit {
       const employeeData: any = {
         name_employee: formVal.name_employee,
         employee_code: formVal.employee_code,
-        email: formVal.email,
-        phone: formVal.phone,
-        role: formVal.role,
+        email: formVal.email || null,
+        phone: formVal.phone || null,
+        role: formVal.role || null,
         admission_date: formVal.admission_date,
         imss_registration_date: formVal.imss_registration_date,
         position: formVal.position,
@@ -706,7 +703,7 @@ export class EmployeesComponent implements OnInit {
         exit_time: formVal.exit_time,
         location: formVal.location,
         gender: formVal.gender,
-        age: formVal.age,
+        age: formVal.age !== '' && formVal.age !== null ? Number(formVal.age) : null,
         marital_status: formVal.marital_status,
         education_level: formVal.education_level,
         education_status: formVal.education_status,
@@ -719,14 +716,13 @@ export class EmployeesComponent implements OnInit {
         zip_code: formVal.zip_code,
         city: formVal.city,
         state: formVal.state,
-        contract_type: formVal.contract_type, // Map contract_type (Update)
-
+        contract_type: formVal.contract_type,
         birth_place: formVal.birth_place,
         birth_date: formVal.birth_date,
         nss: formVal.nss,
         rfc: formVal.rfc,
         curp: formVal.curp,
-        children_count: formVal.children_count,
+        children_count: formVal.children_count !== '' && formVal.children_count !== null ? Number(formVal.children_count) : null,
         child1_name: formVal.child1_name,
         child1_birth_date: formVal.child1_birth_date,
         child2_name: formVal.child2_name,
@@ -737,7 +733,7 @@ export class EmployeesComponent implements OnInit {
         child4_birth_date: formVal.child4_birth_date,
         child5_name: formVal.child5_name,
         child5_birth_date: formVal.child5_birth_date,
-        beneficiaries_count: formVal.beneficiaries_count,
+        beneficiaries_count: formVal.beneficiaries_count !== '' && formVal.beneficiaries_count !== null ? Number(formVal.beneficiaries_count) : null,
         beneficiary: formVal.beneficiary,
         beneficiary_relationship: formVal.beneficiary_relationship,
         beneficiary_percentage: formVal.beneficiary_percentage,
@@ -859,9 +855,9 @@ export class EmployeesComponent implements OnInit {
     this.filteredEmployees = this.allEmployees.filter(emp => {
       const searchMatch = !this.searchTerm ||
         emp.name_employee.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        emp.email.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        emp.phone.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        emp.role.toLowerCase().includes(this.searchTerm.toLowerCase());
+        (emp.email ?? '').toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+        (emp.phone ?? '').toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+        (emp.role ?? '').toLowerCase().includes(this.searchTerm.toLowerCase());
       let statusMatch = true;
       if (this.selectedStatus === 'true') {
         statusMatch = emp.status === true;
@@ -1085,10 +1081,10 @@ export class EmployeesComponent implements OnInit {
     const dataToExport = source.map(emp => ({
       'ID Colaborador': emp.employee_code,
       'Nombre': emp.name_employee,
-      'Email': emp.email,
-      'Teléfono': emp.phone,
+      'Email': emp.email ?? '',
+      'Teléfono': emp.phone ?? '',
       'Puesto': emp.position,
-      'Rol': emp.role,
+      'Rol': emp.role ?? '',
       'Fecha Ingreso': emp.admission_date,
       'Fecha Alta IMSS': emp.imss_registration_date,
       'Ubicación': emp.location,

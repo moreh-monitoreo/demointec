@@ -3,9 +3,9 @@ export interface Employee {
   id_employee: string;
   name_employee: string;
   employee_code?: string;
-  email: string;
-  phone: string;
-  role: string;
+  email?: string | null;
+  phone?: string | null;
+  role?: string | null;
   admission_date?: string;
   imss_registration_date?: string;
   position?: string;
@@ -14,7 +14,7 @@ export interface Employee {
   contract_type?: string;
   location?: string;
   gender?: string;
-  age?: number;
+  age?: number | null;
   marital_status?: string;
   education_level?: string;
   education_status?: string;
@@ -32,7 +32,7 @@ export interface Employee {
   nss?: string;
   rfc?: string;
   curp?: string;
-  children_count?: number;
+  children_count?: number | null;
   child1_name?: string;
   child1_birth_date?: string;
   child2_name?: string;
@@ -43,7 +43,7 @@ export interface Employee {
   child4_birth_date?: string;
   child5_name?: string;
   child5_birth_date?: string;
-  beneficiaries_count?: number;
+  beneficiaries_count?: number | null;
   beneficiary?: string; // Beneficiary 1
   beneficiary_relationship?: string;
   beneficiary_percentage?: string;

@@ -16,13 +16,13 @@ export class EmployeeEntity {
   @Column({ name: 'employee_code', type: 'varchar', length: 50, nullable: true })
   employee_code!: string;
 
-  @Column({ name: 'email', type: 'varchar', length: 100, unique: true })
+  @Column({ name: 'email', type: 'varchar', length: 100, unique: true, nullable: true })
   email!: string;
 
-  @Column({ name: 'phone', type: 'varchar', length: 100 })
+  @Column({ name: 'phone', type: 'varchar', length: 100, nullable: true })
   phone!: string;
 
-  @Column({ name: 'role', type: 'varchar', length: 100 })
+  @Column({ name: 'role', type: 'varchar', length: 100, nullable: true })
   role!: string;
 
   @Column({ name: 'admission_date', type: 'varchar', length: 100, nullable: true })

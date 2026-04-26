@@ -94,11 +94,11 @@ export class ReportEmployeesService {
       pdf.addImage(logoBase64, 'PNG', pageWidth - logoWidth - marginRight, pageHeight - logoHeight - marginBottom - 2, logoWidth, logoHeight);
       pdf.setTextColor('#000000');
     };
-    const tableBody = employees.map(emp => [
+    const tableBody: string[][] = employees.map(emp => [
       emp.name_employee,
-      emp.email,
-      emp.phone,
-      emp.role,
+      emp.email ?? '',
+      emp.phone ?? '',
+      emp.role ?? '',
       emp.status ? 'Activo' : 'Inactivo'
     ]);
     autoTable(pdf, {

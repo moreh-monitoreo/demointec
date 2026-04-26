@@ -18,7 +18,9 @@ export class EmployeesController {
   async create(req: Request, res: Response): Promise<void> {
     try {
       const body = req.body;
+      console.log('[CREATE] Body recibido:', JSON.stringify(body, null, 2));
       const material = await this.employeesRepository.create(body);
+      console.log('[CREATE] Empleado guardado en BD:', material?.id_employee);
 
       // Create Labor Event for initial position if exists
       if (body.position) {
@@ -39,8 +41,11 @@ export class EmployeesController {
       }
 
       res.status(200).json({ message: 'Agregado correctamente' });
-    } catch (error) {
-      res.status(500).json({ message: 'Error', error });
+    } catch (error: any) {
+      console.error('[CREATE] ERROR:', error?.message);
+      console.error('[CREATE] Detalle:', error?.detail || error?.sqlMessage || error?.code || '');
+      console.error('[CREATE] Stack:', error?.stack);
+      res.status(500).json({ message: 'Error', error: error?.message, detail: error?.detail || error?.sqlMessage });
     }
   }
 

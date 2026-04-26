@@ -13,14 +13,37 @@ export class EmployeesAdapterRepository implements EmployeesRepository<EmployeeE
   async create(data: Partial<EmployeeEntity>, query?: Query): Promise<EmployeeEntity> {
     const repository = database.getRepository(EmployeeEntity);
 
-    const material = repository.create({
-      ...data,
-    });
-    await repository.save(material);
-    await this.createOnRTDB(material);
+    console.log('[ADAPTER CREATE] id_employee:', data.id_employee);
+    console.log('[ADAPTER CREATE] name_employee:', data.name_employee);
+    console.log('[ADAPTER CREATE] email:', data.email);
+    console.log('[ADAPTER CREATE] phone:', data.phone);
+    console.log('[ADAPTER CREATE] role:', data.role);
+
+    const material = repository.create({ ...data });
+
+    try {
+      console.log('[ADAPTER CREATE] Intentando repository.save...');
+      await repository.save(material);
+      console.log('[ADAPTER CREATE] repository.save OK');
+    } catch (dbError: any) {
+      console.error('[ADAPTER CREATE] ERROR en repository.save:', dbError?.message);
+      console.error('[ADAPTER CREATE] sqlMessage:', dbError?.sqlMessage);
+      console.error('[ADAPTER CREATE] code:', dbError?.code);
+      console.error('[ADAPTER CREATE] detail:', dbError?.detail);
+      throw dbError;
+    }
+
+    try {
+      console.log('[ADAPTER CREATE] Intentando createOnRTDB...');
+      await this.createOnRTDB(material);
+      console.log('[ADAPTER CREATE] createOnRTDB OK');
+    } catch (fbError: any) {
+      console.error('[ADAPTER CREATE] ERROR en createOnRTDB:', fbError?.message);
+      throw fbError;
+    }
+
     return repository.findOneOrFail({
       where: { id_employee: data.id_employee },
-
     });
   }
 
@@ -224,7 +247,7 @@ export class EmployeesAdapterRepository implements EmployeesRepository<EmployeeE
 
     const snapshot = await ref.once('value');
     if (snapshot.exists()) {
-      throw new Error('El empleado ya existe en Firebase');
+      return;
     }
 
     await ref.set({

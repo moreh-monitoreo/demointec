@@ -8,7 +8,7 @@ export class SalaryReportAdapterRepository implements SalaryReportRepository {
         const employeeRepo = database.getRepository(EmployeeEntity);
 
         const employees = await employeeRepo.find({
-            where: { status: true },
+            where: { status: true, is_dev: false },
             select: [
                 'id_employee',
                 'employee_code',

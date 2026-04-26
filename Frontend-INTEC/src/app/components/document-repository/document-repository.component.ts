@@ -101,7 +101,7 @@ export class DocumentRepositoryComponent implements OnInit {
         const lowerTerm = term.toLowerCase();
         this.filteredEmployees = this.employees.filter(emp =>
             emp.name_employee.toLowerCase().includes(lowerTerm) ||
-            emp.email.toLowerCase().includes(lowerTerm)
+            (emp.email ?? '').toLowerCase().includes(lowerTerm)
         );
     }
 
