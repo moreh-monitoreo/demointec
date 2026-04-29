@@ -370,6 +370,8 @@ export class FormatsComponent implements OnInit {
     } else if (this.activeFormatKey === 'responsiva-epp') {
       this.responsivaEppForm.patchValue({
         nombre: emp.name_employee ?? '',
+        ciudad: emp.city ?? '',
+        estado: emp.state ?? '',
       });
 
     } else if (this.activeFormatKey === 'contrato-obra-determinada') {
