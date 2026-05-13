@@ -30,6 +30,9 @@ export class TerminationsComponent implements OnInit {
     formModal: any;
     viewModal: any;
 
+    // Archivos al registrar nueva baja
+    newTerminationFiles: File[] = [];
+
     // Estado del modal de documentos (dentro del modal de vista)
     docsFilesToAdd: File[] = [];
     isUploadingDocs = false;
@@ -125,6 +128,7 @@ export class TerminationsComponent implements OnInit {
     openAddModal(): void {
         this.isEditMode = false;
         this.selectedTerminationId = null;
+        this.newTerminationFiles = [];
         this.employees = this.allEmployees.filter(emp => emp.status === true);
         this.terminationForm.reset({ document_paths: [] });
         this.showModal();
@@ -204,7 +208,21 @@ export class TerminationsComponent implements OnInit {
             }
         };
 
-        processSave(formData);
+        if (!this.isEditMode && this.newTerminationFiles.length > 0) {
+            this.uploadService.uploadFiles(this.newTerminationFiles).subscribe({
+                next: (res) => {
+                    formData.document_paths = res.paths;
+                    formData.document_path = res.paths[0];
+                    processSave(formData);
+                },
+                error: () => {
+                    this.toastr.error('Error al subir los documentos. Guardando sin archivos...', 'Advertencia');
+                    processSave(formData);
+                }
+            });
+        } else {
+            processSave(formData);
+        }
     }
 
     deleteTermination(id: number): void {
@@ -248,6 +266,17 @@ export class TerminationsComponent implements OnInit {
         if (this.viewModal) {
             this.viewModal.hide();
         }
+    }
+
+    onNewTerminationFilesSelected(event: any): void {
+        if (event.target.files && event.target.files.length > 0) {
+            this.newTerminationFiles = [...this.newTerminationFiles, ...Array.from<File>(event.target.files)];
+            event.target.value = '';
+        }
+    }
+
+    removeNewTerminationFile(index: number): void {
+        this.newTerminationFiles = this.newTerminationFiles.filter((_, i) => i !== index);
     }
 
     onDocsFileSelected(event: any): void {
