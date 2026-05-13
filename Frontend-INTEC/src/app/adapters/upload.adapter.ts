@@ -16,4 +16,10 @@ export class UploadAdapterService {
         formData.append('file', file);
         return this.http.post<{ path: string }>(this.apiUrl, formData);
     }
+
+    uploadFiles(files: File[]): Observable<{ paths: string[] }> {
+        const formData = new FormData();
+        files.forEach(file => formData.append('files', file));
+        return this.http.post<{ paths: string[] }>(`${this.apiUrl}/multiple`, formData);
+    }
 }

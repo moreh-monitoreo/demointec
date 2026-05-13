@@ -30,6 +30,9 @@ export class TerminationEntity {
     @Column({ name: 'document_name', type: 'varchar', length: 255, nullable: true })
     document_name!: string;
 
+    @Column({ name: 'document_paths', type: 'json', nullable: true })
+    document_paths!: string[];
+
     @CreateDateColumn({ name: 'created_at' })
     created_at!: Date;
 

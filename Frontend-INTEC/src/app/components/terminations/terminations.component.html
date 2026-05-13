@@ -31,27 +31,19 @@
             </thead>
             <tbody>
                 <tr *ngFor="let termination of filteredTerminations">
-                    <td class="fw-bold">{{ termination.employee?.name_employee || termination.name_employee || 'N/A' }}
-                    </td>
+                    <td class="fw-bold">{{ termination.employee?.name_employee || termination.name_employee || 'N/A' }}</td>
                     <td>{{ termination.last_work_day | date:'dd/MM/yyyy':'UTC' }}</td>
                     <td>{{ termination.reason }}</td>
-                    <td>{{ termination.severance_date ? (termination.severance_date | date:'dd/MM/yyyy':'UTC') :
-                        'Pendiente' }}</td>
+                    <td>{{ termination.severance_date ? (termination.severance_date | date:'dd/MM/yyyy':'UTC') : 'Pendiente' }}</td>
                     <td>{{ termination.observation || '-' }}</td>
                     <td class="text-center">
-                        <a *ngIf="termination.document_path" [href]="termination.document_path" target="_blank"
-                            class="btn-action btn-edit me-1" style="background-color: #d1e7dd; color: #0f5132;"
-                            title="Ver Documento">
-                            <i class="bi bi-file-earmark-text"></i>
-                        </a>
                         <button class="btn-action btn-view" (click)="viewTermination(termination)" title="Ver Detalles">
                             <i class="bi bi-eye"></i>
                         </button>
                         <button class="btn-action btn-edit" (click)="openEditModal(termination)" title="Editar">
                             <i class="bi bi-pencil"></i>
                         </button>
-                        <button class="btn-action btn-delete" (click)="deleteTermination(termination.id!)"
-                            title="Eliminar">
+                        <button class="btn-action btn-delete" (click)="deleteTermination(termination.id!)" title="Eliminar">
                             <i class="bi bi-trash"></i>
                         </button>
                     </td>
@@ -71,8 +63,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="terminationModalLabel">{{ isEditMode ? 'Editar Baja' : 'Registrar Baja' }}
-                </h5>
+                <h5 class="modal-title" id="terminationModalLabel">{{ isEditMode ? 'Editar Baja' : 'Registrar Baja' }}</h5>
                 <button type="button" class="btn-close" (click)="hideModal()" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -105,15 +96,6 @@
                         <label class="form-label">Observaciones</label>
                         <textarea class="form-control" formControlName="observation" rows="3"></textarea>
                     </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Documento Adjunto</label>
-                        <input type="file" class="form-control" (change)="onFileSelected($event)">
-                        <div *ngIf="isEditMode && terminationForm.get('document_path')?.value" class="form-text">
-                            <a [href]="terminationForm.get('document_path')?.value" target="_blank">Ver documento
-                                actual</a>
-                        </div>
-                    </div>
                 </form>
             </div>
             <div class="modal-footer">
@@ -127,37 +109,72 @@
     </div>
 </div>
 
-<!-- Modal Visualizar Baja -->
+<!-- Modal Visualizar / Gestionar Documentos -->
 <div class="modal fade" id="viewTerminationModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header bg-info text-dark">
                 <h5 class="modal-title">Detalle de Baja</h5>
                 <button type="button" class="btn-close" (click)="hideViewModal()" aria-label="Close"></button>
             </div>
             <div class="modal-body" *ngIf="selectedTermination">
-                <p><strong>Colaborador:</strong> {{ selectedTermination.employee?.name_employee ||
-                    selectedTermination.name_employee }}</p>
-                <p><strong>Último día trabajado:</strong> {{ selectedTermination.last_work_day |
-                    date:'dd/MM/yyyy':'UTC' }}</p>
+                <p><strong>Colaborador:</strong> {{ selectedTermination.employee?.name_employee || selectedTermination.name_employee }}</p>
+                <p><strong>Último día trabajado:</strong> {{ selectedTermination.last_work_day | date:'dd/MM/yyyy':'UTC' }}</p>
                 <p><strong>Motivo:</strong> {{ selectedTermination.reason }}</p>
-                <p><strong>Fecha Finiquito:</strong> {{ selectedTermination.severance_date ?
-                    (selectedTermination.severance_date | date:'dd/MM/yyyy':'UTC') : 'Pendiente' }}</p>
-                <p><strong>Observaciones:</strong><br /> {{ selectedTermination.observation || 'Sin observaciones' }}
-                </p>
+                <p><strong>Fecha Finiquito:</strong> {{ selectedTermination.severance_date ? (selectedTermination.severance_date | date:'dd/MM/yyyy':'UTC') : 'Pendiente' }}</p>
+                <p><strong>Observaciones:</strong><br /> {{ selectedTermination.observation || 'Sin observaciones' }}</p>
 
-                <div *ngIf="selectedTermination.document_path" class="mt-3">
-                    <p class="fw-bold">Documento Adjunto:</p>
-                    <a [href]="selectedTermination.document_path" target="_blank" class="btn btn-outline-primary w-100">
-                        <i class="bi bi-file-earmark-arrow-down"></i> Ver / Descargar Documento
-                    </a>
+                <hr>
+
+                <!-- Sección de documentos -->
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <p class="fw-bold mb-0">Documentos Adjuntos</p>
+                    <label class="btn btn-sm btn-outline-primary mb-0" style="cursor:pointer;">
+                        <i class="bi bi-plus-lg me-1"></i> Agregar
+                        <input type="file" multiple hidden (change)="onDocsFileSelected($event)">
+                    </label>
                 </div>
-                <div *ngIf="!selectedTermination.document_path" class="alert alert-secondary mt-3">
-                    No hay documento adjunto.
+
+                <!-- Documentos existentes -->
+                <div *ngIf="selectedTerminationDocs.length > 0">
+                    <div *ngFor="let path of selectedTerminationDocs; let i = index"
+                        class="d-flex align-items-center gap-2 mb-2 p-2 border rounded">
+                        <i class="bi bi-file-earmark-text text-primary fs-5"></i>
+                        <a [href]="path" target="_blank" class="flex-grow-1 text-decoration-none text-primary text-truncate"
+                            [title]="getFileNameFromUrl(path)">
+                            {{ getFileNameFromUrl(path) }}
+                        </a>
+                        <button class="btn btn-sm btn-outline-danger border-0" title="Eliminar"
+                            (click)="removeExistingDoc(i)">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
                 </div>
+                <div *ngIf="selectedTerminationDocs.length === 0 && docsFilesToAdd.length === 0"
+                    class="alert alert-secondary py-2 mb-2">
+                    No hay documentos adjuntos.
+                </div>
+
+                <!-- Archivos nuevos por subir -->
+                <div *ngIf="docsFilesToAdd.length > 0" class="mt-2">
+                    <small class="text-muted">Archivos por subir:</small>
+                    <div *ngFor="let file of docsFilesToAdd; let i = index"
+                        class="d-flex align-items-center gap-2 mb-1 p-2 border rounded border-warning-subtle bg-warning-subtle">
+                        <i class="bi bi-file-earmark-arrow-up text-warning fs-5"></i>
+                        <span class="flex-grow-1 text-truncate small">{{ file.name }}</span>
+                        <button class="btn btn-sm btn-outline-danger border-0" (click)="removeDocToAdd(i)">
+                            <i class="bi bi-x"></i>
+                        </button>
+                    </div>
+                </div>
+
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" (click)="hideViewModal()">Cerrar</button>
+                <button type="button" class="btn btn-primary" (click)="saveDocChanges()" [disabled]="isUploadingDocs">
+                    <span *ngIf="isUploadingDocs" class="spinner-border spinner-border-sm me-1"></span>
+                    Guardar Cambios
+                </button>
             </div>
         </div>
     </div>

@@ -18,6 +18,7 @@ export interface Termination {
     labor_event_id?: number;
     document_path?: string;
     document_name?: string;
+    document_paths?: string[];
 }
 
 @Injectable({

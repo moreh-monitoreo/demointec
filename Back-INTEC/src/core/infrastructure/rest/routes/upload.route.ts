@@ -21,4 +21,18 @@ const uploadMiddleware = (req: Request, res: Response, next: NextFunction) => {
 
 uploadRouter.post('/uploads', uploadMiddleware, (req, res) => { controller.uploadFile(req, res); });
 
+const uploadMultipleMiddleware = (req: Request, res: Response, next: NextFunction) => {
+    const uploader = upload.array('files', 10); // Máximo 10 archivos
+    uploader(req, res, (err: any) => {
+        if (err instanceof multer.MulterError) {
+            return res.status(500).json({ message: "Error en subida de archivos (Multer)", error: err });
+        } else if (err) {
+            return res.status(500).json({ message: "Error desconocido al subir archivos", error: err });
+        }
+        next();
+    });
+};
+
+uploadRouter.post('/uploads/multiple', uploadMultipleMiddleware, (req, res) => { controller.uploadMultiple(req, res); });
+
 export default uploadRouter;

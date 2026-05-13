@@ -22,7 +22,6 @@ export class TerminationsComponent implements OnInit {
     allEmployees: Employee[] = [];
     isLoading = false;
     searchTerm = '';
-    selectedFile: File | null = null;
 
     terminationForm: FormGroup;
     isEditMode = false;
@@ -31,7 +30,10 @@ export class TerminationsComponent implements OnInit {
     formModal: any;
     viewModal: any;
 
-    // Dropdown options for termination reason
+    // Estado del modal de documentos (dentro del modal de vista)
+    docsFilesToAdd: File[] = [];
+    isUploadingDocs = false;
+
     reasonOptions = [
         'Renuncia voluntaria',
         'Término de contrato',
@@ -54,7 +56,8 @@ export class TerminationsComponent implements OnInit {
             reason: ['', Validators.required],
             severance_date: [''],
             observation: [''],
-            document_path: ['']
+            document_path: [''],
+            document_paths: [[]]
         });
     }
 
@@ -69,6 +72,23 @@ export class TerminationsComponent implements OnInit {
             (t.reason.toLowerCase().includes(lowerTerm)) ||
             (t.observation?.toLowerCase().includes(lowerTerm) ?? false)
         );
+    }
+
+    get selectedTerminationDocs(): string[] {
+        return this.selectedTermination?.document_paths ?? [];
+    }
+
+    getFileNameFromUrl(url: string): string {
+        try {
+            const decoded = decodeURIComponent(url);
+            const parts = decoded.split('/');
+            const last = parts[parts.length - 1].split('?')[0];
+            // El nombre guardado es uuid_nombreoriginal, quitamos el prefijo uuid_
+            const match = last.match(/^[0-9a-f-]{36}_(.+)$/i);
+            return match ? match[1] : last;
+        } catch {
+            return url;
+        }
     }
 
     ngOnInit(): void {
@@ -105,20 +125,14 @@ export class TerminationsComponent implements OnInit {
     openAddModal(): void {
         this.isEditMode = false;
         this.selectedTerminationId = null;
-        this.selectedFile = null;
-        // Reset employees list to only Active ones
         this.employees = this.allEmployees.filter(emp => emp.status === true);
-
-        this.terminationForm.reset();
+        this.terminationForm.reset({ document_paths: [] });
         this.showModal();
     }
 
     openEditModal(termination: Termination): void {
         this.isEditMode = true;
         this.selectedTerminationId = termination.id!;
-        this.selectedFile = null;
-
-        // Filter employees to ONLY the one related to this termination
         this.employees = this.allEmployees.filter(emp => emp.id_employee === termination.id_employee);
 
         this.terminationForm.patchValue({
@@ -127,15 +141,10 @@ export class TerminationsComponent implements OnInit {
             reason: termination.reason,
             severance_date: termination.severance_date,
             observation: termination.observation,
-            document_path: termination.document_path
+            document_path: termination.document_path,
+            document_paths: termination.document_paths || []
         });
         this.showModal();
-    }
-
-    onFileSelected(event: any): void {
-        if (event.target.files && event.target.files.length > 0) {
-            this.selectedFile = event.target.files[0];
-        }
     }
 
     showModal(): void {
@@ -159,9 +168,7 @@ export class TerminationsComponent implements OnInit {
 
         const formData = this.terminationForm.value;
 
-        // Helper function to proceed with save/update
         const processSave = (data: any) => {
-            console.log("Frontend: Prepared data for save:", data); // DEBUG LOG
             if (this.isEditMode && this.selectedTerminationId) {
                 this.terminationsService.updateTermination(this.selectedTerminationId, data).subscribe({
                     next: () => {
@@ -197,24 +204,7 @@ export class TerminationsComponent implements OnInit {
             }
         };
 
-        if (this.selectedFile) {
-            console.log("Frontend: File selected, starting upload..."); // DEBUG LOG
-            this.uploadService.uploadFile(this.selectedFile).subscribe({
-                next: (res) => {
-                    console.log("Frontend: Upload successful, Path:", res.path); // DEBUG LOG
-                    formData.document_path = res.path;
-                    processSave(formData);
-                },
-                error: (err) => {
-                    console.error('Error uploading file', err);
-                    this.toastr.error('Error al cargar el documento. Guardando sin archivo...', 'Advertencia');
-                    processSave(formData);
-                }
-            });
-        } else {
-            console.log("Frontend: No file selected."); // DEBUG LOG
-            processSave(formData);
-        }
+        processSave(formData);
     }
 
     deleteTermination(id: number): void {
@@ -236,8 +226,17 @@ export class TerminationsComponent implements OnInit {
         }
     }
 
+    // ── Modal de vista ──────────────────────────────────────────────
+
     viewTermination(termination: Termination): void {
-        this.selectedTermination = termination;
+        // Normalizar: consolidar document_path legacy + document_paths en un solo array
+        const hasPaths = termination.document_paths && termination.document_paths.length > 0;
+        const paths = hasPaths
+            ? [...termination.document_paths!]
+            : termination.document_path ? [termination.document_path] : [];
+
+        this.selectedTermination = { ...termination, document_paths: paths, document_path: paths[0] || '' };
+        this.docsFilesToAdd = [];
         const modalElement = document.getElementById('viewTerminationModal');
         if (modalElement) {
             this.viewModal = new bootstrap.Modal(modalElement);
@@ -248,6 +247,77 @@ export class TerminationsComponent implements OnInit {
     hideViewModal(): void {
         if (this.viewModal) {
             this.viewModal.hide();
+        }
+    }
+
+    onDocsFileSelected(event: any): void {
+        if (event.target.files && event.target.files.length > 0) {
+            this.docsFilesToAdd = [...this.docsFilesToAdd, ...Array.from<File>(event.target.files)];
+            event.target.value = '';
+        }
+    }
+
+    removeDocToAdd(index: number): void {
+        this.docsFilesToAdd = this.docsFilesToAdd.filter((_, i) => i !== index);
+    }
+
+    removeExistingDoc(index: number): void {
+        if (!this.selectedTermination) return;
+        const updated = this.selectedTermination.document_paths!.filter((_, i) => i !== index);
+        this.selectedTermination = { ...this.selectedTermination, document_paths: updated };
+    }
+
+    saveDocChanges(): void {
+        if (!this.selectedTermination || !this.selectedTermination.id) return;
+
+        const existingPaths = this.selectedTermination.document_paths || [];
+
+        const applyUpdate = (finalPaths: string[]) => {
+            const updatedData: Partial<Termination> = {
+                document_paths: finalPaths,
+                document_path: finalPaths[0] || ''
+            };
+
+            this.isUploadingDocs = true;
+            this.terminationsService.updateTermination(this.selectedTermination!.id!, updatedData as Termination).subscribe({
+                next: () => {
+                    this.isUploadingDocs = false;
+                    this.loadTerminations();
+                    // Actualizar selectedTermination localmente para que el modal refleje cambios
+                    this.selectedTermination = { ...this.selectedTermination!, document_paths: finalPaths, document_path: finalPaths[0] || '' };
+                    this.docsFilesToAdd = [];
+                    this.zone.run(() => {
+                        this.toastr.success('Documentos actualizados correctamente', 'Éxito');
+                    });
+                },
+                error: (err: any) => {
+                    this.isUploadingDocs = false;
+                    console.error('Error updating documents', err);
+                    this.zone.run(() => {
+                        this.toastr.error('Error al actualizar documentos', 'Error');
+                    });
+                }
+            });
+        };
+
+        if (this.docsFilesToAdd.length > 0) {
+            this.isUploadingDocs = true;
+            this.uploadService.uploadFiles(this.docsFilesToAdd).subscribe({
+                next: (res) => {
+                    this.isUploadingDocs = false;
+                    const finalPaths = [...existingPaths, ...res.paths];
+                    applyUpdate(finalPaths);
+                },
+                error: (err) => {
+                    this.isUploadingDocs = false;
+                    console.error('Error uploading files', err);
+                    this.zone.run(() => {
+                        this.toastr.error('Error al subir los archivos', 'Error');
+                    });
+                }
+            });
+        } else {
+            applyUpdate(existingPaths);
         }
     }
 }

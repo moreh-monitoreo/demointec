@@ -18,7 +18,6 @@ export class TerminationAdapterRepository implements TerminationRepository<Termi
         // 1. Create Termination Record
         const termination = repository.create(data);
         await repository.save(termination);
-        console.log("[DEBUG] Termination created with ID:", termination.id);
 
         // 2. Sync to Labor Relations (Create Event)
         try {
@@ -27,10 +26,9 @@ export class TerminationAdapterRepository implements TerminationRepository<Termi
                 event_date: termination.last_work_day,
                 event_name: 'Baja de Personal',
                 observation: `Motivo: ${termination.reason}. Observación: ${termination.observation || ''}. Documento: ${termination.document_name || 'Sin nombre'}. ID Baja: ${termination.id}`,
-                document_path: termination.document_path // Sync document to labor event too
+                document_path: termination.document_path
             });
             await laborEventRepository.save(laborEvent);
-            console.log("[DEBUG] Labor Event created synced to termination.");
 
             // 3. Update Termination with Labor Event ID
             termination.labor_event_id = laborEvent.id;
@@ -45,30 +43,30 @@ export class TerminationAdapterRepository implements TerminationRepository<Termi
             if (employee) {
                 employee.status = false;
                 await employeeRepository.save(employee);
-                console.log(`[DEBUG] Employee ${employee.name_employee} status set to INACTIVE.`);
-            } else {
-                console.warn(`[WARNING] Employee with ID ${termination.id_employee} not found for status update.`);
             }
         } catch (error) {
             console.error("[CRITICAL ERROR] Error updating employee status:", error);
         }
 
-        // 5. Sync to Document Repository (if file exists)
-        if (termination.document_path) {
-            console.log("[DEBUG] Syncing CREATE to Document Repository. Path:", termination.document_path);
+        // 5. Sync to Document Repository (if files exist)
+        const pathsToSync: string[] = [];
+        if (termination.document_paths && termination.document_paths.length > 0) {
+            pathsToSync.push(...termination.document_paths);
+        } else if (termination.document_path) {
+            pathsToSync.push(termination.document_path);
+        }
+
+        for (const path of pathsToSync) {
             try {
                 const doc = documentRepository.create({
                     id_employee: termination.id_employee,
                     document_type: (termination.document_name || 'Baja').substring(0, 50),
-                    document_path: termination.document_path
+                    document_path: path
                 });
                 await documentRepository.save(doc);
-                console.log("[DEBUG] Document saved successfully on create.");
             } catch (error) {
-                console.error("[CRITICAL ERROR] Error creating synced Document:", error);
+                console.error("Error creating synced Document:", error);
             }
-        } else {
-            console.log("[DEBUG] No document_path for creation, skipping doc sync.");
         }
 
         return termination;
@@ -113,23 +111,28 @@ export class TerminationAdapterRepository implements TerminationRepository<Termi
             }
         }
 
-        // 3. Sync to Document Repository (if file exists and is new or updated)
-        if (data.document_path) {
-            console.log("[DEBUG] Syncing UPDATE to Document Repository. Path:", data.document_path);
+        // 3. Sync to Document Repository (if new files exist in update)
+        const newPaths: string[] = [];
+        if (data.document_paths && data.document_paths.length > 0) {
+            newPaths.push(...data.document_paths);
+        } else if (data.document_path) {
+            newPaths.push(data.document_path);
+        }
+
+        if (newPaths.length > 0) {
             const documentRepository = database.getRepository(EmployeeDocumentEntity);
-            try {
-                const doc = documentRepository.create({
-                    id_employee: updatedTermination.id_employee,
-                    document_type: (updatedTermination.document_name || 'Baja (Actualización)').substring(0, 50),
-                    document_path: updatedTermination.document_path
-                });
-                await documentRepository.save(doc);
-                console.log("[DEBUG] Document saved successfully on update.");
-            } catch (error) {
-                console.error("[CRITICAL ERROR] Error creating synced Document on update:", error);
+            for (const path of newPaths) {
+                try {
+                    const doc = documentRepository.create({
+                        id_employee: updatedTermination.id_employee,
+                        document_type: (updatedTermination.document_name || 'Baja (Actualización)').substring(0, 50),
+                        document_path: path
+                    });
+                    await documentRepository.save(doc);
+                } catch (error) {
+                    console.error("Error creating synced Document on update:", error);
+                }
             }
-        } else {
-            console.log("[DEBUG] No document_path in update data, skipping sync.");
         }
 
         return updatedTermination;
