@@ -30,6 +30,9 @@ export class TerminationsComponent implements OnInit {
     formModal: any;
     viewModal: any;
 
+    employeeSearchTerm = '';
+    showEmployeeDropdown = false;
+
     // Archivos al registrar nueva baja
     newTerminationFiles: File[] = [];
 
@@ -62,6 +65,22 @@ export class TerminationsComponent implements OnInit {
             document_path: [''],
             document_paths: [[]]
         });
+    }
+
+    get filteredEmployeeOptions(): Employee[] {
+        const lower = this.employeeSearchTerm.toLowerCase().trim();
+        if (!lower) return this.employees;
+        return this.employees.filter(emp => emp.name_employee.toLowerCase().includes(lower));
+    }
+
+    selectEmployee(employee: Employee): void {
+        this.terminationForm.patchValue({ id_employee: employee.id_employee });
+        this.employeeSearchTerm = employee.name_employee;
+        this.showEmployeeDropdown = false;
+    }
+
+    hideEmployeeDropdownDelayed(): void {
+        setTimeout(() => { this.showEmployeeDropdown = false; }, 200);
     }
 
     get filteredTerminations(): Termination[] {
@@ -130,6 +149,8 @@ export class TerminationsComponent implements OnInit {
         this.selectedTerminationId = null;
         this.newTerminationFiles = [];
         this.employees = this.allEmployees.filter(emp => emp.status === true);
+        this.employeeSearchTerm = '';
+        this.showEmployeeDropdown = false;
         this.terminationForm.reset({ document_paths: [] });
         this.showModal();
     }
@@ -138,6 +159,9 @@ export class TerminationsComponent implements OnInit {
         this.isEditMode = true;
         this.selectedTerminationId = termination.id!;
         this.employees = this.allEmployees.filter(emp => emp.id_employee === termination.id_employee);
+        const emp = this.allEmployees.find(e => e.id_employee === termination.id_employee);
+        this.employeeSearchTerm = emp?.name_employee || '';
+        this.showEmployeeDropdown = false;
 
         this.terminationForm.patchValue({
             id_employee: termination.id_employee,

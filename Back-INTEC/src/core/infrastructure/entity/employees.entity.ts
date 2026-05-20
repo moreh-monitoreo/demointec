@@ -43,6 +43,9 @@ export class EmployeeEntity {
   @Column({ name: 'exit_time', type: 'varchar', length: 50, nullable: true })
   exit_time!: string;
 
+  @Column({ name: 'work_schedule', type: 'text', nullable: true })
+  work_schedule!: string;
+
   @Column({ name: 'gender', type: 'varchar', length: 50, nullable: true })
   gender!: string;
 

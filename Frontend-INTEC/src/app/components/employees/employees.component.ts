@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import * as XLSX from 'xlsx-js-style';
@@ -50,6 +50,8 @@ export class EmployeesComponent implements OnInit {
   childrenCountOptions = ['0', '1', '2', '3', '4', '5 o más'];
   beneficiariesCountOptions = [0, 1, 2, 3];
   contractTypeOptions = ['COD', 'CTD', 'CTI'];
+  daysOfWeek = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+  selectedEmployeeSchedules: any[] = [];
 
   // Asistencia
   selectedEmployeeForAttendance: Employee | null = null;
@@ -89,6 +91,7 @@ export class EmployeesComponent implements OnInit {
       position: [''],
       entry_time: [''],
       exit_time: [''],
+      workSchedules: this.fb.array([this.createScheduleGroup()]),
       location: [''],
       gender: [''],
       age: [''],
@@ -176,6 +179,53 @@ export class EmployeesComponent implements OnInit {
       bonus_hiring: [false],
       bonus_referral: [false]
     });
+  }
+
+  get workSchedules(): FormArray {
+    return this.employeesForm.get('workSchedules') as FormArray;
+  }
+
+  createScheduleGroup(data?: any): FormGroup {
+    return this.fb.group({
+      day_from: [data?.day_from || ''],
+      day_to: [data?.day_to || ''],
+      entry_time: [data?.entry_time || ''],
+      exit_time: [data?.exit_time || '']
+    });
+  }
+
+  addSchedule(): void {
+    this.workSchedules.push(this.createScheduleGroup());
+  }
+
+  removeSchedule(index: number): void {
+    if (this.workSchedules.length > 1) {
+      this.workSchedules.removeAt(index);
+    }
+  }
+
+  private resetWorkSchedules(): void {
+    while (this.workSchedules.length) this.workSchedules.removeAt(0);
+    this.workSchedules.push(this.createScheduleGroup());
+  }
+
+  private loadWorkSchedules(workScheduleJson: string | undefined, fallbackEntryTime?: string, fallbackExitTime?: string): void {
+    while (this.workSchedules.length) this.workSchedules.removeAt(0);
+    const schedules = workScheduleJson ? JSON.parse(workScheduleJson) : [];
+    if (schedules.length === 0) {
+      if (fallbackEntryTime || fallbackExitTime) {
+        this.workSchedules.push(this.createScheduleGroup({
+          day_from: 'Lunes',
+          day_to: 'Viernes',
+          entry_time: fallbackEntryTime || '',
+          exit_time: fallbackExitTime || ''
+        }));
+      } else {
+        this.workSchedules.push(this.createScheduleGroup());
+      }
+    } else {
+      schedules.forEach((s: any) => this.workSchedules.push(this.createScheduleGroup(s)));
+    }
   }
 
   ngOnInit(): void {
@@ -372,6 +422,7 @@ export class EmployeesComponent implements OnInit {
       bonus_referral: false
     });
     this.selectedEmployee = null;
+    this.resetWorkSchedules();
   }
 
   createEmployee(): void {
@@ -398,8 +449,9 @@ export class EmployeesComponent implements OnInit {
       admission_date: formVal.admission_date,
       imss_registration_date: formVal.imss_registration_date,
       position: formVal.position,
-      entry_time: formVal.entry_time,
-      exit_time: formVal.exit_time,
+      entry_time: formVal.workSchedules?.[0]?.entry_time || '',
+      exit_time: formVal.workSchedules?.[0]?.exit_time || '',
+      work_schedule: JSON.stringify(formVal.workSchedules || []),
       location: formVal.location,
       gender: formVal.gender,
       age: formVal.age !== '' && formVal.age !== null ? Number(formVal.age) : null,
@@ -502,6 +554,11 @@ export class EmployeesComponent implements OnInit {
 
   viewEmployee(employee: Employee): void {
     this.selectedEmployee = employee;
+    this.selectedEmployeeSchedules = employee.work_schedule
+      ? JSON.parse(employee.work_schedule)
+      : (employee.entry_time || employee.exit_time)
+        ? [{ day_from: 'Lunes', day_to: 'Viernes', entry_time: employee.entry_time || '', exit_time: employee.exit_time || '' }]
+        : [];
 
     // Fetch full details including rehire document
     if (employee.id_employee) {
@@ -509,6 +566,11 @@ export class EmployeesComponent implements OnInit {
         next: (fullData) => {
           console.log('Full Employee Data:', fullData);
           this.selectedEmployee = fullData;
+          this.selectedEmployeeSchedules = fullData.work_schedule
+            ? JSON.parse(fullData.work_schedule)
+            : (fullData.entry_time || fullData.exit_time)
+              ? [{ day_from: 'Lunes', day_to: 'Viernes', entry_time: fullData.entry_time || '', exit_time: fullData.exit_time || '' }]
+              : [];
         },
         error: (err) => console.error('Error fetching details', err)
       });
@@ -653,6 +715,7 @@ export class EmployeesComponent implements OnInit {
       bonus_hiring: employee.bonuses?.includes('Contratación'),
       bonus_referral: employee.bonuses?.includes('Recomendación')
     });
+    this.loadWorkSchedules(employee.work_schedule, employee.entry_time, employee.exit_time);
   }
 
   handleEditClick(employee: Employee): void {
@@ -699,8 +762,9 @@ export class EmployeesComponent implements OnInit {
         admission_date: formVal.admission_date,
         imss_registration_date: formVal.imss_registration_date,
         position: formVal.position,
-        entry_time: formVal.entry_time,
-        exit_time: formVal.exit_time,
+        entry_time: formVal.workSchedules?.[0]?.entry_time || '',
+        exit_time: formVal.workSchedules?.[0]?.exit_time || '',
+        work_schedule: JSON.stringify(formVal.workSchedules || []),
         location: formVal.location,
         gender: formVal.gender,
         age: formVal.age !== '' && formVal.age !== null ? Number(formVal.age) : null,

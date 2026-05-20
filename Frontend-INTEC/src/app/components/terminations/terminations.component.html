@@ -70,12 +70,32 @@
                 <form [formGroup]="terminationForm">
                     <div class="mb-3">
                         <label class="form-label">Colaborador</label>
-                        <select class="form-select" formControlName="id_employee">
-                            <option value="">Seleccione un colaborador</option>
-                            <option *ngFor="let employee of employees" [value]="employee.id_employee">
-                                {{ employee.name_employee }}
-                            </option>
-                        </select>
+                        <div class="position-relative">
+                            <input type="text" class="form-control" placeholder="Buscar colaborador..."
+                                autocomplete="off"
+                                [(ngModel)]="employeeSearchTerm"
+                                [ngModelOptions]="{standalone: true}"
+                                (input)="showEmployeeDropdown = true"
+                                (focus)="showEmployeeDropdown = true"
+                                (blur)="hideEmployeeDropdownDelayed()">
+                            <ul *ngIf="showEmployeeDropdown && filteredEmployeeOptions.length > 0"
+                                class="list-group position-absolute w-100 shadow-sm"
+                                style="z-index: 1060; max-height: 200px; overflow-y: auto; top: 100%;">
+                                <li *ngFor="let emp of filteredEmployeeOptions"
+                                    class="list-group-item list-group-item-action py-2"
+                                    style="cursor: pointer;"
+                                    (mousedown)="selectEmployee(emp)">
+                                    {{ emp.name_employee }}
+                                </li>
+                            </ul>
+                            <div *ngIf="showEmployeeDropdown && employeeSearchTerm && filteredEmployeeOptions.length === 0"
+                                class="list-group position-absolute w-100 shadow-sm"
+                                style="z-index: 1060; top: 100%;">
+                                <div class="list-group-item text-muted small">No se encontraron colaboradores</div>
+                            </div>
+                        </div>
+                        <div *ngIf="terminationForm.get('id_employee')?.invalid && terminationForm.get('id_employee')?.touched"
+                            class="text-danger small mt-1">Seleccione un colaborador</div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Último día trabajado</label>
