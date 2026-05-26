@@ -47,7 +47,7 @@ export class JobDescriptionEntity {
     @Column({ type: 'varchar', length: 100, nullable: true })
     profile_marital_status!: string;
 
-    @Column({ type: 'varchar', length: 255, nullable: true })
+    @Column({ type: 'text', nullable: true })
     profile_schedule!: string;
 
     @Column({ type: 'varchar', length: 100, nullable: true })

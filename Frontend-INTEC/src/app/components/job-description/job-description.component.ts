@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
+import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
 import { JobDescriptionAdapterService, JobDescription, Activity, Responsibility, ChangeLogEntry } from '../../adapters/job-description.adapter';
 import { ToastrService } from 'ngx-toastr';
 import { PermissionsService } from '../../services/permissions.service';
@@ -50,6 +50,7 @@ export class JobDescriptionComponent implements OnInit {
     frecuenciaOptions = ['Diaria', 'Semanal', 'Mensual', 'Trimestral', 'Semestral', 'Anual', 'Cuando se requiera'];
     genderOptions = ['Masculino', 'Femenino', 'Indistinto'];
     travelOptions = ['Indispensable', 'No requerido', 'Ocasional'];
+    daysOfWeek = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
     private adapter = inject(JobDescriptionAdapterService);
     private fb = inject(FormBuilder);
@@ -71,7 +72,7 @@ export class JobDescriptionComponent implements OnInit {
             profile_gender: [''],
             profile_age: [''],
             profile_marital_status: [''],
-            profile_schedule: [''],
+            workSchedules: this.fb.array([this.createScheduleGroup()]),
             profile_travel_availability: [''],
             profile_languages: [''],
             profile_extra_requirements: [''],
@@ -88,6 +89,48 @@ export class JobDescriptionComponent implements OnInit {
             reviewed_by: [''],
             authorized_by: ['']
         });
+    }
+
+    get workSchedules(): FormArray {
+        return this.jobForm.get('workSchedules') as FormArray;
+    }
+
+    createScheduleGroup(data?: any): FormGroup {
+        return this.fb.group({
+            day_from: [data?.day_from || ''],
+            day_to: [data?.day_to || ''],
+            entry_time: [data?.entry_time || ''],
+            exit_time: [data?.exit_time || '']
+        });
+    }
+
+    addSchedule(): void {
+        this.workSchedules.push(this.createScheduleGroup());
+    }
+
+    removeSchedule(index: number): void {
+        if (this.workSchedules.length > 1) {
+            this.workSchedules.removeAt(index);
+        }
+    }
+
+    private resetWorkSchedules(): void {
+        while (this.workSchedules.length) this.workSchedules.removeAt(0);
+        this.workSchedules.push(this.createScheduleGroup());
+    }
+
+    private loadWorkSchedules(json: string | undefined): void {
+        while (this.workSchedules.length) this.workSchedules.removeAt(0);
+        try {
+            const schedules = json ? JSON.parse(json) : [];
+            if (Array.isArray(schedules) && schedules.length > 0) {
+                schedules.forEach((s: any) => this.workSchedules.push(this.createScheduleGroup(s)));
+            } else {
+                this.workSchedules.push(this.createScheduleGroup());
+            }
+        } catch {
+            this.workSchedules.push(this.createScheduleGroup());
+        }
     }
 
     ngOnInit(): void {
@@ -179,12 +222,25 @@ export class JobDescriptionComponent implements OnInit {
         if (job) {
             this.isEditMode = true;
             this.selectedJobId = job.id!;
-            this.jobForm.patchValue(job);
-            this.parseArrays(job);
+            this.adapter.getById(job.id!).subscribe({
+                next: (fullJob) => {
+                    this.jobForm.patchValue(fullJob);
+                    this.parseArrays(fullJob);
+                    this.loadWorkSchedules(fullJob.profile_schedule);
+                    this.cdr.detectChanges();
+                },
+                error: () => {
+                    this.jobForm.patchValue(job);
+                    this.parseArrays(job);
+                    this.loadWorkSchedules(job.profile_schedule);
+                    this.cdr.detectChanges();
+                }
+            });
         } else {
             this.isEditMode = false;
             this.selectedJobId = null;
             this.jobForm.reset();
+            this.resetWorkSchedules();
         }
     }
 
@@ -193,9 +249,22 @@ export class JobDescriptionComponent implements OnInit {
         this.isViewMode = true;
         this.isEditMode = false;
         this.selectedJobId = job.id!;
-        this.jobForm.patchValue(job);
-        this.parseArrays(job);
-        this.jobForm.disable();
+        this.adapter.getById(job.id!).subscribe({
+            next: (fullJob) => {
+                this.jobForm.patchValue(fullJob);
+                this.parseArrays(fullJob);
+                this.loadWorkSchedules(fullJob.profile_schedule);
+                this.jobForm.disable();
+                this.cdr.detectChanges();
+            },
+            error: () => {
+                this.jobForm.patchValue(job);
+                this.parseArrays(job);
+                this.loadWorkSchedules(job.profile_schedule);
+                this.jobForm.disable();
+                this.cdr.detectChanges();
+            }
+        });
     }
 
     private resetArrays() {
@@ -232,7 +301,7 @@ export class JobDescriptionComponent implements OnInit {
             return;
         }
 
-        const jobData: JobDescription = this.jobForm.value;
+        const jobData: JobDescription = this.jobForm.value as any;
 
         // Serialize arrays
         jobData.activities_matrix = JSON.stringify(this.activities);
@@ -240,6 +309,7 @@ export class JobDescriptionComponent implements OnInit {
         jobData.internal_relations = JSON.stringify(this.internalRelations);
         jobData.external_relations = JSON.stringify(this.externalRelations);
         jobData.change_log = JSON.stringify(this.changeLog);
+        jobData.profile_schedule = JSON.stringify(this.workSchedules.value);
 
         if (this.isEditMode && this.selectedJobId) {
             this.adapter.update(this.selectedJobId, jobData).subscribe({

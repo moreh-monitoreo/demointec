@@ -428,10 +428,47 @@
                                 <input type="text" class="form-control" formControlName="profile_marital_status"
                                     placeholder="Ej: Indistinto">
                             </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Horario:</label>
-                                <input type="text" class="form-control" formControlName="profile_schedule"
-                                    placeholder="Ej: Lunes a viernes de 9am a 6pm">
+                            <div class="col-12">
+                                <label class="form-label fw-semibold">Horario de Trabajo:</label>
+                                <div class="row g-2 mb-1">
+                                    <div class="col-3"><small class="text-muted">De</small></div>
+                                    <div class="col-3"><small class="text-muted">A</small></div>
+                                    <div class="col-2"><small class="text-muted">Entrada</small></div>
+                                    <div class="col-2"><small class="text-muted">Salida</small></div>
+                                    <div class="col-2"></div>
+                                </div>
+                                <div formArrayName="workSchedules">
+                                    <div *ngFor="let schedule of workSchedules.controls; let i = index" [formGroupName]="i"
+                                        class="row g-2 mb-2 align-items-center">
+                                        <div class="col-3">
+                                            <select formControlName="day_from" class="form-select form-select-sm">
+                                                <option value="">De...</option>
+                                                <option *ngFor="let day of daysOfWeek" [value]="day">{{ day }}</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-3">
+                                            <select formControlName="day_to" class="form-select form-select-sm">
+                                                <option value="">A...</option>
+                                                <option *ngFor="let day of daysOfWeek" [value]="day">{{ day }}</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-2">
+                                            <input formControlName="entry_time" type="time" class="form-control form-control-sm">
+                                        </div>
+                                        <div class="col-2">
+                                            <input formControlName="exit_time" type="time" class="form-control form-control-sm">
+                                        </div>
+                                        <div class="col-2">
+                                            <button type="button" class="btn btn-sm btn-outline-danger px-2"
+                                                (click)="removeSchedule(i)" *ngIf="workSchedules.length > 1 && !isViewMode" title="Eliminar">
+                                                <i class="bi bi-x-lg"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-primary mt-1" (click)="addSchedule()" *ngIf="!isViewMode">
+                                    <i class="bi bi-plus-circle me-1"></i>Agregar horario
+                                </button>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Disponibilidad para viajar:</label>
