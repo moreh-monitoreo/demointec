@@ -4,6 +4,7 @@ import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators, For
 import { JobDescriptionAdapterService, JobDescription, Activity, Responsibility, ChangeLogEntry } from '../../adapters/job-description.adapter';
 import { ToastrService } from 'ngx-toastr';
 import { PermissionsService } from '../../services/permissions.service';
+import { ReportJobDescriptionService } from '../../services/reports/report_job_description.service';
 
 @Component({
     selector: 'app-job-description',
@@ -57,6 +58,7 @@ export class JobDescriptionComponent implements OnInit {
     private toastr = inject(ToastrService);
     private cdr = inject(ChangeDetectorRef);
     private permissionsService = inject(PermissionsService);
+    private reportService = inject(ReportJobDescriptionService);
 
     constructor() {
         this.jobForm = this.fb.group({
@@ -336,6 +338,30 @@ export class JobDescriptionComponent implements OnInit {
                 }
             });
         }
+    }
+
+    printJob(job: JobDescription) {
+        this.adapter.getById(job.id!).subscribe({
+            next: (fullJob) => {
+                let activities: Activity[] = [];
+                let responsibilities: Responsibility[] = [];
+                let internalRelations: string[] = [];
+                let externalRelations: string[] = [];
+                let changeLog: ChangeLogEntry[] = [];
+                let workSchedules: any[] = [];
+                try {
+                    if (fullJob.activities_matrix) activities = JSON.parse(fullJob.activities_matrix);
+                    if (fullJob.responsibilities_matrix) responsibilities = JSON.parse(fullJob.responsibilities_matrix);
+                    if (fullJob.internal_relations) internalRelations = JSON.parse(fullJob.internal_relations);
+                    if (fullJob.external_relations) externalRelations = JSON.parse(fullJob.external_relations);
+                    if (fullJob.change_log) changeLog = JSON.parse(fullJob.change_log);
+                    if (fullJob.profile_schedule) workSchedules = JSON.parse(fullJob.profile_schedule);
+                } catch {}
+                this.reportService.generatePDF(fullJob, activities, responsibilities, internalRelations, externalRelations, changeLog, workSchedules)
+                    .catch(() => this.toastr.error('No se pudo generar el PDF', 'Error'));
+            },
+            error: () => this.toastr.error('No se pudo cargar la información del puesto', 'Error')
+        });
     }
 
     deleteJob(id: number) {

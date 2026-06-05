@@ -10,8 +10,9 @@ export class AbsenceRequestController {
             const body = req.body;
             const absenceRequest = await this.absenceRequestRepository.create(body);
             res.status(200).json(absenceRequest);
-        } catch (error) {
-            res.status(500).json({ message: 'Error al crear la solicitud', error });
+        } catch (error: any) {
+            console.error('[ABSENCE CREATE ERROR]', error?.sqlMessage || error?.message || error);
+            res.status(500).json({ message: 'Error al crear la solicitud', error: error?.sqlMessage || error?.message });
         }
     }
 
@@ -40,8 +41,9 @@ export class AbsenceRequestController {
             const body = req.body;
             const absenceRequest = await this.absenceRequestRepository.update(id, body);
             res.status(200).json(absenceRequest);
-        } catch (error) {
-            res.status(500).json({ message: 'Error al actualizar la solicitud', error });
+        } catch (error: any) {
+            console.error('[ABSENCE UPDATE ERROR]', error?.sqlMessage || error?.message || error);
+            res.status(500).json({ message: 'Error al actualizar la solicitud', error: error?.sqlMessage || error?.message });
         }
     }
 

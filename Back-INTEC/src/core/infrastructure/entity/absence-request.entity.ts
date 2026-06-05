@@ -33,11 +33,14 @@ export class AbsenceRequestEntity {
     @Column({ name: 'vacation_year', type: 'int', nullable: true })
     vacation_year!: number;
 
-    @Column({ name: 'document_url', type: 'varchar', length: 500, nullable: true })
+    @Column({ name: 'document_url', type: 'text', nullable: true })
     document_url!: string;
 
     @Column({ name: 'request_date', type: 'date' })
     request_date!: string;
+
+    @Column({ name: 'return_to_work_date', type: 'date', nullable: true })
+    return_to_work_date!: string;
 
     @ManyToOne(() => EmployeeEntity)
     @JoinColumn({ name: 'id_employee' })

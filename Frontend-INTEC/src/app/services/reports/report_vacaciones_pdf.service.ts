@@ -187,11 +187,11 @@ export class ReportVacacionesPdfService {
       'del año',
       'Periodo',
       'No. Dias\nsolicitados',
-      'dias vac\npagadas',
-      'vacaciones\npendientes'
+      'Días Vac.\nPagadas',
+      'Días Vac.\nPendientes'
     ];
     const pBody = [
-      `${empleado.antiguedad} Año(s)`,
+      `${empleado.totalVacaciones} días`,
       `${vacYear}`,
       `${this.fmtDate(solicitud.startDate)}  al  ${this.fmtDate(solicitud.endDate)}`,
       `${solicitud.daysCount}`,

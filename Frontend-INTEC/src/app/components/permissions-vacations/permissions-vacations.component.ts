@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import * as XLSX from 'xlsx-js-style';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -15,6 +16,7 @@ import { ToastrService } from 'ngx-toastr';
 import { PermissionsService } from '../../services/permissions.service';
 import { ReportPermissionsVacationsService } from '../../services/reports/report_permissions_vacations.service';
 import { ReportPermisoPdfService } from '../../services/reports/report_permiso_pdf.service';
+import { ReportPermissionsHistoryService } from '../../services/reports/report_permissions_history.service';
 import { ReportVacacionesPdfService } from '../../services/reports/report_vacaciones_pdf.service';
 
 interface VacationRow {
@@ -38,6 +40,7 @@ interface RequestRecord {
     id: string;
     employeeId: string;
     type: 'Vacaciones' | 'Permiso' | 'Incapacidad';
+    subtype?: string;
     startDate: string;
     endDate: string;
     daysCount: number;
@@ -47,6 +50,7 @@ interface RequestRecord {
     vacationYear?: number;
     documentUrl?: string;
     requestDate: string;
+    returnToWorkDate?: string;
 }
 
 @Component({
@@ -58,6 +62,8 @@ interface RequestRecord {
 })
 export class PermissionsVacationsComponent implements OnInit {
     allRows: VacationRow[] = [];
+    allEmployeesMap: Map<string, Employee> = new Map();
+    allRawRequests: AbsenceRequest[] = [];
     filteredData: VacationRow[] = [];
     searchTerm: string = '';
     loading: boolean = true;
@@ -75,11 +81,18 @@ export class PermissionsVacationsComponent implements OnInit {
     calendarDays: any[] = [];
     calendarMonthLabel: string = '';
     private isOpenedFromCalendar: boolean = false;
+    private isOpenedFromHistory: boolean = false;
+
+    // Tabs
+    activeTab: 'vacaciones' | 'histVacaciones' | 'histPermisos' | 'histIncapacidades' = 'vacaciones';
 
     // History Modal State
     selectedEmployeeName: string = '';
     selectedEmployeeId: string = '';
     selectedEmployeeHistory: RequestRecord[] = [];
+
+    // Inline edit state for días por tomar
+    editingCell: { id: string; field: 'previous' | 'current' } | null = null;
 
     // Disabilities cache
     disabilities: Disability[] = [];
@@ -111,7 +124,8 @@ export class PermissionsVacationsComponent implements OnInit {
         private reportService: ReportPermissionsVacationsService,
         private permisoPdfService: ReportPermisoPdfService,
         private vacacionesPdfService: ReportVacacionesPdfService,
-        private permissionsService: PermissionsService
+        private permissionsService: PermissionsService,
+        private historyExcelService: ReportPermissionsHistoryService
     ) {
         this.requestForm = this.fb.group({
             employeeId: ['', Validators.required],
@@ -132,12 +146,16 @@ export class PermissionsVacationsComponent implements OnInit {
             at_field: [false],
             st7: [false],
             st2: [false],
-            returnToWorkDate: ['']
+            returnToWorkDate: [''],
+            disabilityDays: [null]
         });
+
+        this.requestForm.get('startDate')!.valueChanges.subscribe(() => this.calcDisabilityEndDate());
+        this.requestForm.get('disabilityDays')!.valueChanges.subscribe(() => this.calcDisabilityEndDate());
 
         // Generate available years: only current year and previous year
         const currentYear = new Date().getFullYear();
-        this.availableVacationYears = [currentYear - 1, currentYear];
+        this.availableVacationYears = Array.from({ length: 8 }, (_, i) => currentYear - 4 + i);
     }
 
     ngOnInit(): void {
@@ -149,8 +167,12 @@ export class PermissionsVacationsComponent implements OnInit {
         this.loading = true;
         this.employeesAdapter.getList().subscribe({
             next: (employees) => {
+                // Guardar TODOS los empleados (activos e inactivos) para lookup en reportes
+                this.allEmployeesMap = new Map(employees.map(e => [e.id_employee, e]));
+
                 this.absenceRequestAdapter.getList().subscribe({
                     next: (requests) => {
+                        this.allRawRequests = requests;
                         const mappedRequests = this.mapToRequestRecords(requests);
                         this.processEmployees(employees, mappedRequests);
                         this.loading = false;
@@ -187,7 +209,8 @@ export class PermissionsVacationsComponent implements OnInit {
             withPay: r.with_pay,
             vacationYear: r.vacation_year || undefined,
             documentUrl: r.document_url || '',
-            requestDate: r.request_date
+            requestDate: r.request_date,
+            returnToWorkDate: r.return_to_work_date || ''
         }));
     }
 
@@ -239,6 +262,13 @@ export class PermissionsVacationsComponent implements OnInit {
                 // If employee joined THIS year, Previous Entitlement is 0. Balance 0. Correct.
 
                 let diasPorTomarCurrent = entitlementCurrent - takenCurrent;
+
+                const prevKey = `vac_override_${emp.id_employee}_${previousYear}`;
+                const currKey = `vac_override_${emp.id_employee}_${currentYear}`;
+                const prevOverride = localStorage.getItem(prevKey);
+                const currOverride = localStorage.getItem(currKey);
+                if (prevOverride !== null) diasPorTomarPrevious = Number(prevOverride);
+                if (currOverride !== null) diasPorTomarCurrent = Number(currOverride);
 
                 const saldoTotal = diasPorTomarPrevious + diasPorTomarCurrent;
                 const num = emp.employee_code || (index + 1).toString().padStart(4, '0');
@@ -375,7 +405,8 @@ export class PermissionsVacationsComponent implements OnInit {
             reason: record.reason || '',
             description: record.description || '',
             withPay: !!record.withPay,
-            vacationYear: record.vacationYear || null
+            vacationYear: record.vacationYear || null,
+            returnToWorkDate: record.returnToWorkDate || ''
         });
 
         if (record.type === 'Incapacidad') {
@@ -403,7 +434,8 @@ export class PermissionsVacationsComponent implements OnInit {
             reason: record.reason || '',
             description: record.description || '',
             withPay: !!record.withPay,
-            vacationYear: record.vacationYear || null
+            vacationYear: record.vacationYear || null,
+            returnToWorkDate: record.returnToWorkDate || ''
         });
 
         if (record.type === 'Incapacidad') {
@@ -412,6 +444,17 @@ export class PermissionsVacationsComponent implements OnInit {
 
         this.requestForm.disable();
         this.switchModal();
+    }
+
+    private calcDisabilityEndDate(): void {
+        if (this.requestType !== 'Incapacidad') return;
+        const startVal = this.requestForm.get('startDate')?.value;
+        const days = parseInt(this.requestForm.get('disabilityDays')?.value, 10);
+        if (!startVal || !days || days <= 0) return;
+        const start = new Date(startVal + 'T00:00:00');
+        start.setDate(start.getDate() + days - 1);
+        const endDate = start.toISOString().split('T')[0];
+        this.requestForm.patchValue({ endDate }, { emitEvent: false });
     }
 
     private patchDisabilityFields(employeeId: string, startDate: string): void {
@@ -430,8 +473,13 @@ export class PermissionsVacationsComponent implements OnInit {
                 at_field: !!disability.at_field,
                 st7: !!disability.st7,
                 st2: !!disability.st2,
-                returnToWorkDate: disability.return_to_work_date || ''
+                returnToWorkDate: disability.return_to_work_date || '',
+                disabilityDays: disability.days || null
             });
+            // Si la URL guardada en la solicitud no es válida, intentar con la de la incapacidad
+            if (disability.document_path?.startsWith('http')) {
+                this.currentDocumentUrl = disability.document_path;
+            }
         }
     }
 
@@ -456,11 +504,26 @@ export class PermissionsVacationsComponent implements OnInit {
         const historyModalEl = document.getElementById('historyModal');
         if (historyModalEl) {
             const historyModal = (window as any).bootstrap.Modal.getInstance(historyModalEl);
-            if (historyModal) historyModal.hide();
+            if (historyModal) {
+                this.isOpenedFromHistory = true;
+                historyModal.hide();
+            }
         }
 
         const createModal = new (window as any).bootstrap.Modal(document.getElementById('createRequestModal'));
         createModal.show();
+    }
+
+    openDocument(url: string | null): void {
+        if (url && url.startsWith('http')) {
+            window.open(url, '_blank', 'noopener,noreferrer');
+        } else {
+            this.toastr.warning(
+                'Este documento fue subido con una versión anterior y su enlace no se guardó correctamente. Edita el registro y vuelve a adjuntar el archivo.',
+                'Documento no disponible',
+                { timeOut: 6000 }
+            );
+        }
     }
 
     onFileSelected(event: any): void {
@@ -512,8 +575,12 @@ export class PermissionsVacationsComponent implements OnInit {
                 formData.append('document', this.selectedFile);
 
                 const uploadRes = await firstValueFrom(this.docService.saveDocument(formData));
+                docPath = uploadRes?.doc?.document_path || uploadRes?.document_path || '';
+                if (!docPath) {
+                    this.toastr.error('El archivo se subió pero no se obtuvo la URL. Intenta de nuevo.');
+                    return;
+                }
                 this.toastr.success('Documento guardado en repositorio');
-                docPath = uploadRes?.path || 'Repositorio';
             } catch (err) {
                 console.error('Upload Error', err);
                 this.toastr.error('Error al subir el documento al repositorio');
@@ -532,8 +599,9 @@ export class PermissionsVacationsComponent implements OnInit {
             with_pay: !!formValues.withPay,
             vacation_year: this.requestType === 'Vacaciones' ? formValues.vacationYear : null,
             document_url: docPath || this.currentDocumentUrl || '',
-            request_date: new Date().toISOString().split('T')[0]
-        };
+            request_date: new Date().toISOString().split('T')[0],
+            return_to_work_date: (this.requestType === 'Vacaciones' && formValues.returnToWorkDate) ? formValues.returnToWorkDate : null
+        } as AbsenceRequest;
 
         try {
             if (this.editingRequestId) {
@@ -590,18 +658,273 @@ export class PermissionsVacationsComponent implements OnInit {
             }
 
             this.loadEmployees(); // Refresh view
-        } catch (err) {
+        } catch (err: any) {
             console.error('Error saving request', err);
             this.toastr.error('Error al guardar el registro');
+        }
+    }
+
+    exportHistory(row: VacationRow): void {
+        this.historyExcelService.exportToExcel(row.nombre, row.history);
+    }
+
+    get allVacacionesRecords(): (RequestRecord & { nombre: string })[] {
+        return this.allRows.flatMap(row =>
+            row.history
+                .filter(r => r.type === 'Vacaciones')
+                .map(r => ({ ...r, nombre: row.nombre }))
+        ).sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
+    }
+
+    get allPermisosRecords(): (RequestRecord & { nombre: string })[] {
+        return this.allRows.flatMap(row =>
+            row.history
+                .filter(r => r.type === 'Permiso')
+                .map(r => ({ ...r, nombre: row.nombre }))
+        ).sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
+    }
+
+    get allIncapacidadesRecords(): (any)[] {
+        // Base: todas las solicitudes de tipo Incapacidad (igual que en "Ver Registros")
+        const incapRequests = this.allRawRequests.filter(r => r.type === 'Incapacidad');
+        return incapRequests.map(req => {
+            // Enriquecer con la tabla disability (match por empleado + fecha inicio)
+            const d: any = this.disabilities.find(
+                x => x.id_employee === req.id_employee && x.start_date === req.start_date
+            ) || {};
+            const emp = this.allEmployeesMap.get(req.id_employee);
+            const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(req.id_employee);
+            const nombre = emp?.name_employee || (req as any).employee?.name_employee || d.name || (isUuid ? 'Empleado dado de baja' : req.id_employee);
+            const empCode = emp?.employee_code || (isUuid ? '-' : req.id_employee);
+            const fechaIngreso = emp?.admission_date
+                ? this.formatDate(new Date(emp.admission_date + 'T00:00:00'))
+                : '';
+            return {
+                id_employee: req.id_employee,
+                empCode,
+                nombre,
+                fechaIngreso,
+                position: d.position || emp?.position || '',
+                location: d.location || emp?.location || '',
+                start_date: req.start_date,
+                end_date: req.end_date,
+                days: req.days_count,
+                folio: d.folio || '',
+                type: d.type || '',
+                eg: d.eg, rt: d.rt, at_field: d.at_field, st7: d.st7, st2: d.st2,
+                return_to_work_date: d.return_to_work_date || ''
+            };
+        }).sort((a, b) => new Date(b.start_date).getTime() - new Date(a.start_date).getTime());
+    }
+
+    exportAllVacaciones(): void {
+        this.exportReportExcel(
+            'Historial_Vacaciones',
+            ['Nombre', 'Fecha Solicitud', 'Desde', 'Hasta', 'Días', 'Periodo', 'Motivo', 'Descripción'],
+            this.allVacacionesRecords.map(r => [
+                r.nombre,
+                this.formatDateStr(r.requestDate),
+                this.formatDateStr(r.startDate),
+                this.formatDateStr(r.endDate),
+                r.daysCount,
+                r.vacationYear ? `${r.vacationYear} - ${r.vacationYear + 1}` : '-',
+                r.reason || '-',
+                r.description || '-'
+            ])
+        );
+    }
+
+    exportAllPermisos(): void {
+        this.exportReportExcel(
+            'Historial_Permisos',
+            ['Nombre', 'Fecha Solicitud', 'Desde', 'Hasta', 'Días', 'Motivo', 'Con Goce', 'Descripción'],
+            this.allPermisosRecords.map(r => [
+                r.nombre,
+                this.formatDateStr(r.requestDate),
+                this.formatDateStr(r.startDate),
+                this.formatDateStr(r.endDate),
+                r.daysCount,
+                r.reason || '-',
+                r.withPay ? 'Sí' : 'No',
+                r.description || '-'
+            ])
+        );
+    }
+
+    exportAllIncapacidades(): void {
+        this.exportReportExcel(
+            'Historial_Incapacidades',
+            ['ID', 'Nombre', 'Fecha Ingreso', 'Puesto', 'Ubicación', 'Inicio', 'Folio', 'Días', 'Vence', 'Tipo', 'EG', 'RT', 'AT', 'ST7', 'ST2', 'Inicio Labores', 'Observaciones'],
+            this.allIncapacidadesRecords.map(d => [
+                d.empCode || d.id_employee,
+                d.nombre,
+                d.fechaIngreso,
+                d.position || '-',
+                d.location || '-',
+                d.start_date ? this.formatDate(new Date(d.start_date + 'T00:00:00')) : '-',
+                d.folio || '-',
+                d.days || '-',
+                d.end_date ? this.formatDate(new Date(d.end_date + 'T00:00:00')) : '-',
+                d.type || '-',
+                d.eg ? 'X' : '',
+                d.rt ? 'X' : '',
+                d.at_field ? 'X' : '',
+                d.st7 ? 'X' : '',
+                d.st2 ? 'X' : '',
+                d.return_to_work_date ? this.formatDate(new Date(d.return_to_work_date + 'T00:00:00')) : '-',
+                ''
+            ])
+        );
+    }
+
+    private exportReportExcel(fileName: string, headers: string[], rows: any[][]): void {
+        const ORANGE: [number,number,number] = [245, 133, 37];
+        const WHITE: [number,number,number] = [255, 255, 255];
+        const DARK: [number,number,number] = [30, 30, 30];
+        const LIGHT_BG: [number,number,number] = [245, 245, 245];
+
+        const headerStyle: any = {
+            font: { bold: true, sz: 10, color: { rgb: 'FFFFFF' } },
+            fill: { fgColor: { rgb: 'F58525' } },
+            alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+            border: { top: { style: 'thin', color: { rgb: 'D47020' } }, bottom: { style: 'thin', color: { rgb: 'D47020' } }, left: { style: 'thin', color: { rgb: 'D47020' } }, right: { style: 'thin', color: { rgb: 'D47020' } } }
+        };
+        const titleStyle: any = {
+            font: { bold: true, sz: 14, color: { rgb: 'FFFFFF' } },
+            fill: { fgColor: { rgb: '2C3E6B' } },
+            alignment: { horizontal: 'center', vertical: 'center' }
+        };
+        const dataStyle: any = {
+            font: { sz: 9, color: { rgb: '333333' } },
+            alignment: { horizontal: 'left', vertical: 'center', wrapText: true },
+            border: { bottom: { style: 'thin', color: { rgb: 'EEEEEE' } }, left: { style: 'thin', color: { rgb: 'EEEEEE' } }, right: { style: 'thin', color: { rgb: 'EEEEEE' } } }
+        };
+        const centerData: any = { ...dataStyle, alignment: { horizontal: 'center', vertical: 'center' } };
+
+        const emissionDate = new Date().toLocaleString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' });
+        const allRows = [
+            [fileName.replace(/_/g, ' ')],
+            [`Fecha de generación: ${emissionDate}`],
+            [],
+            headers,
+            ...rows
+        ];
+
+        const ws: any = XLSX.utils.aoa_to_sheet(allRows);
+        ws['!merges'] = [
+            { s: { r: 0, c: 0 }, e: { r: 0, c: headers.length - 1 } },
+            { s: { r: 1, c: 0 }, e: { r: 1, c: headers.length - 1 } },
+            { s: { r: 2, c: 0 }, e: { r: 2, c: headers.length - 1 } },
+        ];
+        ws['!cols'] = headers.map(() => ({ wch: 18 }));
+        ws['!rows'] = [{ hpt: 28 }, { hpt: 16 }, { hpt: 8 }, { hpt: 22 }];
+
+        for (let c = 0; c < headers.length; c++) {
+            ['A1','B1','C1'].forEach(() => {});
+            const r0 = XLSX.utils.encode_cell({ r: 0, c });
+            const r1 = XLSX.utils.encode_cell({ r: 1, c });
+            const r3 = XLSX.utils.encode_cell({ r: 3, c });
+            if (!ws[r0]) ws[r0] = { v: '' };
+            if (!ws[r1]) ws[r1] = { v: '' };
+            ws[r0].s = titleStyle;
+            ws[r1].s = { font: { sz: 9, color: { rgb: '666666' } }, fill: { fgColor: { rgb: 'F5F5F5' } }, alignment: { horizontal: 'center' } };
+            if (ws[r3]) ws[r3].s = headerStyle;
+        }
+
+        rows.forEach((_, i) => {
+            headers.forEach((__, c) => {
+                const ref = XLSX.utils.encode_cell({ r: 4 + i, c });
+                if (!ws[ref]) ws[ref] = { v: '' };
+                ws[ref].s = c <= 1 ? dataStyle : centerData;
+            });
+        });
+
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, fileName.substring(0, 31));
+        XLSX.writeFile(wb, `${fileName}_${new Date().toISOString().split('T')[0]}.xlsx`);
+    }
+
+    private overrideKey(id: string, field: 'previous' | 'current'): string {
+        const year = field === 'previous' ? this.previousYear : this.currentYear;
+        return `vac_override_${id}_${year}`;
+    }
+
+    getOverride(id: string, field: 'previous' | 'current'): number | null {
+        const raw = localStorage.getItem(this.overrideKey(id, field));
+        return raw !== null ? Number(raw) : null;
+    }
+
+    getDiasPorTomar(item: VacationRow, field: 'previous' | 'current'): number {
+        const override = this.getOverride(item.id, field);
+        return override !== null ? override : (field === 'previous' ? item.diasPorTomarPrevious : item.diasPorTomarCurrent);
+    }
+
+    startEdit(item: VacationRow, field: 'previous' | 'current'): void {
+        if (!this.canManage) return;
+        this.editingCell = { id: item.id, field };
+    }
+
+    saveEdit(item: VacationRow, field: 'previous' | 'current', value: string): void {
+        const num = parseInt(value, 10);
+        if (!isNaN(num) && num >= 0) {
+            localStorage.setItem(this.overrideKey(item.id, field), String(num));
+            if (field === 'previous') item.diasPorTomarPrevious = num;
+            else item.diasPorTomarCurrent = num;
+            item.saldoTotal = item.diasPorTomarPrevious + item.diasPorTomarCurrent;
+        }
+        this.editingCell = null;
+    }
+
+    isEditing(id: string, field: 'previous' | 'current'): boolean {
+        return this.editingCell?.id === id && this.editingCell?.field === field;
+    }
+
+    toDate(dateStr: string): Date {
+        return new Date(dateStr + 'T00:00:00');
+    }
+
+    formatDateStr(dateStr: string): string {
+        if (!dateStr) return '-';
+        try {
+            const d = new Date(dateStr + 'T00:00:00');
+            return this.formatDate(d);
+        } catch {
+            return dateStr;
         }
     }
 
     openHistoryModal(row: VacationRow): void {
         this.selectedEmployeeName = row.nombre;
         this.selectedEmployeeId = row.id;
-        this.selectedEmployeeHistory = row.history;
+        this.selectedEmployeeHistory = [...row.history]
+            .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime())
+            .map(req => {
+                if (req.type === 'Incapacidad') {
+                    const disability = this.disabilities.find(
+                        d => d.id_employee === req.employeeId && d.start_date === req.startDate
+                    );
+                    return { ...req, subtype: disability?.type || '' };
+                }
+                return req;
+            });
         const modal = new (window as any).bootstrap.Modal(document.getElementById('historyModal'));
         modal.show();
+    }
+
+    exportHistoryFromModal(filterType?: 'Vacaciones' | 'Permiso' | 'Incapacidad'): void {
+        const records = filterType
+            ? this.selectedEmployeeHistory.filter(r => r.type === filterType)
+            : this.selectedEmployeeHistory;
+        if (records.length === 0) {
+            this.toastr.info(`No hay registros de ${filterType || 'historial'} para exportar`);
+            return;
+        }
+        const suffix = filterType ? ` - ${filterType}` : '';
+        this.historyExcelService.exportToExcel(this.selectedEmployeeName + suffix, records);
+    }
+
+    countByType(type: 'Vacaciones' | 'Permiso' | 'Incapacidad'): number {
+        return this.selectedEmployeeHistory.filter(r => r.type === type).length;
     }
 
     // --- Calendar Logic ---
@@ -714,7 +1037,16 @@ export class PermissionsVacationsComponent implements OnInit {
             if (modal) modal.hide();
         }
 
-        if (this.isOpenedFromCalendar) {
+        if (this.isOpenedFromHistory) {
+            this.isOpenedFromHistory = false;
+            setTimeout(() => {
+                const historyModalEl = document.getElementById('historyModal');
+                if (historyModalEl) {
+                    const modal = new (window as any).bootstrap.Modal(historyModalEl);
+                    modal.show();
+                }
+            }, 150);
+        } else if (this.isOpenedFromCalendar) {
             this.isOpenedFromCalendar = false;
             setTimeout(() => {
                 this.openCalendarModal();

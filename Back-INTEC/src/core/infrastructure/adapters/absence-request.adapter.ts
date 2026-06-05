@@ -5,9 +5,20 @@ import { NotFound } from "http-errors";
 
 export class AbsenceRequestAdapterRepository implements AbsenceRequestRepository<AbsenceRequestEntity> {
 
+    // Convierte cadenas vacías de campos de fecha a null (MySQL DATE no acepta '')
+    private sanitize(data: Partial<AbsenceRequestEntity>): Partial<AbsenceRequestEntity> {
+        const dateFields: (keyof AbsenceRequestEntity)[] = ['start_date', 'end_date', 'request_date', 'return_to_work_date'];
+        const clean: any = { ...data };
+        for (const f of dateFields) {
+            if (clean[f] === '' || clean[f] === undefined) clean[f] = null;
+        }
+        if (clean.vacation_year === '' || clean.vacation_year === undefined) clean.vacation_year = null;
+        return clean;
+    }
+
     async create(data: Partial<AbsenceRequestEntity>, query?: Query): Promise<AbsenceRequestEntity> {
         const repository = database.getRepository(AbsenceRequestEntity);
-        const absenceRequest = repository.create(data);
+        const absenceRequest = repository.create(this.sanitize(data));
         await repository.save(absenceRequest);
         return absenceRequest;
     }
@@ -34,7 +45,7 @@ export class AbsenceRequestAdapterRepository implements AbsenceRequestRepository
 
     async update(id: Id, data: Partial<AbsenceRequestEntity>, query?: Query): Promise<AbsenceRequestEntity> {
         const repository = database.getRepository(AbsenceRequestEntity);
-        await repository.update(id, data);
+        await repository.update(id, this.sanitize(data));
         return this.get(id);
     }
 

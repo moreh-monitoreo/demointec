@@ -11,6 +11,7 @@ export interface AbsenceRequest {
     vacation_year?: number | null;
     document_url?: string;
     request_date: string;
+    return_to_work_date?: string;
     employee?: {
         name_employee: string;
         employee_code?: string;

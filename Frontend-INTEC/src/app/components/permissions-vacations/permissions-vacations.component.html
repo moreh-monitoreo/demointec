@@ -25,6 +25,25 @@
         </div>
     </div>
 
+    <!-- Tabs -->
+    <div class="tabs-nav">
+        <button class="tab-btn" [class.active]="activeTab === 'vacaciones'" (click)="activeTab = 'vacaciones'">
+            <i class="bi bi-sun"></i> Vacaciones
+        </button>
+        <button class="tab-btn" [class.active]="activeTab === 'histVacaciones'" (click)="activeTab = 'histVacaciones'">
+            <i class="bi bi-calendar-check"></i> Historial Vacaciones
+        </button>
+        <button class="tab-btn" [class.active]="activeTab === 'histPermisos'" (click)="activeTab = 'histPermisos'">
+            <i class="bi bi-file-earmark-medical"></i> Historial Permisos
+        </button>
+        <button class="tab-btn" [class.active]="activeTab === 'histIncapacidades'" (click)="activeTab = 'histIncapacidades'">
+            <i class="bi bi-bandaid"></i> Historial Incapacidades
+        </button>
+    </div>
+
+    <!-- TAB: Vacaciones (actual) -->
+    <ng-container *ngIf="activeTab === 'vacaciones'">
+
     <!-- Filters -->
     <div class="filters-section">
         <div class="filters-row">
@@ -69,16 +88,45 @@
                         <td>{{ item.num }}</td>
                         <td style="text-align: left;">{{ item.nombre }}</td>
                         <td>{{ item.fechaIngreso }}</td>
-                        <td class="col-vacaciones-tomar-2024">{{ item.diasPorTomarPrevious }}</td>
+                        <td class="col-vacaciones-tomar-2024 td-editable" (click)="startEdit(item, 'previous')" title="Clic para editar">
+                            <input *ngIf="isEditing(item.id, 'previous')" type="number" min="0"
+                                [value]="item.diasPorTomarPrevious" class="inline-edit-input" #prevInput
+                                (blur)="saveEdit(item, 'previous', prevInput.value)"
+                                (keydown.enter)="saveEdit(item, 'previous', prevInput.value)"
+                                (keydown.escape)="editingCell = null"
+                                (click)="$event.stopPropagation()"
+                                autofocus>
+                            <span *ngIf="!isEditing(item.id, 'previous')">
+                                {{ item.diasPorTomarPrevious }}
+                                <i *ngIf="canManage" class="bi bi-pencil edit-hint"></i>
+                            </span>
+                        </td>
                         <td>{{ item.aniversarioCurrent }}</td>
                         <td>{{ item.totalVacaciones }}</td>
                         <td>{{ item.diasTomados }}</td>
-                        <td class="col-vacaciones-tomar-2025">{{ item.diasPorTomarCurrent }}</td>
+                        <td class="col-vacaciones-tomar-2025 td-editable" (click)="startEdit(item, 'current')" title="Clic para editar">
+                            <input *ngIf="isEditing(item.id, 'current')" type="number" min="0"
+                                [value]="item.diasPorTomarCurrent" class="inline-edit-input" #currInput
+                                (blur)="saveEdit(item, 'current', currInput.value)"
+                                (keydown.enter)="saveEdit(item, 'current', currInput.value)"
+                                (keydown.escape)="editingCell = null"
+                                (click)="$event.stopPropagation()"
+                                autofocus>
+                            <span *ngIf="!isEditing(item.id, 'current')">
+                                {{ item.diasPorTomarCurrent }}
+                                <i *ngIf="canManage" class="bi bi-pencil edit-hint"></i>
+                            </span>
+                        </td>
                         <td style="font-weight: bold;">{{ item.saldoTotal }}</td>
                         <td>
-                            <button class="btn-action btn-view-records" (click)="openHistoryModal(item)">
-                                <i class="bi bi-eye"></i> Ver Registros
-                            </button>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <button class="btn-action btn-view-records" (click)="openHistoryModal(item)">
+                                    <i class="bi bi-eye"></i> Ver Registros
+                                </button>
+                                <button class="btn-action btn-export-excel" (click)="exportHistory(item)" title="Exportar a Excel">
+                                    <i class="bi bi-file-earmark-excel"></i>
+                                </button>
+                            </div>
                         </td>
                     </tr>
                 </tbody>
@@ -101,6 +149,164 @@
             <p>No se encontraron colaboradores.</p>
         </div>
     </div>
+
+    </ng-container><!-- fin tab vacaciones -->
+
+    <!-- TAB: Historial Vacaciones -->
+    <ng-container *ngIf="activeTab === 'histVacaciones'">
+        <div class="report-tab-header">
+            <span class="report-tab-title"><i class="bi bi-calendar-check"></i> Historial de Vacaciones — Todos los colaboradores</span>
+            <button class="btn-excel-report" (click)="exportAllVacaciones()" [disabled]="allVacacionesRecords.length === 0">
+                <i class="bi bi-file-earmark-excel"></i> Exportar Excel
+            </button>
+        </div>
+        <div class="table-container">
+            <div class="table-responsive">
+                <table class="users-table">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Fecha Solicitud</th>
+                            <th>Desde</th>
+                            <th>Hasta</th>
+                            <th>Días</th>
+                            <th>Periodo</th>
+                            <th>Motivo</th>
+                            <th>Descripción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let r of allVacacionesRecords">
+                            <td><strong>{{ r.nombre }}</strong></td>
+                            <td>{{ formatDateStr(r.requestDate) }}</td>
+                            <td>{{ formatDateStr(r.startDate) }}</td>
+                            <td>{{ formatDateStr(r.endDate) }}</td>
+                            <td style="text-align:center;">{{ r.daysCount }}</td>
+                            <td style="text-align:center;">
+                                <span *ngIf="r.vacationYear" class="badge bg-info">{{ r.vacationYear }} - {{ r.vacationYear + 1 }}</span>
+                                <span *ngIf="!r.vacationYear">-</span>
+                            </td>
+                            <td>{{ r.reason || '-' }}</td>
+                            <td>{{ r.description || '-' }}</td>
+                        </tr>
+                        <tr *ngIf="allVacacionesRecords.length === 0">
+                            <td colspan="8" class="text-center py-3 text-muted">Sin registros de vacaciones.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </ng-container>
+
+    <!-- TAB: Historial Permisos -->
+    <ng-container *ngIf="activeTab === 'histPermisos'">
+        <div class="report-tab-header">
+            <span class="report-tab-title"><i class="bi bi-file-earmark-medical"></i> Historial de Permisos — Todos los colaboradores</span>
+            <button class="btn-excel-report" (click)="exportAllPermisos()" [disabled]="allPermisosRecords.length === 0">
+                <i class="bi bi-file-earmark-excel"></i> Exportar Excel
+            </button>
+        </div>
+        <div class="table-container">
+            <div class="table-responsive">
+                <table class="users-table">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Fecha Solicitud</th>
+                            <th>Desde</th>
+                            <th>Hasta</th>
+                            <th>Días</th>
+                            <th>Motivo</th>
+                            <th>Con Goce</th>
+                            <th>Descripción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let r of allPermisosRecords">
+                            <td><strong>{{ r.nombre }}</strong></td>
+                            <td>{{ formatDateStr(r.requestDate) }}</td>
+                            <td>{{ formatDateStr(r.startDate) }}</td>
+                            <td>{{ formatDateStr(r.endDate) }}</td>
+                            <td style="text-align:center;">{{ r.daysCount }}</td>
+                            <td>{{ r.reason || '-' }}</td>
+                            <td style="text-align:center;">
+                                <span class="badge" [ngClass]="r.withPay ? 'bg-success' : 'bg-secondary'">
+                                    {{ r.withPay ? 'Sí' : 'No' }}
+                                </span>
+                            </td>
+                            <td>{{ r.description || '-' }}</td>
+                        </tr>
+                        <tr *ngIf="allPermisosRecords.length === 0">
+                            <td colspan="8" class="text-center py-3 text-muted">Sin registros de permisos.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </ng-container>
+
+    <!-- TAB: Historial Incapacidades -->
+    <ng-container *ngIf="activeTab === 'histIncapacidades'">
+        <div class="report-tab-header">
+            <span class="report-tab-title"><i class="bi bi-bandaid"></i> Historial de Incapacidades — Todos los colaboradores</span>
+            <button class="btn-excel-report" (click)="exportAllIncapacidades()" [disabled]="allIncapacidadesRecords.length === 0">
+                <i class="bi bi-file-earmark-excel"></i> Exportar Excel
+            </button>
+        </div>
+        <div class="table-container">
+            <div class="table-responsive">
+                <table class="users-table" style="font-size:0.82rem;">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>F. Ingreso</th>
+                            <th>Puesto</th>
+                            <th>Ubicación</th>
+                            <th>Inicio</th>
+                            <th>Folio</th>
+                            <th>Días</th>
+                            <th>Vence</th>
+                            <th>Tipo</th>
+                            <th>EG</th>
+                            <th>RT</th>
+                            <th>AT</th>
+                            <th>ST7</th>
+                            <th>ST2</th>
+                            <th>Inicio Labores</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let d of allIncapacidadesRecords">
+                            <td>{{ d.empCode || d.id_employee }}</td>
+                            <td><strong>{{ d.nombre }}</strong></td>
+                            <td>{{ d.fechaIngreso }}</td>
+                            <td>{{ d.position || '-' }}</td>
+                            <td>{{ d.location || '-' }}</td>
+                            <td>{{ d.start_date ? formatDate(toDate(d.start_date)) : '-' }}</td>
+                            <td>{{ d.folio || '-' }}</td>
+                            <td style="text-align:center;font-weight:bold;">{{ d.days || '-' }}</td>
+                            <td>{{ d.end_date ? formatDate(toDate(d.end_date)) : '-' }}</td>
+                            <td style="text-align:center;">
+                                <span *ngIf="d.type" class="badge" [ngClass]="d.type === 'Inicial' ? 'bg-primary' : 'bg-warning text-dark'">{{ d.type }}</span>
+                                <span *ngIf="!d.type">-</span>
+                            </td>
+                            <td style="text-align:center;">{{ d.eg ? 'X' : '' }}</td>
+                            <td style="text-align:center;">{{ d.rt ? 'X' : '' }}</td>
+                            <td style="text-align:center;">{{ d.at_field ? 'X' : '' }}</td>
+                            <td style="text-align:center;">{{ d.st7 ? 'X' : '' }}</td>
+                            <td style="text-align:center;">{{ d.st2 ? 'X' : '' }}</td>
+                            <td>{{ d.return_to_work_date ? formatDate(toDate(d.return_to_work_date)) : '-' }}</td>
+                        </tr>
+                        <tr *ngIf="allIncapacidadesRecords.length === 0">
+                            <td colspan="16" class="text-center py-3 text-muted">Sin registros de incapacidades.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </ng-container>
+
 </div>
 
 <!-- Modal Crear Solicitud -->
@@ -130,7 +336,8 @@
 
                     <div class="section-panel">
                         <h6 class="mb-3">Detalle de la Solicitud</h6>
-                        <div class="row">
+                        <!-- Fechas para Vacaciones y Permiso -->
+                        <div class="row" *ngIf="requestType !== 'Incapacidad'">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Fecha Inicio</label>
                                 <input type="date" formControlName="startDate" class="form-control">
@@ -140,15 +347,38 @@
                                 <input type="date" formControlName="endDate" class="form-control">
                             </div>
                         </div>
+                        <!-- Fechas para Incapacidad: inicio + días → fin calculada -->
+                        <div class="row" *ngIf="requestType === 'Incapacidad'">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Fecha Inicio</label>
+                                <input type="date" formControlName="startDate" class="form-control">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Días de incapacidad</label>
+                                <input type="number" formControlName="disabilityDays" class="form-control"
+                                    min="1" placeholder="Ej: 7">
+                                <small class="text-muted">La fecha fin se calcula automáticamente</small>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Fecha Fin</label>
+                                <input type="date" formControlName="endDate" class="form-control" readonly
+                                    style="background-color: #f8f9fa; cursor: not-allowed;">
+                            </div>
+                        </div>
                         <div class="row" *ngIf="requestType === 'Vacaciones'">
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Año de Vacaciones a Descontar</label>
+                                <label class="form-label">Periodo de Vacaciones a Descontar</label>
                                 <select formControlName="vacationYear" class="form-select">
-                                    <option [ngValue]="null">Seleccione el año...</option>
-                                    <option *ngFor="let year of availableVacationYears" [ngValue]="year">{{ year }}
+                                    <option [ngValue]="null">Seleccione el periodo...</option>
+                                    <option *ngFor="let year of availableVacationYears" [ngValue]="year">
+                                        {{ year }} - {{ year + 1 }}
                                     </option>
                                 </select>
-                                <small class="text-muted">Indica de qué año se tomarán los días de vacaciones</small>
+                                <small class="text-muted">Indica de qué periodo se tomarán los días de vacaciones</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Fecha de Reanudar Actividades</label>
+                                <input type="date" formControlName="returnToWorkDate" class="form-control">
                             </div>
                         </div>
                         <div class="row" *ngIf="requestType === 'Permiso'">
@@ -279,9 +509,10 @@
 
                         <div class="mb-3">
                             <div *ngIf="currentDocumentUrl" class="mb-2">
-                                <a [href]="currentDocumentUrl" target="_blank" class="btn btn-sm btn-info text-white">
+                                <button type="button" class="btn btn-sm btn-info text-white"
+                                    (click)="openDocument(currentDocumentUrl)">
                                     <i class="bi bi-file-earmark-arrow-down"></i> Ver Documento Actual
-                                </a>
+                                </button>
                             </div>
                             <label class="form-label" *ngIf="!isReadOnly">Adjuntar Archivo (PDF/Imagen)</label>
                             <input type="file" (change)="onFileSelected($event)" class="form-control"
@@ -314,6 +545,7 @@
                         <thead>
                             <tr>
                                 <th>Tipo</th>
+                                <th>Inicial/Subsec.</th>
                                 <th>Fecha Solicitud</th>
                                 <th>Desde</th>
                                 <th>Hasta</th>
@@ -334,13 +566,21 @@
                                         {{ req.type }}
                                     </span>
                                 </td>
-                                <td>{{ req.requestDate }}</td>
-                                <td>{{ req.startDate }}</td>
-                                <td>{{ req.endDate }}</td>
+                                <td style="text-align:center;">
+                                    <span *ngIf="req.subtype" class="badge"
+                                        [ngClass]="req.subtype === 'Inicial' ? 'bg-primary' : 'bg-warning text-dark'">
+                                        {{ req.subtype }}
+                                    </span>
+                                    <span *ngIf="!req.subtype">-</span>
+                                </td>
+                                <td>{{ formatDateStr(req.requestDate) }}</td>
+                                <td>{{ formatDateStr(req.startDate) }}</td>
+                                <td>{{ formatDateStr(req.endDate) }}</td>
                                 <td style="font-weight: bold; text-align: center;">{{ req.daysCount }}</td>
                                 <td style="text-align: center;">
-                                    <span *ngIf="req.type === 'Vacaciones' && req.vacationYear" class="badge bg-info">{{
-                                        req.vacationYear }}</span>
+                                    <span *ngIf="req.type === 'Vacaciones' && req.vacationYear" class="badge bg-info">
+                                        {{ req.vacationYear }} - {{ req.vacationYear + 1 }}
+                                    </span>
                                     <span *ngIf="req.type !== 'Vacaciones' || !req.vacationYear">-</span>
                                 </td>
                                 <td>
@@ -379,7 +619,25 @@
                     </table>
                 </div>
             </div>
-            <div class="modal-footer">
+            <div class="modal-footer justify-content-between flex-wrap gap-2">
+                <div class="d-flex flex-wrap gap-2">
+                    <button type="button" class="btn btn-success btn-sm"
+                        (click)="exportHistoryFromModal()">
+                        <i class="bi bi-file-earmark-excel"></i> Exportar Todo
+                    </button>
+                    <button type="button" class="btn btn-outline-success btn-sm"
+                        (click)="exportHistoryFromModal('Vacaciones')" [disabled]="countByType('Vacaciones') === 0">
+                        <i class="bi bi-sun"></i> Solo Vacaciones
+                    </button>
+                    <button type="button" class="btn btn-outline-primary btn-sm"
+                        (click)="exportHistoryFromModal('Permiso')" [disabled]="countByType('Permiso') === 0">
+                        <i class="bi bi-file-earmark-medical"></i> Solo Permisos
+                    </button>
+                    <button type="button" class="btn btn-outline-danger btn-sm"
+                        (click)="exportHistoryFromModal('Incapacidad')" [disabled]="countByType('Incapacidad') === 0">
+                        <i class="bi bi-bandaid"></i> Solo Incapacidades
+                    </button>
+                </div>
                 <button type="button" class="btn btn-secondary btn-small" data-bs-dismiss="modal">Cerrar</button>
             </div>
         </div>
