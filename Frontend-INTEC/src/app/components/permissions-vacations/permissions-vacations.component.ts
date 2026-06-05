@@ -295,6 +295,13 @@ export class PermissionsVacationsComponent implements OnInit {
             })
             .filter(row => row !== null) as VacationRow[];
 
+        // Ordenar por fecha de ingreso (más antiguo primero)
+        const parseFechaIngreso = (s: string): number => {
+            const p = (s || '').split('/');
+            return p.length === 3 ? new Date(+p[2], +p[1] - 1, +p[0]).getTime() : 0;
+        };
+        this.allRows.sort((a, b) => parseFechaIngreso(a.fechaIngreso) - parseFechaIngreso(b.fechaIngreso));
+
         this.applyFilter();
     }
 
@@ -700,12 +707,18 @@ export class PermissionsVacationsComponent implements OnInit {
         this.historyExcelService.exportToExcel(row.nombre, row.history);
     }
 
+    private sortByNameThenDate(a: { nombre: string; startDate: string }, b: { nombre: string; startDate: string }): number {
+        const byName = (a.nombre || '').localeCompare(b.nombre || '');
+        if (byName !== 0) return byName;
+        return new Date(a.startDate).getTime() - new Date(b.startDate).getTime();
+    }
+
     get allVacacionesRecords(): (RequestRecord & { nombre: string })[] {
         return this.allRows.flatMap(row =>
             row.history
                 .filter(r => r.type === 'Vacaciones')
                 .map(r => ({ ...r, nombre: row.nombre }))
-        ).sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
+        ).sort((a, b) => this.sortByNameThenDate(a, b));
     }
 
     get allPermisosRecords(): (RequestRecord & { nombre: string })[] {
@@ -713,7 +726,7 @@ export class PermissionsVacationsComponent implements OnInit {
             row.history
                 .filter(r => r.type === 'Permiso')
                 .map(r => ({ ...r, nombre: row.nombre }))
-        ).sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
+        ).sort((a, b) => this.sortByNameThenDate(a, b));
     }
 
     get allIncapacidadesRecords(): (any)[] {
@@ -746,7 +759,12 @@ export class PermissionsVacationsComponent implements OnInit {
                 eg: d.eg, rt: d.rt, at_field: d.at_field, st7: d.st7, st2: d.st2,
                 return_to_work_date: d.return_to_work_date || ''
             };
-        }).sort((a, b) => new Date(b.start_date).getTime() - new Date(a.start_date).getTime());
+        }).sort((a, b) => {
+            // Ordenar por colaborador (nombre); dentro del mismo, por fecha de inicio
+            const byName = (a.nombre || '').localeCompare(b.nombre || '');
+            if (byName !== 0) return byName;
+            return new Date(a.start_date).getTime() - new Date(b.start_date).getTime();
+        });
     }
 
     exportAllVacaciones(): void {

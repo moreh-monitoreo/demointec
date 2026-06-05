@@ -12,14 +12,6 @@ interface PermissionVacationRow {
   diasTomados: number;
   diasPorTomarCurrent: number;
   saldoTotal: number;
-  registros: string; // Formatted date ranges
-}
-
-interface RequestRecord {
-  type: 'Vacaciones' | 'Permiso' | 'Incapacidad';
-  startDate: string;
-  endDate: string;
-  daysCount: number;
 }
 
 @Injectable({
@@ -29,7 +21,7 @@ export class ReportPermissionsVacationsService {
 
   exportToExcel(rows: any[], previousYear: number, currentYear: number): void {
     const data = this.buildExportData(rows);
-    const colCount = 11; // 10 data cols + Registros
+    const colCount = 10; // columnas de datos (sin Registros)
 
     const excelRows: any[][] = [];
 
@@ -59,8 +51,7 @@ export class ReportPermissionsVacationsService {
       'TOTAL DÍAS LEY',
       'DÍAS TOMADOS',
       `DÍAS POR TOMAR ${currentYear}`,
-      'SALDO TOTAL',
-      'REGISTROS'
+      'SALDO TOTAL'
     ]);
 
     const headerRowIndex = excelRows.length - 1;
@@ -76,8 +67,7 @@ export class ReportPermissionsVacationsService {
         row.totalVacaciones,
         row.diasTomados,
         row.diasPorTomarCurrent,
-        row.saldoTotal,
-        row.registros
+        row.saldoTotal
       ]);
     }
 
@@ -116,13 +106,6 @@ export class ReportPermissionsVacationsService {
       border: { bottom: { style: 'thin', color: { rgb: 'D47020' } } }
     };
 
-    const headerBlueStyle: XLSX.CellStyle = {
-      font: { bold: true, sz: 10, color: { rgb: 'FFFFFF' } },
-      fill: { fgColor: { rgb: '2A7AE4' } },
-      alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
-      border: { bottom: { style: 'thin', color: { rgb: '1A5EC4' } } }
-    };
-
     const dataStyle: XLSX.CellStyle = {
       font: { sz: 9, color: { rgb: '333333' } },
       alignment: { horizontal: 'left', vertical: 'center' },
@@ -148,11 +131,6 @@ export class ReportPermissionsVacationsService {
       border: { bottom: { style: 'thin', color: { rgb: 'EEEEEE' } } }
     };
 
-    const registrosStyle: XLSX.CellStyle = {
-      font: { sz: 8, color: { rgb: '444444' } },
-      alignment: { horizontal: 'left', vertical: 'center', wrapText: true },
-      border: { bottom: { style: 'thin', color: { rgb: 'EEEEEE' } } }
-    };
 
     // Columnas con fondo azul claro (indices): 0=Antigüedad, 4=DíasPorTomar Previous, 8=DíasPorTomar Current
     const blueCols = new Set([0, 4, 8]);
@@ -169,12 +147,9 @@ export class ReportPermissionsVacationsService {
         } else if (R === 2) {
           ws[addr].s = emissionStyle;
         } else if (R === headerRowIndex) {
-          ws[addr].s = (C === colCount - 1) ? headerBlueStyle : headerStyle;
+          ws[addr].s = headerStyle;
         } else if (R > headerRowIndex) {
-          if (C === colCount - 1) {
-            // Columna Registros
-            ws[addr].s = registrosStyle;
-          } else if (C === 2) {
+          if (C === 2) {
             // Nombre alineado a la izquierda
             ws[addr].s = dataStyle;
           } else if (C === 9) {
@@ -201,7 +176,6 @@ export class ReportPermissionsVacationsService {
       { wch: 13 },  // Días Tomados
       { wch: 14 },  // Días por tomar current
       { wch: 11 },  // Saldo Total
-      { wch: 40 },  // Registros
     ];
 
     // Alto de filas
@@ -211,9 +185,9 @@ export class ReportPermissionsVacationsService {
     ws['!rows'][2] = { hpx: 18 };
     ws['!rows'][headerRowIndex] = { hpx: 28 };
 
-    // Filas de datos con altura mayor para mostrar registros
+    // Filas de datos
     for (let R = headerRowIndex + 1; R < excelRows.length; R++) {
-      ws['!rows'][R] = { hpx: 40 };
+      ws['!rows'][R] = { hpx: 22 };
     }
 
     ws['!views'] = [{ showGridLines: false }];
@@ -236,46 +210,7 @@ export class ReportPermissionsVacationsService {
       totalVacaciones: row.totalVacaciones,
       diasTomados: row.diasTomados,
       diasPorTomarCurrent: row.diasPorTomarCurrent,
-      saldoTotal: row.saldoTotal,
-      registros: this.buildRegistrosText(row.history || [])
+      saldoTotal: row.saldoTotal
     }));
-  }
-
-  private buildRegistrosText(history: RequestRecord[]): string {
-    if (!history || history.length === 0) return '';
-
-    return history
-      .map(r => {
-        const rangeStr = this.formatDateRange(r.startDate, r.endDate);
-        return `${r.type}: ${rangeStr}`;
-      })
-      .join('\n');
-  }
-
-  private formatDateRange(startDate: string, endDate: string): string {
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-
-    const startDay = start.getUTCDate();
-    const endDay = end.getUTCDate();
-    const startMonth = this.getMonthAbbr(start.getUTCMonth());
-    const endMonth = this.getMonthAbbr(end.getUTCMonth());
-    const startYear = start.getUTCFullYear();
-    const endYear = end.getUTCFullYear();
-
-    if (startMonth === endMonth && startYear === endYear) {
-      return `${startDay.toString().padStart(2, '0')}-${endDay.toString().padStart(2, '0')} ${startMonth}`;
-    }
-
-    if (startYear === endYear) {
-      return `${startDay.toString().padStart(2, '0')} ${startMonth} - ${endDay.toString().padStart(2, '0')} ${endMonth}`;
-    }
-
-    return `${startDay.toString().padStart(2, '0')} ${startMonth} ${startYear} - ${endDay.toString().padStart(2, '0')} ${endMonth} ${endYear}`;
-  }
-
-  private getMonthAbbr(monthIndex: number): string {
-    const months = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'];
-    return months[monthIndex];
   }
 }
