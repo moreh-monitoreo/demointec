@@ -655,10 +655,10 @@ export class PermissionsVacationsComponent implements OnInit {
                     at_field: !!formValues.at_field,
                     st7: !!formValues.st7,
                     st2: !!formValues.st2,
-                    return_to_work_date: formValues.returnToWorkDate || '',
+                    return_to_work_date: formValues.returnToWorkDate || null,
                     document_path: docPath || this.currentDocumentUrl || '',
                     document_name: this.selectedFile?.name || ''
-                };
+                } as Disability;
                 try {
                     await firstValueFrom(this.disabilityAdapter.create(disabilityData));
                 } catch (disabilityErr) {

@@ -16,7 +16,7 @@ export interface Disability {
     at_field?: boolean;
     st7?: boolean;
     st2?: boolean;
-    return_to_work_date?: string;
+    return_to_work_date?: string | null;
     document_path?: string;
     document_name?: string;
     created_at?: Date;

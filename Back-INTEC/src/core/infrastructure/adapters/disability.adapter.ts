@@ -5,9 +5,19 @@ import { NotFound } from "http-errors";
 
 export class DisabilityAdapterRepository implements DisabilityRepository<DisabilityEntity> {
 
+    // Convierte cadenas vacías de campos de fecha a null (MySQL DATE no acepta '')
+    private sanitize(data: Partial<DisabilityEntity>): Partial<DisabilityEntity> {
+        const dateFields: (keyof DisabilityEntity)[] = ['start_date', 'end_date', 'return_to_work_date'];
+        const clean: any = { ...data };
+        for (const f of dateFields) {
+            if (clean[f] === '' || clean[f] === undefined) clean[f] = null;
+        }
+        return clean;
+    }
+
     async create(data: Partial<DisabilityEntity>, query?: Query): Promise<DisabilityEntity> {
         const repository = database.getRepository(DisabilityEntity);
-        const disability = repository.create(data);
+        const disability = repository.create(this.sanitize(data));
         await repository.save(disability);
         return disability;
     }
@@ -34,7 +44,7 @@ export class DisabilityAdapterRepository implements DisabilityRepository<Disabil
 
     async update(id: Id, data: Partial<DisabilityEntity>, query?: Query): Promise<DisabilityEntity> {
         const repository = database.getRepository(DisabilityEntity);
-        await repository.update(id, data);
+        await repository.update(id, this.sanitize(data));
         return this.get(id);
     }
 
