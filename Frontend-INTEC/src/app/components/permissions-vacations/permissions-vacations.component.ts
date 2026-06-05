@@ -97,6 +97,9 @@ export class PermissionsVacationsComponent implements OnInit {
     // Disabilities cache
     disabilities: Disability[] = [];
 
+    // ID de la incapacidad en edición (para hacer update y no duplicar)
+    editingDisabilityId: number | null = null;
+
     // Permission State
     canManage: boolean = false;
 
@@ -355,6 +358,7 @@ export class PermissionsVacationsComponent implements OnInit {
         this.requestForm.enable();
         this.selectedFile = null;
         this.editingRequestId = null;
+        this.editingDisabilityId = null;
         this.isReadOnly = false;
         this.currentDocumentUrl = null;
         this.incapacidadMotivoBase = '';
@@ -484,6 +488,7 @@ export class PermissionsVacationsComponent implements OnInit {
         const disability = this.disabilities.find(
             d => d.id_employee === employeeId && d.start_date === startDate
         );
+        this.editingDisabilityId = disability?.id ?? null;
         if (disability) {
             this.requestForm.patchValue({
                 position: disability.position || '',
@@ -660,7 +665,11 @@ export class PermissionsVacationsComponent implements OnInit {
                     document_name: this.selectedFile?.name || ''
                 } as Disability;
                 try {
-                    await firstValueFrom(this.disabilityAdapter.create(disabilityData));
+                    if (this.editingRequestId && this.editingDisabilityId) {
+                        await firstValueFrom(this.disabilityAdapter.update(String(this.editingDisabilityId), disabilityData));
+                    } else {
+                        await firstValueFrom(this.disabilityAdapter.create(disabilityData));
+                    }
                 } catch (disabilityErr) {
                     console.error('Error guardando incapacidad', disabilityErr);
                     this.toastr.warning('El registro se guardó pero hubo un error al guardar la incapacidad en el detalle');
