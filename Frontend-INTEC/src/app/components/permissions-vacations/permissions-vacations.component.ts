@@ -378,6 +378,27 @@ export class PermissionsVacationsComponent implements OnInit {
         }
     }
 
+    // Inicializa el selector de motivo de incapacidad a partir del reason guardado
+    private initIncapacidadMotivo(reason: string): void {
+        this.incapacidadMotivoBase = '';
+        this.incapacidadTrayecto = '';
+        this.incapacidadOtrosTexto = '';
+        const baseOptions = ['Enfermedad General', 'Accidente de trabajo', 'Maternidad', 'Parcial permanente'];
+        if (!reason || reason === 'Incapacidad') {
+            return;
+        }
+        if (reason.startsWith('Accidente en trayecto')) {
+            this.incapacidadMotivoBase = 'Accidente en trayecto';
+            const parts = reason.split(' - ');
+            this.incapacidadTrayecto = parts.length > 1 ? parts[1] : '';
+        } else if (baseOptions.includes(reason)) {
+            this.incapacidadMotivoBase = reason;
+        } else {
+            this.incapacidadMotivoBase = 'Otros';
+            this.incapacidadOtrosTexto = reason;
+        }
+    }
+
     onTrayectoChange(value: string): void {
         this.incapacidadTrayecto = value;
         this.requestForm.patchValue({ reason: `Accidente en trayecto - ${value}` });
@@ -410,6 +431,7 @@ export class PermissionsVacationsComponent implements OnInit {
         });
 
         if (record.type === 'Incapacidad') {
+            this.initIncapacidadMotivo(record.reason || '');
             this.patchDisabilityFields(employeeId, record.startDate);
         }
 
@@ -439,6 +461,7 @@ export class PermissionsVacationsComponent implements OnInit {
         });
 
         if (record.type === 'Incapacidad') {
+            this.initIncapacidadMotivo(record.reason || '');
             this.patchDisabilityFields(employeeId, record.startDate);
         }
 

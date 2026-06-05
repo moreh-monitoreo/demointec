@@ -404,7 +404,9 @@
                         <div class="mb-3" *ngIf="requestType === 'Incapacidad'">
                             <label class="form-label">Motivo</label>
                             <div class="d-flex align-items-start gap-3 flex-wrap">
-                                <select class="form-select" style="max-width: 280px;" (change)="onIncapacidadMotivoChange($any($event.target).value)">
+                                <select class="form-select" style="max-width: 280px;"
+                                    [(ngModel)]="incapacidadMotivoBase" [ngModelOptions]="{standalone: true}"
+                                    (change)="onIncapacidadMotivoChange($any($event.target).value)">
                                     <option value="">Seleccione un motivo...</option>
                                     <option value="Enfermedad General">Enfermedad General</option>
                                     <option value="Accidente de trabajo">Accidente de trabajo</option>
@@ -585,7 +587,7 @@
                                 </td>
                                 <td>
                                     <div class="fw-bold">{{ req.reason || '-' }}</div>
-                                    <div class="small text-muted" *ngIf="req.type === 'Permiso' || req.type === 'Incapacidad'">
+                                    <div class="small text-muted" *ngIf="req.type === 'Permiso'">
                                         {{ req.withPay ? 'Con Goce' : 'Sin Goce' }}
                                     </div>
                                 </td>
