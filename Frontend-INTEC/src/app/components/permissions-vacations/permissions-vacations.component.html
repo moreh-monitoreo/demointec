@@ -100,11 +100,35 @@
                                 <i *ngIf="canManage" class="bi bi-pencil edit-hint"></i>
                             </span>
                         </td>
-                        <td class="col-vacaciones-tomar-2024">{{ item.diasPorTomarPrevious }}</td>
+                        <td class="col-vacaciones-tomar-2024 td-editable" (click)="startEdit(item, 'previous')"
+                            title="Clic para editar el total disponible de este año (incluye acumulados)">
+                            <input *ngIf="isEditing(item.id, 'previous')" type="number" min="0"
+                                [value]="item.basePrevious" class="inline-edit-input" #prevInput
+                                (blur)="saveEdit(item, 'previous', prevInput.value)"
+                                (keydown.enter)="saveEdit(item, 'previous', prevInput.value)"
+                                (keydown.escape)="editingCell = null"
+                                (click)="$event.stopPropagation()" autofocus>
+                            <span *ngIf="!isEditing(item.id, 'previous')">
+                                {{ item.diasPorTomarPrevious }}
+                                <i *ngIf="canManage" class="bi bi-pencil edit-hint"></i>
+                            </span>
+                        </td>
                         <td>{{ item.aniversarioCurrent }}</td>
                         <td>{{ item.totalVacaciones }}</td>
                         <td>{{ item.diasTomados }}</td>
-                        <td class="col-vacaciones-tomar-2025">{{ item.diasPorTomarCurrent }}</td>
+                        <td class="col-vacaciones-tomar-2025 td-editable" (click)="startEdit(item, 'current')"
+                            title="Clic para editar el total disponible de este año (incluye acumulados)">
+                            <input *ngIf="isEditing(item.id, 'current')" type="number" min="0"
+                                [value]="item.baseCurrent" class="inline-edit-input" #currInput
+                                (blur)="saveEdit(item, 'current', currInput.value)"
+                                (keydown.enter)="saveEdit(item, 'current', currInput.value)"
+                                (keydown.escape)="editingCell = null"
+                                (click)="$event.stopPropagation()" autofocus>
+                            <span *ngIf="!isEditing(item.id, 'current')">
+                                {{ item.diasPorTomarCurrent }}
+                                <i *ngIf="canManage" class="bi bi-pencil edit-hint"></i>
+                            </span>
+                        </td>
                         <td style="font-weight: bold;">{{ item.saldoTotal }}</td>
                         <td>
                             <div style="display:flex; align-items:center; gap:8px;">

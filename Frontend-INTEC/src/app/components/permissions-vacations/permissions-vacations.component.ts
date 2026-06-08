@@ -34,6 +34,11 @@ interface VacationRow {
     diasTomados: number; // Current year taken
     diasPorTomarCurrent: number;
     saldoTotal: number;
+    // Base de días disponibles (entitlement o ajuste manual) y días tomados por año, para recalcular al editar
+    basePrevious: number;
+    baseCurrent: number;
+    takenPrevious: number;
+    takenCurrent: number;
     history: RequestRecord[];
 }
 
@@ -94,6 +99,9 @@ export class PermissionsVacationsComponent implements OnInit {
 
     // Inline edit state para fecha de ingreso
     editingDateRow: string | null = null;
+
+    // Inline edit state para días por tomar (ajuste manual del total disponible por año)
+    editingCell: { id: string; field: 'previous' | 'current' } | null = null;
 
     // Disabilities cache
     disabilities: Disability[] = [];
@@ -265,13 +273,22 @@ export class PermissionsVacationsComponent implements OnInit {
                     .filter((r: any) => r.type === 'Vacaciones' && r.vacationYear === currentYear)
                     .reduce((sum: number, r: any) => sum + (r.daysCount || 0), 0);
 
-                let diasPorTomarPrevious = entitlementPrevious - takenPrevious;
-                let diasPorTomarCurrent = entitlementCurrent - takenCurrent;
+                // Base de días disponibles por año. Si hay ajuste manual (override en localStorage),
+                // ese es el TOTAL disponible del año (incluye acumulados); si no, es el derecho por ley.
+                const prevKey = `vac_override_${emp.id_employee}_${previousYear}`;
+                const currKey = `vac_override_${emp.id_employee}_${currentYear}`;
+                const prevOverride = localStorage.getItem(prevKey);
+                const currOverride = localStorage.getItem(currKey);
+                const basePrevious = prevOverride !== null ? Number(prevOverride) : entitlementPrevious;
+                const baseCurrent = currOverride !== null ? Number(currOverride) : entitlementCurrent;
+
+                // Días por tomar = base disponible - vacaciones tomadas (siempre se restan)
+                let diasPorTomarPrevious = basePrevious - takenPrevious;
+                let diasPorTomarCurrent = baseCurrent - takenCurrent;
 
                 // Si el año anterior se agota (queda negativo), el exceso se descuenta del año actual.
-                // El año más antiguo se consume primero; no debe quedar en negativo.
                 if (diasPorTomarPrevious < 0) {
-                    diasPorTomarCurrent += diasPorTomarPrevious; // sumar un negativo = restar el exceso
+                    diasPorTomarCurrent += diasPorTomarPrevious;
                     diasPorTomarPrevious = 0;
                 }
 
@@ -293,6 +310,10 @@ export class PermissionsVacationsComponent implements OnInit {
                     diasTomados: takenPrevious + takenCurrent, // Total de días de vacaciones tomados (ambos años del periodo)
                     diasPorTomarCurrent: diasPorTomarCurrent,
                     saldoTotal: saldoTotal,
+                    basePrevious: basePrevious,
+                    baseCurrent: baseCurrent,
+                    takenPrevious: takenPrevious,
+                    takenCurrent: takenCurrent,
                     history: empHistory
                 };
             })
@@ -933,6 +954,40 @@ export class PermissionsVacationsComponent implements OnInit {
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, fileName.substring(0, 31));
         XLSX.writeFile(wb, `${fileName}_${new Date().toISOString().split('T')[0]}.xlsx`);
+    }
+
+    private overrideKey(id: string, field: 'previous' | 'current'): string {
+        const year = field === 'previous' ? this.previousYear : this.currentYear;
+        return `vac_override_${id}_${year}`;
+    }
+
+    isEditing(id: string, field: 'previous' | 'current'): boolean {
+        return this.editingCell?.id === id && this.editingCell?.field === field;
+    }
+
+    startEdit(item: VacationRow, field: 'previous' | 'current'): void {
+        if (!this.canManage) return;
+        this.editingCell = { id: item.id, field };
+    }
+
+    // Al editar se ingresa el TOTAL de días disponibles del año (base, con acumulados).
+    // El sistema recalcula los días por tomar restando las vacaciones tomadas.
+    saveEdit(item: VacationRow, field: 'previous' | 'current', value: string): void {
+        const num = parseInt(value, 10);
+        this.editingCell = null;
+        if (isNaN(num) || num < 0) return;
+
+        localStorage.setItem(this.overrideKey(item.id, field), String(num));
+        if (field === 'previous') item.basePrevious = num;
+        else item.baseCurrent = num;
+
+        // Recalcular días por tomar con la base nueva, restando tomadas y con traslado entre años
+        let dpp = item.basePrevious - item.takenPrevious;
+        let dpc = item.baseCurrent - item.takenCurrent;
+        if (dpp < 0) { dpc += dpp; dpp = 0; }
+        item.diasPorTomarPrevious = dpp;
+        item.diasPorTomarCurrent = dpc;
+        item.saldoTotal = dpp + dpc;
     }
 
     startEditDate(item: VacationRow): void {
