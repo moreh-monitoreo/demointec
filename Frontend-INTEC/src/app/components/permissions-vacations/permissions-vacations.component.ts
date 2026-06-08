@@ -284,7 +284,7 @@ export class PermissionsVacationsComponent implements OnInit {
                     diasPorTomarPrevious: diasPorTomarPrevious,
                     aniversarioCurrent: anniversaryStr,
                     totalVacaciones: entitlementCurrent, // Label is 'TOTAL DIAS LEY', usually refers to current entitlement
-                    diasTomados: takenCurrent, // Showing Current Year Usage to match the 'Current' row logic visually
+                    diasTomados: takenPrevious + takenCurrent, // Total de días de vacaciones tomados (ambos años del periodo)
                     diasPorTomarCurrent: diasPorTomarCurrent,
                     saldoTotal: saldoTotal,
                     history: empHistory
