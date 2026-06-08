@@ -5,12 +5,13 @@ import { NotFound } from "http-errors";
 
 export class DisabilityAdapterRepository implements DisabilityRepository<DisabilityEntity> {
 
-    // Convierte cadenas vacías de campos de fecha a null (MySQL DATE no acepta '')
+    // Convierte cadenas vacías de campos de fecha a null (MySQL DATE no acepta '').
+    // No toca campos undefined: en updates parciales TypeORM los ignora y conserva el valor existente.
     private sanitize(data: Partial<DisabilityEntity>): Partial<DisabilityEntity> {
         const dateFields: (keyof DisabilityEntity)[] = ['start_date', 'end_date', 'return_to_work_date'];
         const clean: any = { ...data };
         for (const f of dateFields) {
-            if (clean[f] === '' || clean[f] === undefined) clean[f] = null;
+            if (clean[f] === '') clean[f] = null;
         }
         return clean;
     }

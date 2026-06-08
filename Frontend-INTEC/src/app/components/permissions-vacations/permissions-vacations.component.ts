@@ -549,16 +549,47 @@ export class PermissionsVacationsComponent implements OnInit {
         createModal.show();
     }
 
-    openDocument(url: string | null): void {
+    async openDocument(url: string | null): Promise<void> {
+        // 1. Si la URL guardada es válida, abrir directo
         if (url && url.startsWith('http')) {
             window.open(url, '_blank', 'noopener,noreferrer');
-        } else {
-            this.toastr.warning(
-                'Este documento fue subido con una versión anterior y su enlace no se guardó correctamente. Edita el registro y vuelve a adjuntar el archivo.',
-                'Documento no disponible',
-                { timeOut: 6000 }
-            );
+            return;
         }
+
+        // 2. Link roto (registros viejos): intentar recuperar desde el repositorio de documentos
+        const employeeId = this.requestForm.get('employeeId')?.value;
+        if (!employeeId) {
+            this.toastr.warning('No se pudo identificar al colaborador para recuperar el documento.');
+            return;
+        }
+
+        this.toastr.info('Buscando el documento en el repositorio...');
+        try {
+            const docs = await firstValueFrom(this.docService.getDocuments(employeeId));
+            const expectedType = `Justificante ${this.requestType}`;
+            // Buscar documento del tipo correspondiente con URL válida de Firebase
+            const match = (docs || []).find(d =>
+                d.document_type === expectedType && (d.document_path || '').startsWith('http')
+            );
+            if (match?.document_path) {
+                window.open(match.document_path, '_blank', 'noopener,noreferrer');
+                // Reparar el registro para que la próxima vez ya tenga el link bueno
+                if (this.editingRequestId) {
+                    this.absenceRequestAdapter.update(this.editingRequestId, {
+                        document_url: match.document_path
+                    } as AbsenceRequest).subscribe({ error: () => {} });
+                }
+                return;
+            }
+        } catch (err) {
+            console.error('Error recuperando documento', err);
+        }
+
+        this.toastr.warning(
+            'No se encontró el archivo en el repositorio. Es posible que se haya reemplazado por otro documento del mismo tipo. En ese caso será necesario volver a adjuntarlo.',
+            'Documento no disponible',
+            { timeOut: 7000 }
+        );
     }
 
     onFileSelected(event: any): void {
