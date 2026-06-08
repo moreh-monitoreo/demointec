@@ -263,12 +263,14 @@ export class PermissionsVacationsComponent implements OnInit {
                     .reduce((sum: number, r: any) => sum + (r.daysCount || 0), 0);
 
                 let diasPorTomarPrevious = entitlementPrevious - takenPrevious;
-                // Optional: Clamp negative previous balance if needed, but usually it can be negative or 0.
-                // Assuming standard logic where unused days carry over, but here we just show strict year math as requested.
-                // However, if yearsOfServicePrev was 0 (new employee last year), existing logic works.
-                // If employee joined THIS year, Previous Entitlement is 0. Balance 0. Correct.
-
                 let diasPorTomarCurrent = entitlementCurrent - takenCurrent;
+
+                // Si el año anterior se agota (queda negativo), el exceso se descuenta del año actual.
+                // El año más antiguo se consume primero; no debe quedar en negativo.
+                if (diasPorTomarPrevious < 0) {
+                    diasPorTomarCurrent += diasPorTomarPrevious; // sumar un negativo = restar el exceso
+                    diasPorTomarPrevious = 0;
+                }
 
                 const prevKey = `vac_override_${emp.id_employee}_${previousYear}`;
                 const currKey = `vac_override_${emp.id_employee}_${currentYear}`;
