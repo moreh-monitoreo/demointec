@@ -231,18 +231,15 @@ export class PermissionsVacationsComponent implements OnInit {
                 const admissionDate = this.parseLocalDate(admissionDateStr);
                 const admissionYear = admissionDate.getFullYear();
 
-                // Calculate Seniority for Current Year
+                // Antigüedad del año actual. El primer año cuenta desde la contratación (mínimo 1).
                 let yearsOfServiceCurrent = currentYear - admissionYear;
-                if (yearsOfServiceCurrent < 0) yearsOfServiceCurrent = 0;
+                if (yearsOfServiceCurrent < 1) yearsOfServiceCurrent = 1;
 
-                // Calculate Seniority for Previous Year
+                // Antigüedad del año anterior (0 si aún no existía ese año)
                 let yearsOfServicePrev = previousYear - admissionYear;
                 if (yearsOfServicePrev < 0) yearsOfServicePrev = 0;
 
-                // Si fue contratado este año (0 años cumplidos), ya se le otorgan los 12 días del primer periodo
-                const entitlementCurrent = yearsOfServiceCurrent === 0
-                    ? 12
-                    : this.calculateVacationDays(yearsOfServiceCurrent);
+                const entitlementCurrent = this.calculateVacationDays(yearsOfServiceCurrent);
                 const entitlementPrevious = this.calculateVacationDays(yearsOfServicePrev);
 
                 // Format dates
