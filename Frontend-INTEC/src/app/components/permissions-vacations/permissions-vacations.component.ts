@@ -92,9 +92,6 @@ export class PermissionsVacationsComponent implements OnInit {
     selectedEmployeeId: string = '';
     selectedEmployeeHistory: RequestRecord[] = [];
 
-    // Inline edit state for días por tomar
-    editingCell: { id: string; field: 'previous' | 'current' } | null = null;
-
     // Inline edit state para fecha de ingreso
     editingDateRow: string | null = null;
 
@@ -271,13 +268,6 @@ export class PermissionsVacationsComponent implements OnInit {
                     diasPorTomarCurrent += diasPorTomarPrevious; // sumar un negativo = restar el exceso
                     diasPorTomarPrevious = 0;
                 }
-
-                const prevKey = `vac_override_${emp.id_employee}_${previousYear}`;
-                const currKey = `vac_override_${emp.id_employee}_${currentYear}`;
-                const prevOverride = localStorage.getItem(prevKey);
-                const currOverride = localStorage.getItem(currKey);
-                if (prevOverride !== null) diasPorTomarPrevious = Number(prevOverride);
-                if (currOverride !== null) diasPorTomarCurrent = Number(currOverride);
 
                 const saldoTotal = diasPorTomarPrevious + diasPorTomarCurrent;
                 const num = emp.employee_code || (index + 1).toString().padStart(4, '0');
@@ -937,41 +927,6 @@ export class PermissionsVacationsComponent implements OnInit {
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, fileName.substring(0, 31));
         XLSX.writeFile(wb, `${fileName}_${new Date().toISOString().split('T')[0]}.xlsx`);
-    }
-
-    private overrideKey(id: string, field: 'previous' | 'current'): string {
-        const year = field === 'previous' ? this.previousYear : this.currentYear;
-        return `vac_override_${id}_${year}`;
-    }
-
-    getOverride(id: string, field: 'previous' | 'current'): number | null {
-        const raw = localStorage.getItem(this.overrideKey(id, field));
-        return raw !== null ? Number(raw) : null;
-    }
-
-    getDiasPorTomar(item: VacationRow, field: 'previous' | 'current'): number {
-        const override = this.getOverride(item.id, field);
-        return override !== null ? override : (field === 'previous' ? item.diasPorTomarPrevious : item.diasPorTomarCurrent);
-    }
-
-    startEdit(item: VacationRow, field: 'previous' | 'current'): void {
-        if (!this.canManage) return;
-        this.editingCell = { id: item.id, field };
-    }
-
-    saveEdit(item: VacationRow, field: 'previous' | 'current', value: string): void {
-        const num = parseInt(value, 10);
-        if (!isNaN(num) && num >= 0) {
-            localStorage.setItem(this.overrideKey(item.id, field), String(num));
-            if (field === 'previous') item.diasPorTomarPrevious = num;
-            else item.diasPorTomarCurrent = num;
-            item.saldoTotal = item.diasPorTomarPrevious + item.diasPorTomarCurrent;
-        }
-        this.editingCell = null;
-    }
-
-    isEditing(id: string, field: 'previous' | 'current'): boolean {
-        return this.editingCell?.id === id && this.editingCell?.field === field;
     }
 
     startEditDate(item: VacationRow): void {
