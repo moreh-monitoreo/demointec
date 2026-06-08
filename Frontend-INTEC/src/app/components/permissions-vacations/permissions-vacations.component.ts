@@ -239,7 +239,10 @@ export class PermissionsVacationsComponent implements OnInit {
                 let yearsOfServicePrev = previousYear - admissionYear;
                 if (yearsOfServicePrev < 0) yearsOfServicePrev = 0;
 
-                const entitlementCurrent = this.calculateVacationDays(yearsOfServiceCurrent);
+                // Si fue contratado este año (0 años cumplidos), ya se le otorgan los 12 días del primer periodo
+                const entitlementCurrent = yearsOfServiceCurrent === 0
+                    ? 12
+                    : this.calculateVacationDays(yearsOfServiceCurrent);
                 const entitlementPrevious = this.calculateVacationDays(yearsOfServicePrev);
 
                 // Format dates
