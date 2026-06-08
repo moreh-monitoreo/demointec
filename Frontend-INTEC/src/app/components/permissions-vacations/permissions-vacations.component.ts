@@ -17,6 +17,8 @@ import { PermissionsService } from '../../services/permissions.service';
 import { ReportPermissionsVacationsService } from '../../services/reports/report_permissions_vacations.service';
 import { ReportPermisoPdfService } from '../../services/reports/report_permiso_pdf.service';
 import { ReportPermissionsHistoryService } from '../../services/reports/report_permissions_history.service';
+import { VacationAdjustmentAdapterService } from '../../adapters/vacation-adjustment.adapter';
+import { VacationAdjustment } from '../../models/vacation-adjustment';
 import { ReportVacacionesPdfService } from '../../services/reports/report_vacaciones_pdf.service';
 
 interface VacationRow {
@@ -106,6 +108,9 @@ export class PermissionsVacationsComponent implements OnInit {
     // Disabilities cache
     disabilities: Disability[] = [];
 
+    // Ajustes manuales de días por tomar (cargados desde la BD)
+    vacationAdjustments: VacationAdjustment[] = [];
+
     // ID de la incapacidad en edición (para hacer update y no duplicar)
     editingDisabilityId: number | null = null;
 
@@ -137,7 +142,8 @@ export class PermissionsVacationsComponent implements OnInit {
         private permisoPdfService: ReportPermisoPdfService,
         private vacacionesPdfService: ReportVacacionesPdfService,
         private permissionsService: PermissionsService,
-        private historyExcelService: ReportPermissionsHistoryService
+        private historyExcelService: ReportPermissionsHistoryService,
+        private vacationAdjustmentAdapter: VacationAdjustmentAdapterService
     ) {
         this.requestForm = this.fb.group({
             employeeId: ['', Validators.required],
@@ -177,6 +183,14 @@ export class PermissionsVacationsComponent implements OnInit {
 
     loadEmployees(): void {
         this.loading = true;
+        // Cargar primero los ajustes manuales de la BD; luego empleados y solicitudes
+        this.vacationAdjustmentAdapter.getList().subscribe({
+            next: (adjustments) => { this.vacationAdjustments = adjustments; this.loadEmployeesData(); },
+            error: () => { this.vacationAdjustments = []; this.loadEmployeesData(); }
+        });
+    }
+
+    private loadEmployeesData(): void {
         this.employeesAdapter.getList().subscribe({
             next: (employees) => {
                 // Guardar TODOS los empleados (activos e inactivos) para lookup en reportes
@@ -273,14 +287,12 @@ export class PermissionsVacationsComponent implements OnInit {
                     .filter((r: any) => r.type === 'Vacaciones' && r.vacationYear === currentYear)
                     .reduce((sum: number, r: any) => sum + (r.daysCount || 0), 0);
 
-                // Base de días disponibles por año. Si hay ajuste manual (override en localStorage),
+                // Base de días disponibles por año. Si hay ajuste manual guardado en la BD,
                 // ese es el TOTAL disponible del año (incluye acumulados); si no, es el derecho por ley.
-                const prevKey = `vac_override_${emp.id_employee}_${previousYear}`;
-                const currKey = `vac_override_${emp.id_employee}_${currentYear}`;
-                const prevOverride = localStorage.getItem(prevKey);
-                const currOverride = localStorage.getItem(currKey);
-                const basePrevious = prevOverride !== null ? Number(prevOverride) : entitlementPrevious;
-                const baseCurrent = currOverride !== null ? Number(currOverride) : entitlementCurrent;
+                const prevAdj = this.vacationAdjustments.find(a => a.id_employee === emp.id_employee && a.year === previousYear);
+                const currAdj = this.vacationAdjustments.find(a => a.id_employee === emp.id_employee && a.year === currentYear);
+                const basePrevious = prevAdj ? prevAdj.base_days : entitlementPrevious;
+                const baseCurrent = currAdj ? currAdj.base_days : entitlementCurrent;
 
                 // Días por tomar = base disponible - vacaciones tomadas (siempre se restan)
                 let diasPorTomarPrevious = basePrevious - takenPrevious;
@@ -956,11 +968,6 @@ export class PermissionsVacationsComponent implements OnInit {
         XLSX.writeFile(wb, `${fileName}_${new Date().toISOString().split('T')[0]}.xlsx`);
     }
 
-    private overrideKey(id: string, field: 'previous' | 'current'): string {
-        const year = field === 'previous' ? this.previousYear : this.currentYear;
-        return `vac_override_${id}_${year}`;
-    }
-
     isEditing(id: string, field: 'previous' | 'current'): boolean {
         return this.editingCell?.id === id && this.editingCell?.field === field;
     }
@@ -971,17 +978,32 @@ export class PermissionsVacationsComponent implements OnInit {
     }
 
     // Al editar se ingresa el TOTAL de días disponibles del año (base, con acumulados).
-    // El sistema recalcula los días por tomar restando las vacaciones tomadas.
+    // Se guarda en la BD y el sistema recalcula los días por tomar restando las vacaciones tomadas.
     saveEdit(item: VacationRow, field: 'previous' | 'current', value: string): void {
         const num = parseInt(value, 10);
         this.editingCell = null;
         if (isNaN(num) || num < 0) return;
 
-        localStorage.setItem(this.overrideKey(item.id, field), String(num));
+        const year = field === 'previous' ? this.previousYear : this.currentYear;
+
+        // Guardar el ajuste en la base de datos
+        this.vacationAdjustmentAdapter.save({ id_employee: item.id, year, base_days: num }).subscribe({
+            next: () => {
+                // Actualizar el cache local de ajustes
+                const existing = this.vacationAdjustments.find(a => a.id_employee === item.id && a.year === year);
+                if (existing) existing.base_days = num;
+                else this.vacationAdjustments.push({ id_employee: item.id, year, base_days: num });
+                this.toastr.success('Días disponibles actualizados');
+            },
+            error: (err) => {
+                console.error('Error guardando ajuste de vacaciones', err);
+                this.toastr.error('No se pudo guardar el ajuste');
+            }
+        });
+
+        // Recalcular días por tomar localmente (respuesta inmediata)
         if (field === 'previous') item.basePrevious = num;
         else item.baseCurrent = num;
-
-        // Recalcular días por tomar con la base nueva, restando tomadas y con traslado entre años
         let dpp = item.basePrevious - item.takenPrevious;
         let dpc = item.baseCurrent - item.takenCurrent;
         if (dpp < 0) { dpc += dpp; dpp = 0; }

@@ -43,6 +43,7 @@ import loanPaymentRouter from './core/infrastructure/rest/routes/loan_payment.ro
 import bondApplicationRouter from './core/infrastructure/rest/routes/bond_application.route';
 import bondRecommendationRouter from './core/infrastructure/rest/routes/bond_recommendation.route';
 import rolePermissionsRouter from './core/infrastructure/rest/routes/role-permissions.route';
+import vacationAdjustmentRouter from './core/infrastructure/rest/routes/vacation-adjustment.route';
 
 import { RoleEntity } from './core/infrastructure/entity/roles.entity';
 import { UserEntity } from './core/infrastructure/entity/users.entity';
@@ -102,6 +103,7 @@ app.use('/api', loanPaymentRouter);
 app.use('/api', bondApplicationRouter);
 app.use('/api', bondRecommendationRouter);
 app.use('/api', rolePermissionsRouter);
+app.use('/api', vacationAdjustmentRouter);
 
 // Serve Frontend Static Files
 app.use(express.static(path.join(__dirname, '../public')));
