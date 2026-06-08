@@ -242,9 +242,15 @@ export class PermissionsVacationsComponent implements OnInit {
                 const entitlementCurrent = this.calculateVacationDays(yearsOfServiceCurrent);
                 const entitlementPrevious = this.calculateVacationDays(yearsOfServicePrev);
 
-                // Format dates
-                const anniversaryDateCurrent = new Date(currentYear, admissionDate.getMonth(), admissionDate.getDate());
-                const anniversaryStr = this.formatDate(anniversaryDateCurrent);
+                // Próximo aniversario: el día/mes de ingreso en su próxima ocurrencia futura.
+                // Si la fecha de este año ya pasó (o es hoy), se toma la del año siguiente.
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                let anniversaryDate = new Date(currentYear, admissionDate.getMonth(), admissionDate.getDate());
+                if (anniversaryDate <= today) {
+                    anniversaryDate = new Date(currentYear + 1, admissionDate.getMonth(), admissionDate.getDate());
+                }
+                const anniversaryStr = this.formatDate(anniversaryDate);
                 const admissionStr = this.formatDate(admissionDate);
 
                 const empHistory = savedRequests.filter((r: any) => r.employeeId === emp.id_employee);
