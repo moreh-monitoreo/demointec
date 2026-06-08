@@ -87,7 +87,19 @@
                         <td class="col-antiguedad">{{ item.antiguedad }} Años</td>
                         <td>{{ item.num }}</td>
                         <td style="text-align: left;">{{ item.nombre }}</td>
-                        <td>{{ item.fechaIngreso }}</td>
+                        <td class="td-editable" (click)="startEditDate(item)" title="Clic para editar fecha de ingreso">
+                            <input *ngIf="editingDateRow === item.id" type="date"
+                                [value]="item.admissionDateRaw" class="inline-edit-input" #dateInput
+                                style="width: 130px;"
+                                (blur)="saveAdmissionDate(item, dateInput.value)"
+                                (keydown.enter)="saveAdmissionDate(item, dateInput.value)"
+                                (keydown.escape)="editingDateRow = null"
+                                (click)="$event.stopPropagation()">
+                            <span *ngIf="editingDateRow !== item.id">
+                                {{ item.fechaIngreso }}
+                                <i *ngIf="canManage" class="bi bi-pencil edit-hint"></i>
+                            </span>
+                        </td>
                         <td class="col-vacaciones-tomar-2024 td-editable" (click)="startEdit(item, 'previous')" title="Clic para editar">
                             <input *ngIf="isEditing(item.id, 'previous')" type="number" min="0"
                                 [value]="item.diasPorTomarPrevious" class="inline-edit-input" #prevInput

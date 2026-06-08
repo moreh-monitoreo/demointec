@@ -25,6 +25,7 @@ interface VacationRow {
     num: string;
     nombre: string;
     fechaIngreso: string;
+    admissionDateRaw: string; // YYYY-MM-DD para edición
     position: string;
     location: string;
     diasPorTomarPrevious: number;
@@ -93,6 +94,9 @@ export class PermissionsVacationsComponent implements OnInit {
 
     // Inline edit state for días por tomar
     editingCell: { id: string; field: 'previous' | 'current' } | null = null;
+
+    // Inline edit state para fecha de ingreso
+    editingDateRow: string | null = null;
 
     // Disabilities cache
     disabilities: Disability[] = [];
@@ -227,7 +231,7 @@ export class PermissionsVacationsComponent implements OnInit {
                 const admissionDateStr = emp.admission_date;
                 if (!admissionDateStr) return null;
 
-                const admissionDate = new Date(admissionDateStr);
+                const admissionDate = this.parseLocalDate(admissionDateStr);
                 const admissionYear = admissionDate.getFullYear();
 
                 // Calculate Seniority for Current Year
@@ -282,6 +286,7 @@ export class PermissionsVacationsComponent implements OnInit {
                     num: num,
                     nombre: emp.name_employee,
                     fechaIngreso: admissionStr,
+                    admissionDateRaw: (admissionDateStr || '').substring(0, 10),
                     position: emp.position || '',
                     location: emp.location || '',
                     diasPorTomarPrevious: diasPorTomarPrevious,
@@ -329,6 +334,13 @@ export class PermissionsVacationsComponent implements OnInit {
         const m = (date.getMonth() + 1).toString().padStart(2, '0');
         const y = date.getFullYear();
         return `${d}/${m}/${y}`;
+    }
+
+    // Parsea una fecha 'YYYY-MM-DD' (o ISO) como fecha local, sin desfase de zona horaria
+    private parseLocalDate(str: string): Date {
+        const datePart = (str || '').substring(0, 10);
+        const [y, m, d] = datePart.split('-').map(Number);
+        return new Date(y, (m || 1) - 1, d || 1);
     }
 
     applyFilter(): void {
@@ -958,6 +970,26 @@ export class PermissionsVacationsComponent implements OnInit {
 
     isEditing(id: string, field: 'previous' | 'current'): boolean {
         return this.editingCell?.id === id && this.editingCell?.field === field;
+    }
+
+    startEditDate(item: VacationRow): void {
+        if (!this.canManage) return;
+        this.editingDateRow = item.id;
+    }
+
+    saveAdmissionDate(item: VacationRow, value: string): void {
+        this.editingDateRow = null;
+        if (!value || value === item.admissionDateRaw) return;
+        this.employeesAdapter.put(item.id, { admission_date: value } as any).subscribe({
+            next: () => {
+                this.toastr.success('Fecha de ingreso actualizada');
+                this.loadEmployees(); // recalcula antigüedad, aniversario y días
+            },
+            error: (err) => {
+                console.error('Error actualizando fecha de ingreso', err);
+                this.toastr.error('No se pudo actualizar la fecha de ingreso');
+            }
+        });
     }
 
     toDate(dateStr: string): Date {
