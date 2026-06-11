@@ -44,6 +44,7 @@ import bondApplicationRouter from './core/infrastructure/rest/routes/bond_applic
 import bondRecommendationRouter from './core/infrastructure/rest/routes/bond_recommendation.route';
 import rolePermissionsRouter from './core/infrastructure/rest/routes/role-permissions.route';
 import vacationAdjustmentRouter from './core/infrastructure/rest/routes/vacation-adjustment.route';
+import absenceAttachmentRouter from './core/infrastructure/rest/routes/absence-attachment.route';
 
 import { RoleEntity } from './core/infrastructure/entity/roles.entity';
 import { UserEntity } from './core/infrastructure/entity/users.entity';
@@ -104,6 +105,7 @@ app.use('/api', bondApplicationRouter);
 app.use('/api', bondRecommendationRouter);
 app.use('/api', rolePermissionsRouter);
 app.use('/api', vacationAdjustmentRouter);
+app.use('/api', absenceAttachmentRouter);
 
 // Serve Frontend Static Files
 app.use(express.static(path.join(__dirname, '../public')));

@@ -518,19 +518,59 @@
 
                     <div class="section-panel">
                         <h6 class="mb-3">Documentación de Respaldo</h6>
-                        <p class="text-muted small" *ngIf="!isReadOnly">El archivo se guardará en el repositorio del
-                            colaborador.</p>
 
-                        <div class="mb-3">
-                            <div *ngIf="currentDocumentUrl" class="mb-2">
-                                <button type="button" class="btn btn-sm btn-info text-white"
-                                    (click)="openDocument(currentDocumentUrl)">
-                                    <i class="bi bi-file-earmark-arrow-down"></i> Ver Documento Actual
-                                </button>
+                        <!-- Archivos ya adjuntados a este registro -->
+                        <div class="mb-3" *ngIf="currentAttachments.length > 0 || loadingAttachments">
+                            <label class="form-label">Archivos adjuntos</label>
+                            <div *ngIf="loadingAttachments" class="text-muted small">
+                                <i class="bi bi-arrow-repeat spin"></i> Cargando archivos...
                             </div>
-                            <label class="form-label" *ngIf="!isReadOnly">Adjuntar Archivo (PDF/Imagen)</label>
-                            <input type="file" (change)="onFileSelected($event)" class="form-control"
-                                [disabled]="isReadOnly" *ngIf="!isReadOnly">
+                            <ul class="list-group" *ngIf="!loadingAttachments">
+                                <li class="list-group-item d-flex justify-content-between align-items-center"
+                                    *ngFor="let att of currentAttachments">
+                                    <span class="text-truncate" style="max-width: 70%;">
+                                        <i class="bi bi-paperclip"></i> {{ att.file_name }}
+                                    </span>
+                                    <span>
+                                        <button type="button" class="btn btn-sm btn-info text-white me-1"
+                                            (click)="openAttachment(att)" title="Abrir">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-danger"
+                                            *ngIf="!isReadOnly" (click)="deleteAttachment(att)" title="Eliminar">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </span>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <!-- Mensaje si no hay adjuntos en modo visualización -->
+                        <p class="text-muted small" *ngIf="isReadOnly && !loadingAttachments && currentAttachments.length === 0">
+                            Este registro no tiene archivos adjuntos.
+                        </p>
+
+                        <!-- Selección de nuevos archivos (múltiples, sin tope) -->
+                        <div class="mb-3" *ngIf="!isReadOnly">
+                            <label class="form-label">Adjuntar archivos (PDF/Imágenes) — puedes seleccionar varios</label>
+                            <input type="file" multiple (change)="onFileSelected($event)" class="form-control">
+
+                            <!-- Lista de archivos seleccionados pendientes de subir -->
+                            <ul class="list-group mt-2" *ngIf="selectedFiles.length > 0">
+                                <li class="list-group-item d-flex justify-content-between align-items-center py-1"
+                                    *ngFor="let file of selectedFiles; let i = index">
+                                    <span class="text-truncate small" style="max-width: 80%;">
+                                        <i class="bi bi-file-earmark-arrow-up"></i> {{ file.name }}
+                                    </span>
+                                    <button type="button" class="btn btn-sm btn-outline-danger py-0"
+                                        (click)="removeSelectedFile(i)" title="Quitar">
+                                        <i class="bi bi-x"></i>
+                                    </button>
+                                </li>
+                            </ul>
+                            <small class="text-muted" *ngIf="selectedFiles.length > 0">
+                                {{ selectedFiles.length }} archivo(s) se subirán al guardar.
+                            </small>
                         </div>
                     </div>
                 </form>
