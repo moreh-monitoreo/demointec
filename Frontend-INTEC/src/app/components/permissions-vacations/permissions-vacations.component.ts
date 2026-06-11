@@ -21,6 +21,8 @@ import { VacationAdjustmentAdapterService } from '../../adapters/vacation-adjust
 import { VacationAdjustment } from '../../models/vacation-adjustment';
 import { AbsenceAttachmentAdapterService } from '../../adapters/absence-attachment.adapter';
 import { AbsenceAttachment } from '../../models/absence-attachment';
+import { SalaryTabulatorAdapterService } from '../../adapters/salary-tabulator.adapter';
+import { SalaryTabulator } from '../../models/salary-tabulator';
 import { ReportVacacionesPdfService } from '../../services/reports/report_vacaciones_pdf.service';
 
 interface VacationRow {
@@ -116,6 +118,9 @@ export class PermissionsVacationsComponent implements OnInit {
     // Ajustes manuales de días por tomar (cargados desde la BD)
     vacationAdjustments: VacationAdjustment[] = [];
 
+    // Puestos del tabulador (para el selector de puesto en incapacidad)
+    salaryPositions: SalaryTabulator[] = [];
+
     // ID de la incapacidad en edición (para hacer update y no duplicar)
     editingDisabilityId: number | null = null;
 
@@ -149,7 +154,8 @@ export class PermissionsVacationsComponent implements OnInit {
         private permissionsService: PermissionsService,
         private historyExcelService: ReportPermissionsHistoryService,
         private vacationAdjustmentAdapter: VacationAdjustmentAdapterService,
-        private attachmentAdapter: AbsenceAttachmentAdapterService
+        private attachmentAdapter: AbsenceAttachmentAdapterService,
+        private salaryTabulatorAdapter: SalaryTabulatorAdapterService
     ) {
         this.requestForm = this.fb.group({
             employeeId: ['', Validators.required],
@@ -185,6 +191,10 @@ export class PermissionsVacationsComponent implements OnInit {
     ngOnInit(): void {
         this.canManage = !this.permissionsService.hasPermissionsConfigured() || this.permissionsService.canAccessRoute('/dashboard/permisos-vacaciones');
         this.loadEmployees();
+        this.salaryTabulatorAdapter.getList().subscribe({
+            next: (positions) => { this.salaryPositions = positions; },
+            error: (err) => console.error('Error cargando puestos', err)
+        });
     }
 
     loadEmployees(): void {

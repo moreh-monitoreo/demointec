@@ -455,7 +455,10 @@
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Puesto</label>
-                                    <input type="text" formControlName="position" class="form-control" readonly>
+                                    <select formControlName="position" class="form-select" [attr.disabled]="isReadOnly ? true : null">
+                                        <option value="">Seleccione un puesto...</option>
+                                        <option *ngFor="let pos of salaryPositions" [value]="pos.position">{{ pos.position }}</option>
+                                    </select>
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Localización</label>
