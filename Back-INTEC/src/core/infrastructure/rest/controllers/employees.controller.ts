@@ -176,7 +176,7 @@ export class EmployeesController {
       const count = await repository.count();
 
       res.status(200).json({
-        message: 'Sincronización desde Firebase completada correctamente.',
+        message: 'Sincronización con Firebase completada correctamente.',
       });
     } catch {
       res.status(500).json({ message: 'Error al sincronizar desde Firebase' });

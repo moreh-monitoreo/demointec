@@ -13,38 +13,29 @@ export class EmployeesAdapterRepository implements EmployeesRepository<EmployeeE
   async create(data: Partial<EmployeeEntity>, query?: Query): Promise<EmployeeEntity> {
     const repository = database.getRepository(EmployeeEntity);
 
-    console.log('[ADAPTER CREATE] id_employee:', data.id_employee);
-    console.log('[ADAPTER CREATE] name_employee:', data.name_employee);
-    console.log('[ADAPTER CREATE] email:', data.email);
-    console.log('[ADAPTER CREATE] phone:', data.phone);
-    console.log('[ADAPTER CREATE] role:', data.role);
 
     const material = repository.create({ ...data });
 
     try {
-      console.log('[ADAPTER CREATE] Intentando repository.save...');
       await repository.save(material);
-      console.log('[ADAPTER CREATE] repository.save OK');
     } catch (dbError: any) {
-      console.error('[ADAPTER CREATE] ERROR en repository.save:', dbError?.message);
-      console.error('[ADAPTER CREATE] sqlMessage:', dbError?.sqlMessage);
-      console.error('[ADAPTER CREATE] code:', dbError?.code);
-      console.error('[ADAPTER CREATE] detail:', dbError?.detail);
       throw dbError;
     }
 
+    const saved = await repository.findOneOrFail({
+      where: { id_employee: data.id_employee },
+    });
+
     try {
       console.log('[ADAPTER CREATE] Intentando createOnRTDB...');
-      await this.createOnRTDB(material);
+      await this.createOnRTDB(saved);
       console.log('[ADAPTER CREATE] createOnRTDB OK');
     } catch (fbError: any) {
       console.error('[ADAPTER CREATE] ERROR en createOnRTDB:', fbError?.message);
       throw fbError;
     }
 
-    return repository.findOneOrFail({
-      where: { id_employee: data.id_employee },
-    });
+    return saved;
   }
 
   async list(query?: Query): Promise<EmployeeEntity[]> {
@@ -228,6 +219,22 @@ export class EmployeesAdapterRepository implements EmployeesRepository<EmployeeE
       }
 
       await Promise.all(operaciones);
+
+      // Subir a Firebase los colaboradores de MySQL que no existan aun en Perfiles
+      const employees = await repository.find();
+      const pushOperations = employees.map(async (employee) => {
+        try {
+          if (data && data[employee.id_employee]) {
+            await this.updateOnRTDB(employee);
+          } else {
+            await this.createOnRTDB(employee);
+          }
+        } catch (error) {
+          console.error(`Error subiendo a Firebase al empleado ${employee.id_employee}:`, error);
+        }
+      });
+
+      await Promise.all(pushOperations);
 
       return {
         success: true,
