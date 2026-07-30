@@ -47,7 +47,7 @@ export class ReportPermissionsVacationsService {
       'NOMBRE',
       'FECHA INGRESO',
       `DÍAS POR TOMAR ${previousYear}`,
-      `ANIVERSARIO ${currentYear}`,
+      'ANIVERSARIO',
       'TOTAL DÍAS LEY',
       'DÍAS TOMADOS',
       `DÍAS POR TOMAR ${currentYear}`,

@@ -17,6 +17,12 @@ import { PermissionsService } from '../../services/permissions.service';
 import { ReportPermissionsVacationsService } from '../../services/reports/report_permissions_vacations.service';
 import { ReportPermisoPdfService } from '../../services/reports/report_permiso_pdf.service';
 import { ReportPermissionsHistoryService } from '../../services/reports/report_permissions_history.service';
+import { VacationAdjustmentAdapterService } from '../../adapters/vacation-adjustment.adapter';
+import { VacationAdjustment } from '../../models/vacation-adjustment';
+import { AbsenceAttachmentAdapterService } from '../../adapters/absence-attachment.adapter';
+import { AbsenceAttachment } from '../../models/absence-attachment';
+import { SalaryTabulatorAdapterService } from '../../adapters/salary-tabulator.adapter';
+import { SalaryTabulator } from '../../models/salary-tabulator';
 import { ReportVacacionesPdfService } from '../../services/reports/report_vacaciones_pdf.service';
 
 interface VacationRow {
@@ -34,6 +40,11 @@ interface VacationRow {
     diasTomados: number; // Current year taken
     diasPorTomarCurrent: number;
     saldoTotal: number;
+    // Base de días disponibles (entitlement o ajuste manual) y días tomados por año, para recalcular al editar
+    basePrevious: number;
+    baseCurrent: number;
+    takenPrevious: number;
+    takenCurrent: number;
     history: RequestRecord[];
 }
 
@@ -70,7 +81,10 @@ export class PermissionsVacationsComponent implements OnInit {
     loading: boolean = true;
     requestForm: FormGroup;
     requestType: 'Vacaciones' | 'Permiso' | 'Incapacidad' = 'Vacaciones';
-    selectedFile: File | null = null;
+    // Archivos seleccionados para subir (múltiples, sin tope) y adjuntos ya guardados del registro
+    selectedFiles: File[] = [];
+    currentAttachments: AbsenceAttachment[] = [];
+    loadingAttachments: boolean = false;
 
     // Dynamic Years
     currentYear: number = new Date().getFullYear();
@@ -95,8 +109,17 @@ export class PermissionsVacationsComponent implements OnInit {
     // Inline edit state para fecha de ingreso
     editingDateRow: string | null = null;
 
+    // Inline edit state para días por tomar (ajuste manual del total disponible por año)
+    editingCell: { id: string; field: 'previous' | 'current' } | null = null;
+
     // Disabilities cache
     disabilities: Disability[] = [];
+
+    // Ajustes manuales de días por tomar (cargados desde la BD)
+    vacationAdjustments: VacationAdjustment[] = [];
+
+    // Puestos del tabulador (para el selector de puesto en incapacidad)
+    salaryPositions: SalaryTabulator[] = [];
 
     // ID de la incapacidad en edición (para hacer update y no duplicar)
     editingDisabilityId: number | null = null;
@@ -129,7 +152,10 @@ export class PermissionsVacationsComponent implements OnInit {
         private permisoPdfService: ReportPermisoPdfService,
         private vacacionesPdfService: ReportVacacionesPdfService,
         private permissionsService: PermissionsService,
-        private historyExcelService: ReportPermissionsHistoryService
+        private historyExcelService: ReportPermissionsHistoryService,
+        private vacationAdjustmentAdapter: VacationAdjustmentAdapterService,
+        private attachmentAdapter: AbsenceAttachmentAdapterService,
+        private salaryTabulatorAdapter: SalaryTabulatorAdapterService
     ) {
         this.requestForm = this.fb.group({
             employeeId: ['', Validators.required],
@@ -165,10 +191,22 @@ export class PermissionsVacationsComponent implements OnInit {
     ngOnInit(): void {
         this.canManage = !this.permissionsService.hasPermissionsConfigured() || this.permissionsService.canAccessRoute('/dashboard/permisos-vacaciones');
         this.loadEmployees();
+        this.salaryTabulatorAdapter.getList().subscribe({
+            next: (positions) => { this.salaryPositions = positions; },
+            error: (err) => console.error('Error cargando puestos', err)
+        });
     }
 
     loadEmployees(): void {
         this.loading = true;
+        // Cargar primero los ajustes manuales de la BD; luego empleados y solicitudes
+        this.vacationAdjustmentAdapter.getList().subscribe({
+            next: (adjustments) => { this.vacationAdjustments = adjustments; this.loadEmployeesData(); },
+            error: () => { this.vacationAdjustments = []; this.loadEmployeesData(); }
+        });
+    }
+
+    private loadEmployeesData(): void {
         this.employeesAdapter.getList().subscribe({
             next: (employees) => {
                 // Guardar TODOS los empleados (activos e inactivos) para lookup en reportes
@@ -231,23 +269,26 @@ export class PermissionsVacationsComponent implements OnInit {
                 const admissionDate = this.parseLocalDate(admissionDateStr);
                 const admissionYear = admissionDate.getFullYear();
 
-                // Calculate Seniority for Current Year
+                // Antigüedad del año actual. El primer año cuenta desde la contratación (mínimo 1).
                 let yearsOfServiceCurrent = currentYear - admissionYear;
-                if (yearsOfServiceCurrent < 0) yearsOfServiceCurrent = 0;
+                if (yearsOfServiceCurrent < 1) yearsOfServiceCurrent = 1;
 
-                // Calculate Seniority for Previous Year
+                // Antigüedad del año anterior (0 si aún no existía ese año)
                 let yearsOfServicePrev = previousYear - admissionYear;
                 if (yearsOfServicePrev < 0) yearsOfServicePrev = 0;
 
-                // Si fue contratado este año (0 años cumplidos), ya se le otorgan los 12 días del primer periodo
-                const entitlementCurrent = yearsOfServiceCurrent === 0
-                    ? 12
-                    : this.calculateVacationDays(yearsOfServiceCurrent);
+                const entitlementCurrent = this.calculateVacationDays(yearsOfServiceCurrent);
                 const entitlementPrevious = this.calculateVacationDays(yearsOfServicePrev);
 
-                // Format dates
-                const anniversaryDateCurrent = new Date(currentYear, admissionDate.getMonth(), admissionDate.getDate());
-                const anniversaryStr = this.formatDate(anniversaryDateCurrent);
+                // Próximo aniversario: el día/mes de ingreso en su próxima ocurrencia futura.
+                // Si la fecha de este año ya pasó (o es hoy), se toma la del año siguiente.
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                let anniversaryDate = new Date(currentYear, admissionDate.getMonth(), admissionDate.getDate());
+                if (anniversaryDate <= today) {
+                    anniversaryDate = new Date(currentYear + 1, admissionDate.getMonth(), admissionDate.getDate());
+                }
+                const anniversaryStr = this.formatDate(anniversaryDate);
                 const admissionStr = this.formatDate(admissionDate);
 
                 const empHistory = savedRequests.filter((r: any) => r.employeeId === emp.id_employee);
@@ -262,13 +303,20 @@ export class PermissionsVacationsComponent implements OnInit {
                     .filter((r: any) => r.type === 'Vacaciones' && r.vacationYear === currentYear)
                     .reduce((sum: number, r: any) => sum + (r.daysCount || 0), 0);
 
-                let diasPorTomarPrevious = entitlementPrevious - takenPrevious;
-                let diasPorTomarCurrent = entitlementCurrent - takenCurrent;
+                // Base de días disponibles por año. Si hay ajuste manual guardado en la BD,
+                // ese es el TOTAL disponible del año (incluye acumulados); si no, es el derecho por ley.
+                const prevAdj = this.vacationAdjustments.find(a => a.id_employee === emp.id_employee && a.year === previousYear);
+                const currAdj = this.vacationAdjustments.find(a => a.id_employee === emp.id_employee && a.year === currentYear);
+                const basePrevious = prevAdj ? prevAdj.base_days : entitlementPrevious;
+                const baseCurrent = currAdj ? currAdj.base_days : entitlementCurrent;
+
+                // Días por tomar = base disponible - vacaciones tomadas (siempre se restan)
+                let diasPorTomarPrevious = basePrevious - takenPrevious;
+                let diasPorTomarCurrent = baseCurrent - takenCurrent;
 
                 // Si el año anterior se agota (queda negativo), el exceso se descuenta del año actual.
-                // El año más antiguo se consume primero; no debe quedar en negativo.
                 if (diasPorTomarPrevious < 0) {
-                    diasPorTomarCurrent += diasPorTomarPrevious; // sumar un negativo = restar el exceso
+                    diasPorTomarCurrent += diasPorTomarPrevious;
                     diasPorTomarPrevious = 0;
                 }
 
@@ -290,6 +338,10 @@ export class PermissionsVacationsComponent implements OnInit {
                     diasTomados: takenPrevious + takenCurrent, // Total de días de vacaciones tomados (ambos años del periodo)
                     diasPorTomarCurrent: diasPorTomarCurrent,
                     saldoTotal: saldoTotal,
+                    basePrevious: basePrevious,
+                    baseCurrent: baseCurrent,
+                    takenPrevious: takenPrevious,
+                    takenCurrent: takenCurrent,
                     history: empHistory
                 };
             })
@@ -370,7 +422,8 @@ export class PermissionsVacationsComponent implements OnInit {
             reason: type === 'Vacaciones' ? 'Vacaciones' : (type === 'Incapacidad' ? 'Incapacidad' : '')
         });
         this.requestForm.enable();
-        this.selectedFile = null;
+        this.selectedFiles = [];
+        this.currentAttachments = [];
         this.editingRequestId = null;
         this.editingDisabilityId = null;
         this.isReadOnly = false;
@@ -430,7 +483,8 @@ export class PermissionsVacationsComponent implements OnInit {
     editRequest(record: RequestRecord, employeeId: string): void {
         this.requestType = record.type;
         this.editingRequestId = record.id;
-        this.selectedFile = null;
+        this.selectedFiles = [];
+        this.loadAttachments(record.id);
         this.isReadOnly = false;
         this.currentDocumentUrl = record.documentUrl || null;
         this.incapacidadMotivoBase = '';
@@ -460,7 +514,8 @@ export class PermissionsVacationsComponent implements OnInit {
     viewRequest(record: RequestRecord, employeeId: string): void {
         this.requestType = record.type;
         this.editingRequestId = record.id;
-        this.selectedFile = null;
+        this.selectedFiles = [];
+        this.loadAttachments(record.id);
         this.isReadOnly = true;
         this.currentDocumentUrl = record.documentUrl || null;
         this.incapacidadMotivoBase = '';
@@ -602,8 +657,45 @@ export class PermissionsVacationsComponent implements OnInit {
     onFileSelected(event: any): void {
         if (this.isReadOnly) return;
         if (event.target.files && event.target.files.length > 0) {
-            this.selectedFile = event.target.files[0];
+            // Agregar a la lista (permite seleccionar en varias tandas)
+            this.selectedFiles.push(...Array.from(event.target.files as FileList));
+            event.target.value = ''; // permitir re-seleccionar el mismo archivo
         }
+    }
+
+    removeSelectedFile(index: number): void {
+        this.selectedFiles.splice(index, 1);
+    }
+
+    // Carga los adjuntos ya guardados de un registro específico
+    private loadAttachments(referenceId: string): void {
+        this.currentAttachments = [];
+        if (!referenceId) return;
+        this.loadingAttachments = true;
+        this.attachmentAdapter.getByReference(referenceId).subscribe({
+            next: (attachments) => { this.currentAttachments = attachments; this.loadingAttachments = false; },
+            error: () => { this.loadingAttachments = false; }
+        });
+    }
+
+    openAttachment(att: AbsenceAttachment): void {
+        if (att.file_url && att.file_url.startsWith('http')) {
+            window.open(att.file_url, '_blank', 'noopener,noreferrer');
+        } else {
+            this.toastr.warning('El archivo no tiene una URL válida.');
+        }
+    }
+
+    deleteAttachment(att: AbsenceAttachment): void {
+        if (!att.id) return;
+        if (!confirm(`¿Eliminar el archivo "${att.file_name}"?`)) return;
+        this.attachmentAdapter.delete(att.id).subscribe({
+            next: () => {
+                this.currentAttachments = this.currentAttachments.filter(a => a.id !== att.id);
+                this.toastr.success('Archivo eliminado');
+            },
+            error: () => this.toastr.error('No se pudo eliminar el archivo')
+        });
     }
 
     async saveRequest(): Promise<void> {
@@ -637,30 +729,6 @@ export class PermissionsVacationsComponent implements OnInit {
 
         this.toastr.info('Procesando solicitud...');
 
-        let docPath = '';
-
-        // 1. Upload File to Document Repository if exists
-        if (this.selectedFile) {
-            try {
-                const formData = new FormData();
-                formData.append('id_employee', formValues.employeeId);
-                formData.append('document_type', `Justificante ${this.requestType}`);
-                formData.append('document', this.selectedFile);
-
-                const uploadRes = await firstValueFrom(this.docService.saveDocument(formData));
-                docPath = uploadRes?.doc?.document_path || uploadRes?.document_path || '';
-                if (!docPath) {
-                    this.toastr.error('El archivo se subió pero no se obtuvo la URL. Intenta de nuevo.');
-                    return;
-                }
-                this.toastr.success('Documento guardado en repositorio');
-            } catch (err) {
-                console.error('Upload Error', err);
-                this.toastr.error('Error al subir el documento al repositorio');
-                return;
-            }
-        }
-
         const requestData: AbsenceRequest = {
             id_employee: formValues.employeeId,
             type: this.requestType,
@@ -671,18 +739,34 @@ export class PermissionsVacationsComponent implements OnInit {
             description: formValues.description || '',
             with_pay: !!formValues.withPay,
             vacation_year: this.requestType === 'Vacaciones' ? formValues.vacationYear : null,
-            document_url: docPath || this.currentDocumentUrl || '',
+            document_url: '',
             request_date: new Date().toISOString().split('T')[0],
             return_to_work_date: (this.requestType === 'Vacaciones' && formValues.returnToWorkDate) ? formValues.returnToWorkDate : null
         } as AbsenceRequest;
 
         try {
+            // Crear o actualizar la solicitud y obtener su ID (referencia para los adjuntos)
+            let referenceId = this.editingRequestId;
             if (this.editingRequestId) {
                 await firstValueFrom(this.absenceRequestAdapter.update(this.editingRequestId, requestData));
                 this.toastr.success('Registro actualizado exitosamente');
             } else {
-                await firstValueFrom(this.absenceRequestAdapter.create(requestData));
+                const created = await firstValueFrom(this.absenceRequestAdapter.create(requestData));
+                referenceId = created?.id || null;
                 this.toastr.success(`${this.requestType} registrado exitosamente`);
+            }
+
+            // Subir los archivos adjuntos (múltiples) vinculados a este registro
+            if (this.selectedFiles.length > 0 && referenceId) {
+                try {
+                    await firstValueFrom(this.attachmentAdapter.upload(
+                        formValues.employeeId, this.requestType, referenceId, this.selectedFiles
+                    ));
+                    this.toastr.success(`${this.selectedFiles.length} archivo(s) adjuntado(s)`);
+                } catch (attErr) {
+                    console.error('Error subiendo adjuntos', attErr);
+                    this.toastr.warning('El registro se guardó pero hubo un error al subir los archivos');
+                }
             }
 
             // Si es Incapacidad, guardar también en la tabla de incapacidades
@@ -706,8 +790,8 @@ export class PermissionsVacationsComponent implements OnInit {
                     st7: !!formValues.st7,
                     st2: !!formValues.st2,
                     return_to_work_date: formValues.returnToWorkDate || null,
-                    document_path: docPath || this.currentDocumentUrl || '',
-                    document_name: this.selectedFile?.name || ''
+                    document_path: '',
+                    document_name: ''
                 } as Disability;
                 try {
                     if (this.editingRequestId && this.editingDisabilityId) {
@@ -930,6 +1014,50 @@ export class PermissionsVacationsComponent implements OnInit {
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, fileName.substring(0, 31));
         XLSX.writeFile(wb, `${fileName}_${new Date().toISOString().split('T')[0]}.xlsx`);
+    }
+
+    isEditing(id: string, field: 'previous' | 'current'): boolean {
+        return this.editingCell?.id === id && this.editingCell?.field === field;
+    }
+
+    startEdit(item: VacationRow, field: 'previous' | 'current'): void {
+        if (!this.canManage) return;
+        this.editingCell = { id: item.id, field };
+    }
+
+    // Al editar se ingresa el TOTAL de días disponibles del año (base, con acumulados).
+    // Se guarda en la BD y el sistema recalcula los días por tomar restando las vacaciones tomadas.
+    saveEdit(item: VacationRow, field: 'previous' | 'current', value: string): void {
+        const num = parseInt(value, 10);
+        this.editingCell = null;
+        if (isNaN(num) || num < 0) return;
+
+        const year = field === 'previous' ? this.previousYear : this.currentYear;
+
+        // Guardar el ajuste en la base de datos
+        this.vacationAdjustmentAdapter.save({ id_employee: item.id, year, base_days: num }).subscribe({
+            next: () => {
+                // Actualizar el cache local de ajustes
+                const existing = this.vacationAdjustments.find(a => a.id_employee === item.id && a.year === year);
+                if (existing) existing.base_days = num;
+                else this.vacationAdjustments.push({ id_employee: item.id, year, base_days: num });
+                this.toastr.success('Días disponibles actualizados');
+            },
+            error: (err) => {
+                console.error('Error guardando ajuste de vacaciones', err);
+                this.toastr.error('No se pudo guardar el ajuste');
+            }
+        });
+
+        // Recalcular días por tomar localmente (respuesta inmediata)
+        if (field === 'previous') item.basePrevious = num;
+        else item.baseCurrent = num;
+        let dpp = item.basePrevious - item.takenPrevious;
+        let dpc = item.baseCurrent - item.takenCurrent;
+        if (dpp < 0) { dpc += dpp; dpp = 0; }
+        item.diasPorTomarPrevious = dpp;
+        item.diasPorTomarCurrent = dpc;
+        item.saldoTotal = dpp + dpc;
     }
 
     startEditDate(item: VacationRow): void {
