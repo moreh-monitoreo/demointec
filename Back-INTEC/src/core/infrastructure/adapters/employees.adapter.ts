@@ -126,13 +126,15 @@ export class EmployeesAdapterRepository implements EmployeesRepository<EmployeeE
       for (const key in data) {
         const item = data[key];
 
-        if (!item || !item.uuid) {
+        if (!item) {
           continue;
         }
 
+        const uuid = item.uuid || key;
+
         const newData = {
           name_employee: item.nombre || '',
-          email: item.correo || '',
+          email: item.correo || null,
           pAut1: item.pAut1 || '0',
           pAut2: item.pAut2 || '0',
           pAut3: item.pAut3 || '0',
@@ -195,11 +197,11 @@ export class EmployeesAdapterRepository implements EmployeesRepository<EmployeeE
         operaciones.push(
           (async () => {
             try {
-              const existing = await repository.findOne({ where: { id_employee: item.uuid } });
+              const existing = await repository.findOne({ where: { id_employee: uuid } });
 
               if (!existing) {
                 const entity = repository.create({
-                  id_employee: item.uuid,
+                  id_employee: uuid,
                   ...newData,
                   status: true
                 });
@@ -212,7 +214,7 @@ export class EmployeesAdapterRepository implements EmployeesRepository<EmployeeE
                 await repository.save(existing);
               }
             } catch (error) {
-              console.error(`Error procesando empleado ${item.uuid}:`, error);
+              console.error(`Error procesando empleado ${uuid}:`, error);
             }
           })()
         );
