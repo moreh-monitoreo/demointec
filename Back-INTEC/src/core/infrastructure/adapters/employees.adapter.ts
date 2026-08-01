@@ -261,10 +261,10 @@ export class EmployeesAdapterRepository implements EmployeesRepository<EmployeeE
 
     await ref.set({
       uuid: employee.id_employee,
-      nombre: employee.name_employee,
-      correo: employee.email,
-      telefono: employee.phone,
-      rol: employee.role,
+      nombre: employee.name_employee || '',
+      correo: employee.email || '',
+      telefono: employee.phone || '',
+      rol: employee.role || '',
       status: employee.status,
       // Permissions
       pAut1: employee.pAut1 || '0',
@@ -337,10 +337,10 @@ export class EmployeesAdapterRepository implements EmployeesRepository<EmployeeE
     }
 
     await ref.update({
-      nombre: employee.name_employee,
-      correo: employee.email,
-      telefono: employee.phone,
-      rol: employee.role,
+      nombre: employee.name_employee || '',
+      correo: employee.email || '',
+      telefono: employee.phone || '',
+      rol: employee.role || '',
       status: employee.status,
       // Permissions
       pAut1: employee.pAut1 || '0',
