@@ -158,6 +158,8 @@
             <a *ngIf="canRoute('/dashboard/administrar-roles')" routerLink="/dashboard/administrar-roles" routerLinkActive="active">
               <span class="menu-text">Administrar Roles</span></a>
           </ng-container>
+          <a *ngIf="isSuperAdmin" (click)="!isSyncingRailway && syncRailway()" style="cursor: pointer;">
+            <span class="menu-text">{{ isSyncingRailway ? 'Sincronizando...' : 'Sincronizar Railway' }}</span></a>
         </div>
       </div>
 

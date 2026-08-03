@@ -6,6 +6,9 @@ import { PLATFORM_ID, Inject } from '@angular/core';
 import { EmployeesAdapterService } from '../../adapters/employees.adapter';
 import { ToastrService } from 'ngx-toastr';
 import { PermissionsService } from '../../services/permissions.service';
+import { SyncAdapterService } from '../../adapters/sync.adapter';
+
+const SYNC_ADMIN_EMAIL = 'admin@admin.com';
 
 
 @Component({
@@ -22,6 +25,8 @@ export class NavbarMainComponent implements OnInit {
   @ViewChild('logo', { static: true }) logoRef!: ElementRef;
   isSubmenuOpen: { [key: string]: boolean } = {};
   isSidebarCollapsed: boolean = false;
+  isSuperAdmin: boolean = false;
+  isSyncingRailway: boolean = false;
 
 
   constructor(
@@ -30,7 +35,8 @@ export class NavbarMainComponent implements OnInit {
     private employeesAdapter: EmployeesAdapterService,
     private toastr: ToastrService,
     private router: Router,
-    private permissionsService: PermissionsService
+    private permissionsService: PermissionsService,
+    private syncAdapter: SyncAdapterService
   ) { }
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
@@ -40,6 +46,7 @@ export class NavbarMainComponent implements OnInit {
           const userObj = JSON.parse(user);
           this.userName = userObj.name_user || userObj.name || userObj.nombre || 'Usuario';
           this.userImage = userObj.photo || null;
+          this.isSuperAdmin = userObj.email === SYNC_ADMIN_EMAIL;
 
           // Check for expiring contracts permission
           console.log('[Navbar] User loaded:', userObj);
@@ -173,6 +180,21 @@ export class NavbarMainComponent implements OnInit {
       return;
     }
     this.toggleSubmenu(menu);
+  }
+
+  syncRailway(): void {
+    if (this.isSyncingRailway) return;
+    this.isSyncingRailway = true;
+    this.syncAdapter.syncRailway().subscribe({
+      next: (res: any) => {
+        this.isSyncingRailway = false;
+        this.toastr.success(res?.msg || 'Sincronización completada', 'Railway');
+      },
+      error: (err) => {
+        this.isSyncingRailway = false;
+        this.toastr.error(err?.error?.message || 'Error al sincronizar con Railway', 'Railway');
+      }
+    });
   }
 
   logout(): void {
