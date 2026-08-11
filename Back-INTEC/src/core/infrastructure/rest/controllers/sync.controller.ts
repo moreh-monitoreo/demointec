@@ -8,11 +8,6 @@ interface TableSyncResult {
   rows: number;
 }
 
-interface TableSyncFailure {
-  table: string;
-  error: string;
-}
-
 async function getSourceTables(sourceConn: mysql.Connection, dbName: string): Promise<string[]> {
   const [rows] = await sourceConn.query(
     `SELECT TABLE_NAME AS name FROM information_schema.tables
@@ -62,48 +57,44 @@ async function migrateTable(
 
 export class SyncController {
   async syncRailway(req: Request, res: Response): Promise<void> {
+    const { table } = req.body;
+    if (!table || typeof table !== 'string') {
+      res.status(400).json({ message: 'Debe especificar la tabla a sincronizar.' });
+      return;
+    }
+
     let sourceConn: mysql.Connection | undefined;
     let targetConn: mysql.Connection | undefined;
 
     try {
       sourceConn = await mysql.createConnection({
-        host: process.env.DB_HOST,
-        port: parseInt(process.env.DB_PORT || '3306', 10),
-        user: process.env.DB_USER,
-        password: process.env.DB_PASS,
-        database: process.env.DB_NAME,
+        host: process.env.AZURE_DB_HOST,
+        port: parseInt(process.env.AZURE_DB_PORT || '3306', 10),
+        user: process.env.AZURE_DB_USER,
+        password: process.env.AZURE_DB_PASS,
+        database: process.env.AZURE_DB_NAME,
         ssl: { rejectUnauthorized: false },
       });
 
       targetConn = await mysql.createConnection({
         host: process.env.RAILWAY_DB_HOST,
         port: parseInt(process.env.RAILWAY_DB_PORT || '3306', 10),
-        user: process.env.MYSQLUSER,
-        password: process.env.MYSQL_ROOT_PASSWORD,
-        database: process.env.MYSQL_DATABASE,
+        user: process.env.RAILWAY_DB_USER,
+        password: process.env.RAILWAY_DB_PASS,
+        database: process.env.RAILWAY_DB_NAME,
       });
 
-      await targetConn.query('SET FOREIGN_KEY_CHECKS = 0');
-
-      const tables = await getSourceTables(sourceConn, process.env.DB_NAME!);
-      const results: TableSyncResult[] = [];
-      const failures: TableSyncFailure[] = [];
-
-      for (const table of tables) {
-        try {
-          results.push(await migrateTable(sourceConn, targetConn, table));
-        } catch (err: any) {
-          failures.push({ table, error: err.message });
-        }
+      const validTables = await getSourceTables(sourceConn, process.env.AZURE_DB_NAME!);
+      if (!validTables.includes(table)) {
+        res.status(400).json({ message: `La tabla "${table}" no existe en el origen.` });
+        return;
       }
 
+      await targetConn.query('SET FOREIGN_KEY_CHECKS = 0');
+      const result = await migrateTable(sourceConn, targetConn, table);
       await targetConn.query('SET FOREIGN_KEY_CHECKS = 1');
 
-      res.status(failures.length > 0 ? 207 : 200).json({
-        msg: failures.length > 0 ? 'Sincronización completada con errores.' : 'Sincronización completada.',
-        tables: results,
-        failures,
-      });
+      res.status(200).json({ msg: 'Sincronización completada.', table: result });
     } catch (error: any) {
       console.error('Error en sincronización con Railway:', error);
       res.status(500).json({ message: error.message });

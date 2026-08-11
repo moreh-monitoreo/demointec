@@ -16,9 +16,9 @@ export class SyncAdapterService {
     this.myApiUrl = 'api/sincronizar-railway';
   }
 
-  syncRailway(): Observable<any> {
+  syncTable(table: string): Observable<any> {
     const token = localStorage.getItem('token');
     const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
-    return this.http.post(this.myAppUrl + this.myApiUrl, {}, { headers });
+    return this.http.post(this.myAppUrl + this.myApiUrl, { table }, { headers });
   }
 }

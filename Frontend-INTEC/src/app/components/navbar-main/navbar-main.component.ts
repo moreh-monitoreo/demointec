@@ -185,7 +185,7 @@ export class NavbarMainComponent implements OnInit {
   syncRailway(): void {
     if (this.isSyncingRailway) return;
     this.isSyncingRailway = true;
-    this.syncAdapter.syncRailway().subscribe({
+    this.syncAdapter.syncTable('terminations').subscribe({
       next: (res: any) => {
         this.isSyncingRailway = false;
         this.toastr.success(res?.msg || 'Sincronización completada', 'Railway');
