@@ -1,8 +1,6 @@
 import {
     Entity,
     Column,
-    PrimaryColumn,
-    Double,
     PrimaryGeneratedColumn,
   } from 'typeorm';
 

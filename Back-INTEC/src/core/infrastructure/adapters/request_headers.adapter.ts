@@ -1,20 +1,27 @@
 import { Query, Id } from "../../domain/repository/users.repository";
 import database from "../../../config/db";
 import { NotFound } from "http-errors";
-import { db} from "../../../firebase/firebase.config";
 import { RequestHeadersRepository } from "../../domain/repository/request_headers.repository";
 import { RequestHeadersEntity } from "../entity/request_headers.entity";
+import {
+  REQUESTS_COLLECTION,
+  deleteRequestDocument,
+  firestore,
+  formatDate,
+  fromFirestoreHeader,
+  toFirestoreHeader,
+} from "./request-firestore.helper";
 
 
 
 export class RequestHeadersAdpaterRepository implements RequestHeadersRepository<RequestHeadersEntity> {
-  
+
   async create(data: Partial<RequestHeadersEntity>[] | Partial<RequestHeadersEntity>): Promise<RequestHeadersEntity[] | RequestHeadersEntity> {
     const repository = database.getRepository(RequestHeadersEntity);
     const materiales: RequestHeadersEntity[] = [];
-    
+
     const dataArray = Array.isArray(data) ? data : [data];
-    
+
     for (const item of dataArray) {
       const entity = repository.create(item);
       await repository.save(entity);
@@ -25,13 +32,13 @@ export class RequestHeadersAdpaterRepository implements RequestHeadersRepository
     return Array.isArray(data) ? materiales : materiales[0];
   }
 
-    
+
   async list(query?: Query): Promise<RequestHeadersEntity[]> {
     const repository = database.getRepository(RequestHeadersEntity);
     return repository.find({
     });
   }
-    
+
   async get(id: Id, query?: Query): Promise<RequestHeadersEntity> {
     const repository = database.getRepository(RequestHeadersEntity);
     const data = await repository.findOne({
@@ -48,7 +55,7 @@ export class RequestHeadersAdpaterRepository implements RequestHeadersRepository
       const updatedH: RequestHeadersEntity[] = [];
       const toCreate: RequestHeadersEntity[] = [];
       const toUpdate: RequestHeadersEntity[] = [];
-  
+
       for (const item of data) {
         if (!item.id_header) {
           throw new Error('Cada solicitud debe tener su id_header para poder actualizar');
@@ -56,53 +63,42 @@ export class RequestHeadersAdpaterRepository implements RequestHeadersRepository
         await repository.update({ id_header: item.id_header }, item);
         const updated = await this.get(item.id_header);
         updatedH.push(updated);
-        
+
 
         const existsInRTDB = await this.existsInFirestore(item.id_header);
-        
+
         if (existsInRTDB) {
           toUpdate.push(updated);
         } else {
           toCreate.push(updated);
         }
       }
-  
+
       if (toCreate.length > 0) {
         await this.createOnFirestore(toCreate);
       }
       if (toUpdate.length > 0) {
         await this.updateOnFirestore(toUpdate);
       }
-      
+
       return updatedH;
     }
-  
+
   async remove(id: Id, query?: Query): Promise<RequestHeadersEntity> {
     const repository = database.getRepository(RequestHeadersEntity);
     const data = await this.get(id, query);
     await repository.update({ id_header: id.toString()  }, { status: false });
-    await this.deleteFromFirestore(id.toString())
+    await deleteRequestDocument(id.toString());
     return data;
-  }
-
-  private convertToDate(dateStr: string): Date | undefined {
-    const [day, month, year] = dateStr.split('-');
-    if (!day || !month || !year) return undefined;
-
-    return new Date(`${year}-${month}-${day}`);
   }
 
   async syncToFirebase(): Promise<{ success: boolean }> {
     const repository = database.getRepository(RequestHeadersEntity);
 
     try {
-        const admin = require('firebase-admin');
-        const firestore = admin.firestore();
-
-        const seccionesSnapshot = await firestore.collection('SolicitudesCom').get();
+        const seccionesSnapshot = await firestore().collection(REQUESTS_COLLECTION).get();
 
         if (seccionesSnapshot.empty) {
-          console.log('No se encontraron solicitudes en Firestore.');
           return { success: false };
         }
 
@@ -115,28 +111,7 @@ export class RequestHeadersAdpaterRepository implements RequestHeadersRepository
           const item = doc.data();
           if (!item) continue;
 
-          const newData = {
-              auth1: item.auth1 || '',
-              auth2: item.auth2 || '',
-              auth3: item.auth3 || '',
-              status_header: item.estatus || '',
-              locationType: item.fLocalForanea || '',
-              date: item.fecha ? this.convertToDate(String(item.fecha)) : undefined,
-              hour: item.hora || '',
-              revision_date1: item.fechaRev1 || '',
-              revision_date2: item.fechaRev2 || '',
-              revision_date3: item.fechaRev3 || '',
-              folio_request: item.folioSol || '',
-              locality: item.localidad || '',
-              notes: item.notas || '',
-              project: item.obra || '',
-              official: item.oficial || '',
-              revision1: item.revisaA1 || '',
-              revision2: item.revisaA2 || '',
-              revision3: item.revisaA3 || '',
-              requester: item.solicitante || '',
-              work: item.trabajo || ''
-          };
+          const newData = fromFirestoreHeader(item);
 
           operaciones.push(
               (async () => {
@@ -147,6 +122,7 @@ export class RequestHeadersAdpaterRepository implements RequestHeadersRepository
                   const entity = repository.create({
                       id_header: seccionKey,
                       ...newData,
+                      date: newData.date as Date,
                       status: true
                   });
 
@@ -158,7 +134,7 @@ export class RequestHeadersAdpaterRepository implements RequestHeadersRepository
                       existing.auth3 !== newData.auth3 ||
                       existing.status_header !== newData.status_header ||
                       existing.locationType !== newData.locationType ||
-                      existing.date !== newData.date ||
+                      formatDate(existing.date) !== formatDate(newData.date) ||
                       existing.hour !== newData.hour ||
                       existing.revision_date1 !== newData.revision_date1 ||
                       existing.revision_date2 !== newData.revision_date2 ||
@@ -197,99 +173,36 @@ export class RequestHeadersAdpaterRepository implements RequestHeadersRepository
   private async createOnFirestore(encabezados: RequestHeadersEntity[]): Promise<void> {
     if (encabezados.length === 0) return;
 
-    const admin = require('firebase-admin');
-    const firestore = admin.firestore();
-
     for (const encabezado of encabezados) {
         if (!encabezado.id_header) {
         throw new Error('id_header es requerido en cada encabezado');
         }
 
-        const dateToString = (date: Date | string | undefined): string => {
-          if (!date) return '';
-          if (typeof date === 'string') return date;
-          return date.toISOString().split('T')[0];
-        };
-
-        const data = {
-        auth1: String(encabezado.auth1 || ''),
-        auth2: String(encabezado.auth2 || ''),
-        auth3: String(encabezado.auth3 || ''),
-        estatus: String(encabezado.status_header || ''),
-        fLocalForanea: String(encabezado.locationType || ''),
-        fecha: dateToString(encabezado.date),
-        hora: String(encabezado.hour || ''),
-        fechaRev1: String(encabezado.revision_date1 || ''),
-        fechaRev2: String(encabezado.revision_date2 || ''),
-        fechaRev3: String(encabezado.revision_date3 || ''),
-        folioSol: String(encabezado.folio_request || ''),
-        localidad: String(encabezado.locality || ''),
-        notas: String(encabezado.notes || ''),
-        obra: String(encabezado.project || ''),
-        oficial: String(encabezado.official || ''),
-        revisaA1: String(encabezado.revision1 || ''),
-        revisaA2: String(encabezado.revision2 || ''),
-        revisaA3: String(encabezado.revision3 || ''),
-        solicitante: String(encabezado.requester || ''),
-        trabajo: String(encabezado.work || '')
-        };
-
-        await firestore.collection('SolicitudesCom').doc(encabezado.id_header).set(data);
+        await firestore()
+          .collection(REQUESTS_COLLECTION)
+          .doc(encabezado.id_header)
+          .set(toFirestoreHeader(encabezado));
     }
   }
 
   private async updateOnFirestore(encabezados: RequestHeadersEntity[]): Promise<void> {
     if (!encabezados.length) return;
 
-    const admin = require('firebase-admin');
-    const firestore = admin.firestore();
-
-    const dateToString = (date: Date | string | undefined): string => {
-      if (!date) return '';
-      if (typeof date === 'string') return date;
-      return date.toISOString().split('T')[0];
-    };
-
     for (const encabezado of encabezados) {
-        const docRef = firestore.collection('SolicitudesCom').doc(encabezado.id_header);
+        const docRef = firestore().collection(REQUESTS_COLLECTION).doc(encabezado.id_header);
         const exists = await docRef.get();
         if (!exists.exists) {
           throw new Error(`La sección ${encabezado.id_header} no existe en Firestore`);
         }
 
-        const data = {
-        auth1: String(encabezado.auth1 || ''),
-        auth2: String(encabezado.auth2 || ''),
-        auth3: String(encabezado.auth3 || ''),
-        estatus: String(encabezado.status_header || ''),
-        fLocalForanea: String(encabezado.locationType || ''),
-        fecha: dateToString(encabezado.date),
-        hora: String(encabezado.hour || ''),
-        fechaRev1: String(encabezado.revision_date1 || ''),
-        fechaRev2: String(encabezado.revision_date2 || ''),
-        fechaRev3: String(encabezado.revision_date3 || ''),
-        folioSol: String(encabezado.folio_request || ''),
-        localidad: String(encabezado.locality || ''),
-        notas: String(encabezado.notes || ''),
-        obra: String(encabezado.project || ''),
-        oficial: String(encabezado.official || ''),
-        revisaA1: String(encabezado.revision1 || ''),
-        revisaA2: String(encabezado.revision2 || ''),
-        revisaA3: String(encabezado.revision3 || ''),
-        solicitante: String(encabezado.requester || ''),
-        trabajo: String(encabezado.work || '')
-        };
-
-        await docRef.set(data);
+        await docRef.set(toFirestoreHeader(encabezado));
     }
   }
 
 
   private async existsInFirestore(id: string): Promise<boolean> {
     try {
-      const admin = require('firebase-admin');
-      const firestore = admin.firestore();
-      const doc = await firestore.collection('SolicitudesCom').doc(id).get();
+      const doc = await firestore().collection(REQUESTS_COLLECTION).doc(id).get();
       return doc.exists;
     } catch (error) {
       console.error('Error al verificar existencia en Firestore:', error);
@@ -297,11 +210,4 @@ export class RequestHeadersAdpaterRepository implements RequestHeadersRepository
     }
   }
 
-  private async deleteFromFirestore(id_detail: string, materialKey?: string): Promise<void> {
-    const admin = require('firebase-admin');
-    const firestore = admin.firestore();
-
-    await firestore.collection('SolicitudesCom').doc(id_detail).delete();
-  }
-   
 }

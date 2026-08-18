@@ -1,8 +1,6 @@
 import {
     Entity,
     Column,
-    PrimaryColumn,
-    Double,
     PrimaryGeneratedColumn,
   } from 'typeorm';
 
@@ -30,7 +28,7 @@ import {
     c2!: string;
 
     @Column({ name: 'unit_cost', type: 'double'})
-    unit_cost!: Double;
+    unit_cost!: number;
   
     @Column({ name: 'description', type: 'varchar', length: 255  })
     description!: string;

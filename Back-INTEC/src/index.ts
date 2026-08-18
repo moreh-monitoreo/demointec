@@ -16,6 +16,7 @@ import employeesRouter from './core/infrastructure/rest/routes/employees.route';
 import requestRouter from './core/infrastructure/rest/routes/request_details.route';
 import requestRouter1 from './core/infrastructure/rest/routes/request_headers.route';
 import requestsAdditionalRouter from './core/infrastructure/rest/routes/requests_additional.route';
+import purchaseRequestRouter from './core/infrastructure/rest/routes/purchase_request.route';
 import laborRelationsRouter from './core/infrastructure/rest/routes/labor-relations.route';
 import employeeDocumentsRouter from './core/infrastructure/rest/routes/employee-documents.route';
 
@@ -79,6 +80,7 @@ app.use('/api', employeesRouter);
 app.use('/api', requestRouter);
 app.use('/api', requestRouter1);
 app.use('/api', requestsAdditionalRouter);
+app.use('/api', purchaseRequestRouter);
 app.use('/api', laborRelationsRouter);
 app.use('/api', employeeDocumentsRouter);
 app.use('/api', jobDescriptionRouter);

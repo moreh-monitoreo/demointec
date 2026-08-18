@@ -1,664 +1,493 @@
 <div class="content-container">
-  <!-- Header de la página -->
   <div class="page-header">
     <div>
-      <h1 class="page-title">Solicitudes de Compras</h1>
+      <h1 class="page-title" *ngIf="view === 'projects'">Control de solicitudes</h1>
+      <div class="project-breadcrumb" *ngIf="view === 'requests'">
+        <button class="btn-back" (click)="backToProjects()" title="Regresar a obras">
+          <i class="bi bi-arrow-left"></i>
+        </button>
+        <h1 class="page-title mb-0">{{ selectedProject }}</h1>
+      </div>
     </div>
-    <a (click)="setCreateMode()" class="btn-primary" data-bs-toggle="modal" data-bs-target="#agregarSolicitudModal">
+    <a (click)="openCaptureChooser()" class="btn-primary">
       <i class="bi bi-plus-circle"></i>
       Nueva Solicitud
     </a>
   </div>
 
-  <!-- Filtros y búsqueda -->
   <div class="filters-section">
     <div class="filters-row">
       <div class="filter-group">
         <label for="search">Buscar</label>
-        <input type="text" id="search" class="filter-input" placeholder="Folio, proyecto o solicitante..." [(ngModel)]="searchTerm" (input)="applyFilters()">
+        <input type="text" id="search" class="filter-input"
+               [placeholder]="view === 'projects' ? 'Nombre de la obra...' : 'Folio, trabajo, residente o localidad...'"
+               [(ngModel)]="searchTerm" (keyup.enter)="applyFilters()">
       </div>
       <div class="filter-group">
-        <select id="status" class="filter-input" [(ngModel)]="selectedStatus" (change)="applyFilters()">
-          <option value="">Todos los estados</option>
-          <option value="true">Activo</option>
-          <option value="false">Inactivo</option>
-        </select>
+        <label>Estatus</label>
+        <div class="status-toggle">
+          <button type="button" [class.active]="statusFilter === ''" (click)="setStatusFilter('')">
+            <span class="status-dot dot-all"></span>Todas
+          </button>
+          <button type="button" [class.active]="statusFilter === statusPending" (click)="setStatusFilter(statusPending)">
+            <span class="status-dot dot-pending"></span>Pendientes
+          </button>
+          <button type="button" [class.active]="statusFilter === statusSupplied" (click)="setStatusFilter(statusSupplied)">
+            <span class="status-dot dot-supplied"></span>Suministradas
+          </button>
+        </div>
       </div>
-      <button class="btn-consult" (click)="consultRequests()" [disabled]="isLoading">
+      <button class="btn-consult" (click)="applyFilters()" [disabled]="isLoading" title="Consultar">
         <i class="bi bi-search"></i>
       </button>
-      <button class="btn-filter" (click)="clearFilters()">
-        <i class="bi bi-list-ul"></i>
-      </button>
-      <button class="btn-sync" (click)="syncRequests()" title="Sincronizar solicitudes" [disabled]="isLoading">
-        <i class="bi bi-arrow-repeat"></i>
+      <button class="btn-filter1" (click)="exportRequests()" title="Exportar a Excel">
+        <i class="bi bi-file-earmark-excel"></i>
       </button>
     </div>
   </div>
 
-  <!-- Tabla de solicitudes -->
-  <div class="table-container" *ngIf="hasConsulted && !isLoading && filteredRequests.length > 0">
-    <div class="table-header">
-      <div class="table-info">
-        Mostrando {{ requests.length }} de {{ allRequests.length }} solicitudes
-        <span *ngIf="hasActiveFilters()" class="text-muted">(filtradas)</span>
+  <ng-container *ngIf="view === 'projects'">
+    <div class="table-container" *ngIf="!isLoading && projects.length > 0">
+      <div class="table-header">
+        <div class="table-info">
+          Obras con solicitudes: <strong>{{ projectsWithRequests }}</strong>
+          <span *ngIf="hasActiveFilters()" class="text-muted">(filtradas)</span>
+        </div>
       </div>
-      <div class="table-actions">
-        <button class="btn-filter1" (click)="exportRequests()">
-          <i class="bi bi-download"></i>
-          Exportar
-        </button>
-      </div>
-    </div>
-    <div class="table-responsive">
-      <table class="users-table">
-        <thead>
-          <tr>
-            <th>Folio</th>
-            <th>Proyecto</th>
-            <th>Solicitante</th>
-            <th>Fecha</th>
-            <th>Proceso</th>
-            <th>Oficial</th>
-            <th>Estado</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let request of requests">
-            <td>{{ request.folio_request }}</td>
-            <td>{{ request.project }}</td>
-            <td>{{ request.requester }}</td>
-            <td>{{ request.date | date:'dd/MM/yyyy' }}</td>
-            <td>{{ request.status_header }}</td>
-            <td>{{ request.official }}</td>
-            <td>
-              <span class="status-badge" [ngClass]="request.status ? 'status-active' : 'status-inactive'">
-                {{ request.status ? 'Activo' : 'Inactivo' }}
-              </span>
-            </td>
-            <td>
-              <div class="action-buttons">
-                <button class="btn-action btn-edit" (click)="handleEditClick(request)" title="Editar">
-                  <i class="bi bi-pencil"></i>
-                </button>
-                <button class="btn-action btn-delete" (click)="deleteRequest(request)" title="Eliminar">
-                  <i class="bi bi-trash"></i>
-                </button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    <!-- Paginación -->
-    <div class="pagination-container" *ngIf="totalPages > 1">
-      <div class="pagination">
-        <button [disabled]="currentPage === 1" (click)="setPage(currentPage - 1)">
-          <i class="bi bi-chevron-left"></i>
-        </button>
-        <button *ngFor="let page of pages" [class.active]="page === currentPage" (click)="setPage(page)">
-          {{ page }}
-        </button>
-        <button [disabled]="currentPage === totalPages" (click)="setPage(currentPage + 1)">
-          <i class="bi bi-chevron-right"></i>
+      <div class="project-list">
+        <button class="project-card" *ngFor="let project of projects" (click)="openProject(project)">
+          <div class="project-card-name">{{ project.project }}</div>
+          <div class="project-card-meta">
+            <span class="count-badge">{{ project.total }} {{ project.total === 1 ? 'solicitud' : 'solicitudes' }}</span>
+            <span class="count-badge pending" *ngIf="project.pending > 0">{{ project.pending }} pendientes</span>
+          </div>
         </button>
       </div>
     </div>
-  </div>
-  <div class="table-container placeholder-container" *ngIf="hasConsulted && !isLoading && filteredRequests.length === 0">
-    <div class="table-placeholder">
-      <i class="bi bi-inbox"></i>
-      No se encontraron solicitudes con los filtros aplicados.
+
+    <div class="table-container placeholder-container" *ngIf="!isLoading && projects.length === 0 && hasConsulted">
+      <div class="table-placeholder">
+        <i class="bi bi-inbox"></i>
+        No se encontraron obras con solicitudes.
+      </div>
     </div>
-  </div>
-  <div class="table-container placeholder-container" *ngIf="hasConsulted && isLoading">
+  </ng-container>
+
+  <ng-container *ngIf="view === 'requests'">
+    <div class="table-container" *ngIf="!isLoading && requests.length > 0">
+      <div class="table-header">
+        <div class="table-info">
+          Mostrando {{ requests.length }} de {{ totalRequests }} solicitudes
+          <span *ngIf="hasActiveFilters()" class="text-muted">(filtradas)</span>
+        </div>
+      </div>
+      <div class="table-responsive">
+        <table class="users-table">
+          <thead>
+            <tr>
+              <th>Folio</th>
+              <th>Fecha</th>
+              <th>Trabajo</th>
+              <th>Localidad</th>
+              <th>Residente</th>
+              <th class="text-center">Conceptos</th>
+              <th class="text-center">Unidades</th>
+              <th>Estatus</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let request of requests">
+              <td class="fw-bold"># {{ request.folio_request }}</td>
+              <td>{{ request.date | date:'dd-MM-yyyy' }}</td>
+              <td>{{ request.work }}</td>
+              <td>{{ request.locality }}</td>
+              <td>{{ request.requester }}</td>
+              <td class="text-center">{{ request.concepts }}</td>
+              <td class="text-center">{{ request.units }}</td>
+              <td>
+                <span class="status-badge"
+                      [ngClass]="request.status_header === statusSupplied ? 'status-active' : 'status-inactive'">
+                  {{ request.status_header }}
+                </span>
+              </td>
+              <td>
+                <div class="action-buttons">
+                  <button class="btn-action btn-view" (click)="viewRequest(request)" title="Ver solicitud">
+                    <i class="bi bi-eye"></i>
+                  </button>
+                  <button class="btn-action btn-edit" (click)="toggleSupplied(request)"
+                          [title]="request.status_header === statusSupplied ? 'Marcar como pendiente' : 'Marcar como suministrada'">
+                    <i class="bi" [ngClass]="request.status_header === statusSupplied ? 'bi-arrow-counterclockwise' : 'bi-check2-circle'"></i>
+                  </button>
+                  <button class="btn-action btn-delete" (click)="deleteRequest(request)" title="Eliminar">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pagination-container" *ngIf="totalPages > 1">
+        <div class="pagination">
+          <button [disabled]="currentPage === 1" (click)="setPage(currentPage - 1)">
+            <i class="bi bi-chevron-left"></i>
+          </button>
+          <button *ngFor="let page of pages" [class.active]="page === currentPage" (click)="setPage(page)">
+            {{ page }}
+          </button>
+          <button [disabled]="currentPage === totalPages" (click)="setPage(currentPage + 1)">
+            <i class="bi bi-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-container placeholder-container" *ngIf="!isLoading && requests.length === 0">
+      <div class="table-placeholder">
+        <i class="bi bi-inbox"></i>
+        Esta obra no tiene solicitudes con los filtros aplicados.
+      </div>
+    </div>
+  </ng-container>
+
+  <div class="table-container placeholder-container" *ngIf="isLoading">
     <div class="table-placeholder">
       <i class="bi bi-arrow-repeat loading-icon"></i>
-      Cargando solicitudes...
+      Cargando información...
     </div>
-  </div>
-  <div class="consult-placeholder" *ngIf="!hasConsulted">
-    <i class="bi bi-info-circle"></i>
-    Consulte para ver la información de solicitudes de compra.
   </div>
 </div>
 
-<!-- Modal para Agregar Solicitud -->
-<div class="modal fade" id="agregarSolicitudModal" tabindex="-1" aria-labelledby="agregarSolicitudModalLabel" aria-hidden="true">
+<div class="modal fade" id="capturaSolicitudModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-sm modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Captura de solicitud</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <button type="button" class="kind-option" (click)="startCapture('M')">
+          <i class="bi bi-box-seam me-2"></i>Materiales
+        </button>
+        <button type="button" class="kind-option" (click)="startCapture('H')">
+          <i class="bi bi-tools me-2"></i>Herramientas
+        </button>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="nuevaSolicitudModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header bg-primary text-white">
-        <h5 class="modal-title" id="agregarSolicitudModalLabel">
-          <i class="bi bi-plus-circle me-2"></i>Nueva Solicitud de Compra
+        <h5 class="modal-title">
+          <i class="bi bi-plus-circle me-2"></i>{{ captureTitle }}
         </h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
       </div>
       <div class="modal-body">
-        <form [formGroup]="requestForm" (ngSubmit)="createRequest()">
-          <!-- Folio destacado -->
-          <div class="text-center mb-4 p-3 bg-light rounded">
-            <label class="form-label fw-bold text-muted mb-1">NO. SOLICITUD:</label>
-            <div class="fw-bold fs-2 text-danger">{{ requestForm.value.folio_request || '---' }}</div>
-          </div>
-
-          <!-- Datos principales -->
+        <form [formGroup]="requestForm">
           <div class="row g-3 mb-4">
-                <div class="col-md-6">
-              <label class="form-label fw-semibold">Proyecto *</label>
-              <input formControlName="project" type="text" class="form-control form-control-sm" placeholder="Nombre del proyecto">
-                  </div>
             <div class="col-md-6">
-              <label class="form-label fw-semibold">Solicitante *</label>
-              <input formControlName="requester" type="text" class="form-control form-control-sm" placeholder="Nombre del solicitante">
-                </div>
-                <div class="col-md-6">
-              <label class="form-label fw-semibold">Oficial *</label>
-              <input formControlName="official" type="text" class="form-control form-control-sm" placeholder="Nombre del oficial">
-                  </div>
-                <div class="col-md-6">
+              <label class="form-label fw-semibold">Obra *</label>
+              <select formControlName="project" class="form-control form-control-sm" (change)="onProjectChange()">
+                <option value="">Seleccionar obra...</option>
+                <option *ngFor="let project of catalogProjects" [value]="project.name_project">
+                  {{ project.name_project }}
+                </option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold d-block">Ubicación *</label>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" id="localOption" formControlName="locationType" value="local">
+                <label class="form-check-label" for="localOption">Local</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" id="foraneaOption" formControlName="locationType" value="foranea">
+                <label class="form-check-label" for="foraneaOption">Foránea</label>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Oficial encargado *</label>
+              <input formControlName="official" type="text" class="form-control form-control-sm" placeholder="Oficial encargado">
+            </div>
+            <div class="col-md-6">
               <label class="form-label fw-semibold">Localidad *</label>
               <input formControlName="locality" type="text" class="form-control form-control-sm" placeholder="Localidad">
-                </div>
-                <div class="col-md-6">
-              <label class="form-label fw-semibold">Fecha *</label>
-              <input formControlName="date" type="date" class="form-control form-control-sm" [value]="getCurrentDate()">
-              </div>
-                <div class="col-md-6">
-              <label class="form-label fw-semibold">Hora *</label>
-              <input formControlName="hour" type="time" class="form-control form-control-sm" [value]="getCurrentTime()">
-                </div>
-                <div class="col-md-6">
-              <label class="form-label fw-semibold">Tipo de Ubicación *</label>
-              <input formControlName="locationType" type="text" class="form-control form-control-sm" placeholder="Tipo de ubicación">
-              </div>
-            <div class="col-md-6">
-              <label class="form-label fw-semibold">Trabajo *</label>
-              <input formControlName="work" type="text" class="form-control form-control-sm" placeholder="Descripción del trabajo">
-            </div>
-          </div>
-
-          <!-- Gestión de Artículos -->
-          <div class="card mb-4">
-            <div class="card-header bg-light">
-              <h6 class="fw-bold mb-0">
-                <i class="bi bi-box me-2"></i>Artículos
-              </h6>
-            </div>
-            <div class="card-body">
-              <div [formGroup]="detailsForm">
-                <div class="row g-2">
-                  <div class="col-md-4">
-                    <label class="form-label fw-semibold small">Artículo *</label>
-                    <select formControlName="name" class="form-control form-control-sm" (change)="onArticleChange()">
-                      <option value="">Seleccionar artículo...</option>
-                      <optgroup label="MATERIALES">
-                        <option *ngFor="let material of materials" [value]="getItemValue(material)">
-                          {{ material.name_material }}
-                        </option>
-                      </optgroup>
-                      <optgroup label="HERRAMIENTAS">
-                        <option *ngFor="let tool of tools" [value]="getItemValue(tool)">
-                          {{ tool.name_tool }}
-                        </option>
-                      </optgroup>
-                    </select>
-                  </div>
-                  <div class="col-md-2">
-                    <label class="form-label fw-semibold small">Cantidad *</label>
-                    <input formControlName="amount" type="number" class="form-control form-control-sm" placeholder="0">
-                  </div>
-                  <div class="col-md-2">
-                    <label class="form-label fw-semibold small">Costo Unit. *</label>
-                    <input formControlName="unit_cost" type="number" step="0.01" class="form-control form-control-sm" placeholder="0.00">
-                  </div>
-                  <div class="col-md-2">
-                    <label class="form-label fw-semibold small">Unidad *</label>
-                    <input formControlName="unit" type="text" class="form-control form-control-sm" placeholder="PZA, KG, etc.">
-                  </div>
-                  <div class="col-md-2">
-                    <label class="form-label fw-semibold small">Acciones</label>
-                    <div class="d-flex gap-1">
-                        <button type="button" class="btn btn-primary btn-sm" (click)="isDetailEditMode ? updateDetail() : addDetail()" [disabled]="detailsForm.invalid">
-                        <i class="bi" [ngClass]="isDetailEditMode ? 'bi-check' : 'bi-plus'"></i>
-                        </button>
-                      <button type="button" class="btn btn-outline-secondary btn-sm" (click)="cancelDetailEditForm()" *ngIf="isDetailEditMode">
-                        <i class="bi bi-x"></i>
-                        </button>
-                    </div>
-                  </div>
-                </div>
-                
-                <!-- Campos específicos por tipo de artículo -->
-                <div class="row g-2 mt-2" *ngIf="selectedArticleType">
-                  <!-- Campos para Materiales -->
-                  <ng-container *ngIf="selectedArticleType === 'M'">
-                    <div class="col-md-3">
-                      <label class="form-label fw-semibold small">Código</label>
-                      <input formControlName="code" type="text" class="form-control form-control-sm" readonly>
-                    </div>
-                    <div class="col-md-3">
-                      <label class="form-label fw-semibold small">C1</label>
-                      <input formControlName="c1" type="text" class="form-control form-control-sm" readonly>
-                    </div>
-                    <div class="col-md-3">
-                      <label class="form-label fw-semibold small">C2</label>
-                      <input formControlName="c2" type="text" class="form-control form-control-sm" readonly>
-                    </div>
-                    <div class="col-md-3">
-                      <label class="form-label fw-semibold small">Partida</label>
-                      <input formControlName="category" type="text" class="form-control form-control-sm" readonly>
-                    </div>
-                    <div class="col-md-6">
-                      <label class="form-label fw-semibold small">Subpartida</label>
-                      <input formControlName="subcategory" type="text" class="form-control form-control-sm" readonly>
-                    </div>
-                  </ng-container>
-                  
-                  <!-- Campos para Herramientas -->
-                  <ng-container *ngIf="selectedArticleType === 'H'">
-                    <div class="col-md-3">
-                      <label class="form-label fw-semibold small">Código</label>
-                      <input formControlName="code" type="text" class="form-control form-control-sm" readonly>
-                    </div>
-                    <div class="col-md-9">
-                      <label class="form-label fw-semibold small">Descripción</label>
-                      <textarea formControlName="description" class="form-control form-control-sm" rows="2" readonly></textarea>
-                    </div>
-                  </ng-container>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Tabla de Artículos -->
-          <div class="card mb-4" *ngIf="requestDetails.length > 0">
-            <div class="card-header bg-light">
-              <h6 class="fw-bold mb-0">
-                <i class="bi bi-list-ul me-2"></i>Artículos Agregados ({{ requestDetails.length }})
-              </h6>
-            </div>
-            <div class="card-body p-0">
-              <div class="table-responsive">
-                <table class="table table-sm table-hover mb-0">
-                  <thead class="table-light">
-                    <tr>
-                      <th class="text-center" style="width: 60px;">CANT.</th>
-                      <th>PRODUCTO</th>
-                      <th class="text-center" style="width: 80px;">UNIDAD</th>
-                      <th class="text-end" style="width: 100px;">PRECIO</th>
-                      <th class="text-end" style="width: 100px;">SUBTOTAL</th>
-                      <th class="text-center" style="width: 80px;">ACCIONES</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr *ngFor="let detail of requestDetails">
-                      <td class="text-center fw-bold">{{ detail.amount }}</td>
-                      <td>{{ detail.name }}</td>
-                      <td class="text-center">{{ detail.unit }}</td>
-                      <td class="text-end">${{ detail.unit_cost | number:'1.2-2' }}</td>
-                      <td class="text-end fw-bold">${{ detail.amount * detail.unit_cost | number:'1.2-2' }}</td>
-                      <td class="text-center">
-                        <button type="button" class="btn btn-sm btn-outline-primary" (click)="editDetail(detail)" title="Editar">
-                          <i class="bi bi-pencil"></i>
-                        </button>
-                        <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeDetail(detail)" title="Eliminar">
-                          <i class="bi bi-trash"></i>
-                        </button>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          <!-- Observaciones -->
-          <div class="mb-4">
-            <label class="form-label fw-semibold">Observaciones</label>
-            <textarea formControlName="notes" class="form-control form-control-sm" rows="2" placeholder="Observaciones adicionales"></textarea>
-          </div>
-
-          <!-- Resumen y Acciones -->
-          <div class="row g-3">
-            <div class="col-md-6">
-              <div class="card border-primary">
-                <div class="card-body p-3">
-                  <h6 class="card-title fw-bold text-primary mb-3">
-                    <i class="bi bi-calculator me-2"></i>Resumen Financiero
-                  </h6>
-                  <div class="d-flex justify-content-between mb-2">
-                    <span class="fw-semibold">Subtotal:</span>
-                    <span class="fw-bold">${{ subtotal | number:'1.2-2' }}</span>
-                  </div>
-                  <div class="d-flex justify-content-between mb-2">
-                    <span class="fw-semibold">
-                      <input type="checkbox" [ngModel]="ivaEnabled" [ngModelOptions]="{standalone: true}" (change)="toggleIva()" class="me-2">
-                      IVA (16%):
-                    </span>
-                    <span class="fw-bold">${{ iva | number:'1.2-2' }}</span>
-                  </div>
-                  <hr class="my-2">
-                  <div class="d-flex justify-content-between">
-                    <span class="fw-bold fs-5">TOTAL:</span>
-                    <span class="fw-bold fs-5 text-primary">${{ total | number:'1.2-2' }}</span>
-                  </div>
-                </div>
-              </div>
             </div>
             <div class="col-md-6">
-              <div class="card border-success">
-                <div class="card-body p-3 text-center">
-                  <h6 class="card-title fw-bold text-success mb-3">
-                    <i class="bi bi-box me-2"></i>Artículos: {{ requestDetails.length }}
-                  </h6>
-                  <button type="button" class="btn btn-success btn-lg w-100" (click)="finishRequest()" [disabled]="requestDetails.length === 0">
-                    <i class="bi bi-check-circle me-2"></i>Guardar Solicitud
-                  </button>
-                </div>
-              </div>
+              <label class="form-label fw-semibold">Residente *</label>
+              <input formControlName="requester" type="text" class="form-control form-control-sm" placeholder="Residente">
             </div>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Modal para Editar Solicitud -->
-<div class="modal fade" id="editarSolicitudModal" tabindex="-1" aria-labelledby="editarSolicitudModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header bg-warning text-dark">
-        <h5 class="modal-title" id="editarSolicitudModalLabel">
-          <i class="bi bi-pencil-square me-2"></i>Modificar Solicitud de Compra
-        </h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-      </div>
-      <div class="modal-body" *ngIf="selectedRequest">
-        <form [formGroup]="requestForm" (ngSubmit)="updateRequest()">
-          <!-- Folio destacado -->
-          <div class="text-center mb-4 p-3 bg-light rounded">
-            <label class="form-label fw-bold text-muted mb-1">NO. SOLICITUD:</label>
-            <div class="fw-bold fs-2 text-danger">{{ requestForm.value.folio_request || '---' }}</div>
-          </div>
-
-          <!-- Datos principales -->
-          <div class="row g-3 mb-4">
-                <div class="col-md-6">
-              <label class="form-label fw-semibold">Proyecto *</label>
-              <input formControlName="project" type="text" class="form-control form-control-sm" placeholder="Nombre del proyecto">
-                  </div>
             <div class="col-md-6">
-              <label class="form-label fw-semibold">Solicitante *</label>
-              <input formControlName="requester" type="text" class="form-control form-control-sm" placeholder="Nombre del solicitante">
-                </div>
-                <div class="col-md-6">
-              <label class="form-label fw-semibold">Oficial *</label>
-              <input formControlName="official" type="text" class="form-control form-control-sm" placeholder="Nombre del oficial">
-              </div>
-                <div class="col-md-6">
-              <label class="form-label fw-semibold">Localidad *</label>
-              <input formControlName="locality" type="text" class="form-control form-control-sm" placeholder="Localidad">
-                </div>
-                <div class="col-md-6">
+              <label class="form-label fw-semibold">Trabajo a realizar *</label>
+              <input formControlName="work" type="text" class="form-control form-control-sm" placeholder="Trabajo a realizar">
+            </div>
+            <div class="col-md-6">
               <label class="form-label fw-semibold">Fecha *</label>
               <input formControlName="date" type="date" class="form-control form-control-sm">
-              </div>
-                <div class="col-md-6">
-              <label class="form-label fw-semibold">Hora *</label>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Hora</label>
               <input formControlName="hour" type="time" class="form-control form-control-sm">
-                </div>
-                <div class="col-md-6">
-              <label class="form-label fw-semibold">Tipo de Ubicación *</label>
-              <input formControlName="locationType" type="text" class="form-control form-control-sm" placeholder="Tipo de ubicación">
-            </div>
-            <div class="col-md-6">
-              <label class="form-label fw-semibold">Trabajo *</label>
-              <input formControlName="work" type="text" class="form-control form-control-sm" placeholder="Descripción del trabajo">
-            </div>
-          </div>
-
-          <!-- Estados de la solicitud -->
-          <div class="row g-3 mb-4">
-            <div class="col-md-6">
-              <label class="form-label fw-semibold">Estatus del Proceso *</label>
-              <input formControlName="status_header" type="text" class="form-control form-control-sm" placeholder="Descripción del trabajo">
-            </div>
-            <div class="col-md-6">
-              <label class="form-label fw-semibold">Estado de la Solicitud *</label>
-              <div class="d-flex align-items-center">
-                <div class="form-check form-switch me-3">
-                  <input class="form-check-input" type="checkbox" formControlName="status" id="statusSwitch">
-                  <label class="form-check-label" for="statusSwitch">
-                    <span [ngClass]="requestForm.get('status')?.value ? 'text-success fw-bold' : 'text-danger fw-bold'">
-                      {{ requestForm.get('status')?.value ? 'Activo' : 'Inactivo' }}
-                    </span>
-                  </label>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Gestión de Artículos -->
-          <div class="card mb-4">
-            <div class="card-header bg-light">
-              <h6 class="fw-bold mb-0">
-                <i class="bi bi-box me-2"></i>Artículos
-              </h6>
-            </div>
-            <div class="card-body">
-              <div [formGroup]="detailsForm">
-                <div class="row g-2">
-                  <div class="col-md-4">
-                    <label class="form-label fw-semibold small">Artículo *</label>
-                    <select formControlName="name" class="form-control form-control-sm" (change)="onArticleChange()">
-                      <option value="">Seleccionar artículo...</option>
-                      <optgroup label="MATERIALES">
-                        <option *ngFor="let material of materials" [value]="getItemValue(material)">
-                          {{ material.name_material }}
-                        </option>
-                      </optgroup>
-                      <optgroup label="HERRAMIENTAS">
-                        <option *ngFor="let tool of tools" [value]="getItemValue(tool)">
-                          {{ tool.name_tool }}
-                        </option>
-                      </optgroup>
-                    </select>
-                  </div>
-                  <div class="col-md-2">
-                    <label class="form-label fw-semibold small">Cantidad *</label>
-                    <input formControlName="amount" type="number" class="form-control form-control-sm" placeholder="0">
-                  </div>
-                  <div class="col-md-2">
-                    <label class="form-label fw-semibold small">Costo Unit. *</label>
-                    <input formControlName="unit_cost" type="number" step="0.01" class="form-control form-control-sm" placeholder="0.00">
-                  </div>
-                  <div class="col-md-2">
-                    <label class="form-label fw-semibold small">Unidad *</label>
-                    <input formControlName="unit" type="text" class="form-control form-control-sm" placeholder="PZA, KG, etc.">
-                  </div>
-                  <div class="col-md-2">
-                    <label class="form-label fw-semibold small">Acciones</label>
-                    <div class="d-flex gap-1">
-                        <button type="button" class="btn btn-primary btn-sm" (click)="isDetailEditMode ? updateDetail() : addDetail()" [disabled]="detailsForm.invalid">
-                        <i class="bi" [ngClass]="isDetailEditMode ? 'bi-check' : 'bi-plus'"></i>
-                        </button>
-                      <button type="button" class="btn btn-outline-secondary btn-sm" (click)="cancelDetailEditForm()" *ngIf="isDetailEditMode">
-                        <i class="bi bi-x"></i>
-                        </button>
-                    </div>
-                  </div>
-                </div>
-                
-                <!-- Campos específicos por tipo de artículo -->
-                <div class="row g-2 mt-2" *ngIf="selectedArticleType">
-                  <!-- Campos para Materiales -->
-                  <ng-container *ngIf="selectedArticleType === 'M'">
-                    <div class="col-md-3">
-                      <label class="form-label fw-semibold small">Código</label>
-                      <input formControlName="code" type="text" class="form-control form-control-sm" readonly>
-                    </div>
-                    <div class="col-md-3">
-                      <label class="form-label fw-semibold small">C1</label>
-                      <input formControlName="c1" type="text" class="form-control form-control-sm" readonly>
-                    </div>
-                    <div class="col-md-3">
-                      <label class="form-label fw-semibold small">C2</label>
-                      <input formControlName="c2" type="text" class="form-control form-control-sm" readonly>
-                    </div>
-                    <div class="col-md-3">
-                      <label class="form-label fw-semibold small">Partida</label>
-                      <input formControlName="category" type="text" class="form-control form-control-sm" readonly>
-                    </div>
-                    <div class="col-md-6">
-                      <label class="form-label fw-semibold small">Subpartida</label>
-                      <input formControlName="subcategory" type="text" class="form-control form-control-sm" readonly>
-                    </div>
-                  </ng-container>
-                  
-                  <!-- Campos para Herramientas -->
-                  <ng-container *ngIf="selectedArticleType === 'H'">
-                    <div class="col-md-3">
-                      <label class="form-label fw-semibold small">Código</label>
-                      <input formControlName="code" type="text" class="form-control form-control-sm" readonly>
-                    </div>
-                    <div class="col-md-9">
-                      <label class="form-label fw-semibold small">Descripción</label>
-                      <textarea formControlName="description" class="form-control form-control-sm" rows="2" readonly></textarea>
-                    </div>
-                  </ng-container>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Tabla de Artículos -->
-          <div class="card mb-4" *ngIf="requestDetails.length > 0">
-            <div class="card-header bg-light">
-              <h6 class="fw-bold mb-0">
-                <i class="bi bi-list-ul me-2"></i>Artículos Agregados ({{ requestDetails.length }})
-              </h6>
-            </div>
-            <div class="card-body p-0">
-              <div class="table-responsive">
-                <table class="table table-sm table-hover mb-0">
-                  <thead class="table-light">
-                    <tr>
-                      <th class="text-center" style="width: 60px;">CANT.</th>
-                      <th>PRODUCTO</th>
-                      <th class="text-center" style="width: 80px;">UNIDAD</th>
-                      <th class="text-end" style="width: 100px;">PRECIO</th>
-                      <th class="text-end" style="width: 100px;">SUBTOTAL</th>
-                      <th class="text-center" style="width: 80px;">ACCIONES</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr *ngFor="let detail of requestDetails">
-                      <td class="text-center fw-bold">{{ detail.amount }}</td>
-                      <td>{{ detail.name }}</td>
-                      <td class="text-center">{{ detail.unit }}</td>
-                      <td class="text-end">${{ detail.unit_cost | number:'1.2-2' }}</td>
-                      <td class="text-end fw-bold">${{ detail.amount * detail.unit_cost | number:'1.2-2' }}</td>
-                      <td class="text-center">
-                        <button type="button" class="btn btn-sm btn-outline-primary" (click)="editDetail(detail)" title="Editar">
-                          <i class="bi bi-pencil"></i>
-                        </button>
-                        <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeDetail(detail)" title="Eliminar">
-                          <i class="bi bi-trash"></i>
-                        </button>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          <!-- Observaciones -->
-          <div class="mb-4">
-            <label class="form-label fw-semibold">Observaciones</label>
-            <textarea formControlName="notes" class="form-control form-control-sm" rows="2" placeholder="Observaciones adicionales"></textarea>
-          </div>
-
-          <!-- Resumen y Acciones -->
-          <div class="row g-3">
-            <div class="col-md-6">
-              <div class="card border-warning">
-                <div class="card-body p-3">
-                  <h6 class="card-title fw-bold text-warning mb-3">
-                    <i class="bi bi-calculator me-2"></i>Resumen Financiero
-                  </h6>
-                  <div class="d-flex justify-content-between mb-2">
-                    <span class="fw-semibold">Subtotal:</span>
-                    <span class="fw-bold">${{ subtotal | number:'1.2-2' }}</span>
-                  </div>
-                  <div class="d-flex justify-content-between mb-2">
-                    <span class="fw-semibold">
-                      <input type="checkbox" [ngModel]="ivaEnabled" [ngModelOptions]="{standalone: true}" (change)="toggleIva()" class="me-2">
-                      IVA (16%):
-                    </span>
-                    <span class="fw-bold">${{ iva | number:'1.2-2' }}</span>
-                  </div>
-                  <hr class="my-2">
-                  <div class="d-flex justify-content-between">
-                    <span class="fw-bold fs-5">TOTAL:</span>
-                    <span class="fw-bold fs-5 text-warning">${{ total | number:'1.2-2' }}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="card border-warning">
-                <div class="card-body p-3 text-center">
-                  <h6 class="card-title fw-bold text-warning mb-3">
-                    <i class="bi bi-box me-2"></i>Artículos: {{ requestDetails.length }}
-                  </h6>
-                  <button type="button" class="btn btn-warning btn-lg w-100" (click)="saveRequestChanges()">
-                    <i class="bi bi-check-circle me-2"></i>Guardar Cambios
-                  </button>
-                </div>
-              </div>
             </div>
           </div>
         </form>
-      </div>
-    </div>
-  </div>
-</div> 
 
-<!-- Modal pequeño para confirmar edición de artículo -->
-<div class="modal fade" [class.show]="showEditArticleModal" [style.display]="showEditArticleModal ? 'block' : 'none'" tabindex="-1" *ngIf="showEditArticleModal">
-  <div class="modal-dialog modal-sm">
-    <div class="modal-content">
-      <div class="modal-header bg-info text-white">
-        <h6 class="modal-title">
-          <i class="bi bi-question-circle me-2"></i>Editar Artículo
-        </h6>
-      </div>
-      <div class="modal-body text-center">
-        <div class="mb-3">
-          <i class="bi bi-pencil-square display-4 text-info"></i>
+        <div class="card mb-4">
+          <div class="card-header bg-light">
+            <h6 class="fw-bold mb-0"><i class="bi bi-list-ul me-2"></i>Detalle</h6>
+          </div>
+          <div class="card-body">
+            <div [formGroup]="itemForm">
+              <div class="row g-2">
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold small">
+                    {{ kind === 'H' ? 'Nombre de herramienta *' : 'Material *' }}
+                  </label>
+                  <select formControlName="article" class="form-control form-control-sm" (change)="onArticleChange()">
+                    <option value="">{{ kind === 'H' ? 'Seleccionar herramienta...' : 'Buscar material...' }}</option>
+                    <ng-container *ngIf="kind === 'M'">
+                      <option *ngFor="let material of materials" [value]="material.id_material">
+                        {{ material.name_material }}
+                      </option>
+                    </ng-container>
+                    <ng-container *ngIf="kind === 'H'">
+                      <option *ngFor="let tool of tools" [value]="tool.id_tool">
+                        {{ tool.name_tool }}
+                      </option>
+                    </ng-container>
+                  </select>
+                </div>
+                <div class="col-md-2">
+                  <label class="form-label fw-semibold small">Cantidad *</label>
+                  <input formControlName="amount" type="number" min="1" class="form-control form-control-sm" placeholder="0">
+                </div>
+                <div class="col-md-2">
+                  <label class="form-label fw-semibold small">Costo Unit.</label>
+                  <input formControlName="unit_cost" type="number" step="0.01" class="form-control form-control-sm" placeholder="0.00">
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                  <button type="button" class="btn btn-warning btn-sm w-100" (click)="addItem()">
+                    <i class="bi bi-plus-lg me-1"></i>Agregar
+                  </button>
+                </div>
+              </div>
+
+              <div class="row g-2 mt-1" *ngIf="itemForm.value.article">
+                <ng-container *ngIf="kind === 'M'">
+                  <div class="col-md-3">
+                    <label class="form-label fw-semibold small">Código</label>
+                    <input formControlName="code" type="text" class="form-control form-control-sm" readonly>
+                  </div>
+                  <div class="col-md-3">
+                    <label class="form-label fw-semibold small">Unidad</label>
+                    <input formControlName="unit" type="text" class="form-control form-control-sm" readonly>
+                  </div>
+                  <div class="col-md-3">
+                    <label class="form-label fw-semibold small">Partida</label>
+                    <input formControlName="category" type="text" class="form-control form-control-sm" readonly>
+                  </div>
+                  <div class="col-md-3">
+                    <label class="form-label fw-semibold small">Subpartida</label>
+                    <input formControlName="subcategory" type="text" class="form-control form-control-sm" readonly>
+                  </div>
+                </ng-container>
+                <ng-container *ngIf="kind === 'H'">
+                  <div class="col-md-3">
+                    <label class="form-label fw-semibold small"># de QR</label>
+                    <input formControlName="code" type="text" class="form-control form-control-sm" readonly>
+                  </div>
+                  <div class="col-md-9">
+                    <label class="form-label fw-semibold small">Descripción</label>
+                    <input type="text" class="form-control form-control-sm" [value]="selectedToolDescription" readonly>
+                  </div>
+                </ng-container>
+              </div>
+
+              <div class="mt-2">
+                <label class="form-label fw-semibold small">Especificaciones del concepto</label>
+                <input formControlName="observation" type="text" class="form-control form-control-sm"
+                       placeholder="Especificaciones del concepto">
+              </div>
+            </div>
+          </div>
         </div>
-        <p class="mb-3">¿Deseas editar el artículo seleccionado?</p>
-        <div class="fw-bold text-primary" *ngIf="editingRequestDetail">
-          {{ editingRequestDetail.name }}
+
+        <div class="card mb-4" *ngIf="items.length > 0">
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-sm table-hover mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th class="text-center" style="width: 70px;">CANT.</th>
+                    <th>CONCEPTO</th>
+                    <th class="text-center" style="width: 90px;">UNIDAD</th>
+                    <th class="text-end" style="width: 110px;">IMPORTE</th>
+                    <th class="text-center" style="width: 60px;"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let item of items; let i = index">
+                    <td class="text-center fw-bold">{{ item.amount }}</td>
+                    <td>
+                      {{ item.name }}
+                      <small class="text-muted d-block" *ngIf="item.observation">{{ item.observation }}</small>
+                    </td>
+                    <td class="text-center">{{ item.unit }}</td>
+                    <td class="text-end">${{ item.amount * item.unit_cost | number:'1.2-2' }}</td>
+                    <td class="text-center">
+                      <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeItem(i)" title="Quitar">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
-        <small class="text-muted d-block mt-2" *ngIf="editingRequestDetail">
-          Cantidad: {{ editingRequestDetail.amount }} | Costo: ${{ editingRequestDetail.unit_cost }}
-        </small>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-outline-secondary btn-sm" (click)="cancelEditDetail()">
-          <i class="bi bi-x-circle me-1"></i>Cancelar
-        </button>
-        <button type="button" class="btn btn-info btn-sm" (click)="confirmEditDetail()">
-          <i class="bi bi-pencil me-1"></i>Editar
+
+        <div class="d-flex gap-4 mb-3 fw-bold">
+          <span>Conceptos: {{ conceptsCount }}</span>
+          <span>Unidades: {{ unitsCount }}</span>
+          <span class="ms-auto">Importe: ${{ itemsAmount | number:'1.2-2' }}</span>
+        </div>
+
+        <form [formGroup]="requestForm">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Notas generales de la solicitud</label>
+            <textarea formControlName="notes" class="form-control form-control-sm" rows="2"
+                      placeholder="Notas generales de la solicitud"></textarea>
+          </div>
+        </form>
+
+        <button type="button" class="btn btn-warning btn-lg w-100" (click)="saveRequest()"
+                [disabled]="isSaving || items.length === 0">
+          <i class="bi bi-check-circle me-2"></i>{{ isSaving ? 'Registrando...' : 'Registrar' }}
         </button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Overlay del modal -->
-<div class="modal-backdrop fade" [class.show]="showEditArticleModal" *ngIf="showEditArticleModal"></div> 
+<div class="modal fade" id="detalleSolicitudModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title">
+          <i class="bi bi-file-earmark-text me-2"></i>
+          Solicitud # {{ selectedRequest?.header?.folio_request }}
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body" *ngIf="selectedRequest">
+        <div class="row g-2 mb-4">
+          <div class="col-md-6"><strong>Obra:</strong> {{ selectedRequest.header.project }}</div>
+          <div class="col-md-6"><strong>Fecha:</strong> {{ selectedRequest.header.date | date:'dd-MM-yyyy' }}</div>
+          <div class="col-md-6"><strong>Trabajo:</strong> {{ selectedRequest.header.work }}</div>
+          <div class="col-md-6"><strong>Localidad:</strong> {{ selectedRequest.header.locality }}</div>
+          <div class="col-md-6"><strong>Residente:</strong> {{ selectedRequest.header.requester }}</div>
+          <div class="col-md-6"><strong>Oficial:</strong> {{ selectedRequest.header.official }}</div>
+          <div class="col-md-6"><strong>Ubicación:</strong> {{ selectedRequest.header.locationType }}</div>
+          <div class="col-md-6"><strong>Estatus:</strong> {{ selectedRequest.header.status_header }}</div>
+          <div class="col-12" *ngIf="selectedRequest.header.notes">
+            <strong>Notas:</strong> {{ selectedRequest.header.notes }}
+          </div>
+        </div>
+
+        <div class="card mb-4">
+          <div class="card-header bg-light">
+            <h6 class="fw-bold mb-0"><i class="bi bi-shield-check me-2"></i>Autorizaciones</h6>
+          </div>
+          <div class="card-body d-flex flex-wrap gap-2">
+            <button type="button" class="btn btn-sm" *ngFor="let level of authLevels"
+                    [ngClass]="getAuthLevel(level) === '1' ? 'btn-success' : 'btn-outline-secondary'"
+                    (click)="authorize(level)">
+              <i class="bi" [ngClass]="getAuthLevel(level) === '1' ? 'bi-check-circle' : 'bi-circle'"></i>
+              Autorización {{ level }}
+              <small class="d-block" *ngIf="getReviewer(level)">{{ getReviewer(level) }}</small>
+            </button>
+          </div>
+        </div>
+
+        <div class="card mb-3">
+          <div class="card-header bg-light">
+            <h6 class="fw-bold mb-0">
+              <i class="bi bi-list-ul me-2"></i>Conceptos ({{ selectedRequest.details.length }})
+            </h6>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-sm mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th class="text-center" style="width: 70px;">CANT.</th>
+                    <th>CONCEPTO</th>
+                    <th class="text-center" style="width: 90px;">UNIDAD</th>
+                    <th class="text-end" style="width: 110px;">IMPORTE</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let detail of selectedRequest.details">
+                    <td class="text-center fw-bold">{{ detail.amount }}</td>
+                    <td>
+                      {{ detail.name }}
+                      <small class="text-muted d-block" *ngIf="detail.observation">{{ detail.observation }}</small>
+                    </td>
+                    <td class="text-center">{{ detail.unit }}</td>
+                    <td class="text-end">${{ detail.amount * detail.unit_cost | number:'1.2-2' }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="card mb-3" *ngIf="selectedRequest.additional.length > 0">
+          <div class="card-header bg-light">
+            <h6 class="fw-bold mb-0">
+              <i class="bi bi-plus-square me-2"></i>Adicionales ({{ selectedRequest.additional.length }})
+            </h6>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-sm mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th class="text-center" style="width: 70px;">CANT.</th>
+                    <th>CONCEPTO</th>
+                    <th class="text-center" style="width: 90px;">UNIDAD</th>
+                    <th class="text-end" style="width: 110px;">IMPORTE</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let extra of selectedRequest.additional">
+                    <td class="text-center fw-bold">{{ extra.amount }}</td>
+                    <td>{{ extra.name }}</td>
+                    <td class="text-center">{{ extra.unit }}</td>
+                    <td class="text-end">${{ extra.amount * extra.unit_cost | number:'1.2-2' }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex gap-4 fw-bold">
+          <span>Conceptos: {{ selectedRequest.totals.concepts }}</span>
+          <span>Unidades: {{ selectedRequest.totals.units }}</span>
+          <span class="ms-auto">Importe: ${{ selectedRequest.totals.amount | number:'1.2-2' }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

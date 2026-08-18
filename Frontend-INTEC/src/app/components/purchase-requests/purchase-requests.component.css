@@ -480,3 +480,161 @@ font-size: 17px;
         width: 100%;
     }
 } 
+.project-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.btn-back {
+    background-color: transparent;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    width: 36px;
+    height: 36px;
+    color: #333;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.btn-back:hover {
+    background-color: #e2e6ee;
+}
+
+.btn-primary {
+    cursor: pointer;
+}
+
+.status-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.15rem;
+    padding: 0.25rem;
+    background-color: #e8edf4;
+    border-radius: 999px;
+    height: fit-content;
+}
+
+.status-toggle button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    background-color: transparent;
+    border: none;
+    border-radius: 999px;
+    padding: 0.45rem 1.1rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #5a6b82;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 0.25s, color 0.25s, box-shadow 0.25s;
+}
+
+.status-toggle button:hover:not(.active) {
+    background-color: rgba(255, 255, 255, 0.65);
+    color: #2b3a4d;
+}
+
+.status-toggle button.active {
+    background-color: #fff;
+    color: #1f2d3d;
+    font-weight: 600;
+    box-shadow: 0 1px 3px rgba(16, 32, 56, 0.16);
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #b6c0cd;
+    transition: transform 0.25s;
+}
+
+.status-toggle button.active .status-dot {
+    transform: scale(1.15);
+}
+
+.dot-all {
+    background-color: #8a98ab;
+}
+
+.dot-pending {
+    background-color: #F58525;
+}
+
+.dot-supplied {
+    background-color: #1ba508;
+}
+
+.project-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem;
+}
+
+.project-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+    padding: 1rem 1.25rem;
+    background-color: #f6c445;
+    border: 1px solid #d8a72c;
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: left;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.project-card:hover {
+    background-color: #f8d271;
+    transform: translateY(-1px);
+}
+
+.project-card-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #2b2b2b;
+}
+
+.project-card-meta {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.count-badge {
+    background-color: #F58525;
+    color: #fff;
+    border-radius: 12px;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.count-badge.pending {
+    background-color: #b23b1f;
+}
+
+.kind-option {
+    display: block;
+    width: 100%;
+    padding: 0.9rem 1rem;
+    margin-bottom: 0.5rem;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 1rem;
+    color: #333;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.kind-option:hover {
+    background-color: #eff2f7;
+}
