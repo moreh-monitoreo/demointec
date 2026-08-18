@@ -3,10 +3,14 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
+import { switchMap } from 'rxjs/operators';
 import { PurchaseRequestAdapterService } from '../../adapters/purchase_request.adapter';
 import { MaterialsCatalogAdapterService } from '../../adapters/materials_catalog.adapter';
 import { ToolsCatalogAdapterService } from '../../adapters/tools_catalog.adapter';
 import { ProjectsCatalogAdapterService } from '../../adapters/projects_catalog.adapter';
+import { RequestHeadersAdapterService } from '../../adapters/request_headers.adapter';
+import { RequestDetailsAdapterService } from '../../adapters/request_details.adapter';
+import { RequestAdditionalAdapterService } from '../../adapters/request_additional.adapter';
 import { MaterialsCatalog } from '../../models/materials_catalog';
 import { ToolsCatalog } from '../../models/tools_catalog';
 import { Project } from '../../models/projects_catalog';
@@ -56,6 +60,7 @@ export class PurchaseRequestsComponent implements OnInit {
   kind: RequestKind | null = null;
   items: CreateRequestItem[] = [];
   isSaving: boolean = false;
+  isSyncing: boolean = false;
 
   catalogProjects: Project[] = [];
   materials: MaterialsCatalog[] = [];
@@ -70,7 +75,10 @@ export class PurchaseRequestsComponent implements OnInit {
     private purchaseRequestAdapterService: PurchaseRequestAdapterService,
     private materialsCatalogAdapterService: MaterialsCatalogAdapterService,
     private toolsCatalogAdapterService: ToolsCatalogAdapterService,
-    private projectsCatalogAdapterService: ProjectsCatalogAdapterService
+    private projectsCatalogAdapterService: ProjectsCatalogAdapterService,
+    private requestHeadersAdapterService: RequestHeadersAdapterService,
+    private requestDetailsAdapterService: RequestDetailsAdapterService,
+    private requestAdditionalAdapterService: RequestAdditionalAdapterService
   ) {
     this.requestForm = this.fb.group({
       project: ['', Validators.required],
@@ -108,18 +116,36 @@ export class PurchaseRequestsComponent implements OnInit {
   loadCatalogs(): void {
     this.materialsCatalogAdapterService.getList().subscribe({
       next: (data) => this.materials = data.filter(material => material.status === true),
-      error: (err) => console.error('Error al cargar materiales', err)
+      error: (err) => {
+        console.error('Error al cargar materiales', err);
+        this.toastr.error('No se pudo cargar el catálogo de materiales', 'Error');
+      }
     });
 
     this.toolsCatalogAdapterService.getList().subscribe({
       next: (data) => this.tools = data.filter(tool => tool.status === true),
-      error: (err) => console.error('Error al cargar herramientas', err)
+      error: (err) => {
+        console.error('Error al cargar herramientas', err);
+        this.toastr.error('No se pudo cargar el catálogo de herramientas', 'Error');
+      }
     });
 
     this.projectsCatalogAdapterService.getList().subscribe({
       next: (data) => this.catalogProjects = data.filter(project => project.status === true),
-      error: (err) => console.error('Error al cargar obras', err)
+      error: (err) => {
+        console.error('Error al cargar obras', err);
+        this.toastr.error('No se pudo cargar el catálogo de obras', 'Error');
+      }
     });
+  }
+
+  private ensureCatalogs(): void {
+    const missing = this.catalogProjects.length === 0 ||
+      (this.kind === 'H' ? this.tools.length === 0 : this.materials.length === 0);
+
+    if (missing) {
+      this.loadCatalogs();
+    }
   }
 
   loadProjects(): void {
@@ -239,6 +265,7 @@ export class PurchaseRequestsComponent implements OnInit {
     this.kind = kind;
     this.items = [];
     this.selectedToolDescription = '';
+    this.ensureCatalogs();
 
     this.requestForm.reset({
       project: this.selectedProject || '',
@@ -467,6 +494,26 @@ export class PurchaseRequestsComponent implements OnInit {
       error: (err) => {
         console.error('Error al eliminar la solicitud', err);
         this.toastr.error('Error al eliminar la solicitud', 'Error');
+      }
+    });
+  }
+
+  syncRequests(): void {
+    this.isSyncing = true;
+
+    this.requestHeadersAdapterService.syncToFirebase().pipe(
+      switchMap(() => this.requestDetailsAdapterService.syncToFirebase()),
+      switchMap(() => this.requestAdditionalAdapterService.syncToFirebase())
+    ).subscribe({
+      next: () => {
+        this.isSyncing = false;
+        this.toastr.success('Sincronización completada correctamente', 'Éxito');
+        this.refresh();
+      },
+      error: (err) => {
+        console.error('Error al sincronizar las solicitudes', err);
+        this.toastr.error('Error al sincronizar las solicitudes', 'Error');
+        this.isSyncing = false;
       }
     });
   }

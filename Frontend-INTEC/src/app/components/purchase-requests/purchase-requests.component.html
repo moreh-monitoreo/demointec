@@ -40,6 +40,11 @@
       <button class="btn-consult" (click)="applyFilters()" [disabled]="isLoading" title="Consultar">
         <i class="bi bi-search"></i>
       </button>
+      <button class="btn-sync" (click)="syncRequests()" [disabled]="isSyncing"
+              title="Sincronizar solicitudes desde Firebase">
+        <i class="bi bi-arrow-repeat" [class.loading-icon]="isSyncing"></i>
+        {{ isSyncing ? 'Sincronizando...' : 'Sincronizar' }}
+      </button>
       <button class="btn-filter1" (click)="exportRequests()" title="Exportar a Excel">
         <i class="bi bi-file-earmark-excel"></i>
       </button>

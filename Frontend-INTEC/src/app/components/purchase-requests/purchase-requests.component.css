@@ -638,3 +638,16 @@ font-size: 17px;
 .kind-option:hover {
     background-color: #eff2f7;
 }
+
+.btn-sync {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.btn-sync:disabled {
+    background-color: #e2c98a;
+    cursor: not-allowed;
+}
