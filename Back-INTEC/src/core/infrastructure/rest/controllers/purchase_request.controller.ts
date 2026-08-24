@@ -90,6 +90,20 @@ export class PurchaseRequestController {
     }
   }
 
+  async exportFormat(req: Request, res: Response): Promise<void> {
+    try {
+      const { folio } = req.params;
+      const buffer = await this.purchaseRequestRepository.exportFormat(folio, req.body?.items, req.body?.cotizo);
+
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', `attachment; filename="solicitud-${folio}.xlsx"`);
+      res.status(200).send(buffer);
+    } catch (error) {
+      console.error(error);
+      res.status(statusFromError(error)).json({ message: messageFromError(error) });
+    }
+  }
+
   async exportRequests(req: Request, res: Response): Promise<void> {
     try {
       const buffer = await this.purchaseRequestRepository.exportToBuffer(req.query);

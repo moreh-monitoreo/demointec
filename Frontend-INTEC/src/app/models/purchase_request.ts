@@ -73,3 +73,10 @@ export interface AuthorizationData {
   authorized: boolean;
   reviewer: string;
 }
+
+export type ItemSource = 'detail' | 'additional';
+
+export interface ItemSelection {
+  source: ItemSource;
+  id: number;
+}

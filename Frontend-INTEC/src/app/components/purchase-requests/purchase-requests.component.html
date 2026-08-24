@@ -425,16 +425,25 @@
         </div>
 
         <div class="card mb-3">
-          <div class="card-header bg-light">
+          <div class="card-header bg-light d-flex justify-content-between align-items-center flex-wrap gap-2">
             <h6 class="fw-bold mb-0">
               <i class="bi bi-list-ul me-2"></i>Conceptos ({{ selectedRequest.details.length }})
             </h6>
+            <span class="selection-hint">
+              Marque lo que se va a surtir · {{ selectedFormatCount }} de {{ totalFormatItems }}
+            </span>
           </div>
           <div class="card-body p-0">
             <div class="table-responsive">
               <table class="table table-sm mb-0">
                 <thead class="table-light">
                   <tr>
+                    <th class="text-center" style="width: 46px;">
+                      <input type="checkbox" class="form-check-input print-check"
+                             [checked]="allFormatItemsSelected"
+                             (change)="toggleAllFormatItems()"
+                             title="Seleccionar todo">
+                    </th>
                     <th class="text-center" style="width: 70px;">CANT.</th>
                     <th>CONCEPTO</th>
                     <th class="text-center" style="width: 90px;">UNIDAD</th>
@@ -442,7 +451,13 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr *ngFor="let detail of selectedRequest.details">
+                  <tr *ngFor="let detail of selectedRequest.details"
+                      [class.row-unselected]="!isFormatItemSelected('detail', detail.id)">
+                    <td class="text-center">
+                      <input type="checkbox" class="form-check-input print-check"
+                             [checked]="isFormatItemSelected('detail', detail.id)"
+                             (change)="toggleFormatItem('detail', detail.id)">
+                    </td>
                     <td class="text-center fw-bold">{{ detail.amount }}</td>
                     <td>
                       {{ detail.name }}
@@ -468,6 +483,7 @@
               <table class="table table-sm mb-0">
                 <thead class="table-light">
                   <tr>
+                    <th class="text-center" style="width: 46px;"></th>
                     <th class="text-center" style="width: 70px;">CANT.</th>
                     <th>CONCEPTO</th>
                     <th class="text-center" style="width: 90px;">UNIDAD</th>
@@ -475,7 +491,13 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr *ngFor="let extra of selectedRequest.additional">
+                  <tr *ngFor="let extra of selectedRequest.additional"
+                      [class.row-unselected]="!isFormatItemSelected('additional', extra.id)">
+                    <td class="text-center">
+                      <input type="checkbox" class="form-check-input print-check"
+                             [checked]="isFormatItemSelected('additional', extra.id)"
+                             (change)="toggleFormatItem('additional', extra.id)">
+                    </td>
                     <td class="text-center fw-bold">{{ extra.amount }}</td>
                     <td>{{ extra.name }}</td>
                     <td class="text-center">{{ extra.unit }}</td>
@@ -487,10 +509,27 @@
           </div>
         </div>
 
-        <div class="d-flex gap-4 fw-bold">
+        <div class="d-flex gap-4 fw-bold mb-3">
           <span>Conceptos: {{ selectedRequest.totals.concepts }}</span>
           <span>Unidades: {{ selectedRequest.totals.units }}</span>
           <span class="ms-auto">Importe: ${{ selectedRequest.totals.amount | number:'1.2-2' }}</span>
+        </div>
+
+        <div class="print-bar">
+          <div class="print-bar-info">
+            <i class="bi bi-printer"></i>
+            Se imprimirán <strong>{{ selectedFormatCount }}</strong> de {{ totalFormatItems }} conceptos
+          </div>
+          <div class="quoted-by">
+            <label for="quotedBy">Cotizó y/o procesó</label>
+            <input type="text" id="quotedBy" class="form-control form-control-sm"
+                   [(ngModel)]="quotedBy" [ngModelOptions]="{standalone: true}"
+                   placeholder="Opcional, se deja en blanco">
+          </div>
+          <button type="button" class="btn btn-success" (click)="printFormat()"
+                  [disabled]="isPrinting || selectedFormatCount === 0">
+            <i class="bi bi-file-earmark-excel me-2"></i>{{ isPrinting ? 'Generando...' : 'Imprimir formato' }}
+          </button>
         </div>
       </div>
     </div>

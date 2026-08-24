@@ -651,3 +651,58 @@ font-size: 17px;
     background-color: #e2c98a;
     cursor: not-allowed;
 }
+
+.print-check {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    border-color: #b23b1f;
+}
+
+.print-check:checked {
+    background-color: #1ba508;
+    border-color: #1ba508;
+}
+
+.row-unselected {
+    opacity: 0.45;
+    background-color: #fafafa;
+}
+
+.selection-hint {
+    font-size: 0.78rem;
+    color: #6a7686;
+}
+
+.print-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    padding: 0.9rem 1.1rem;
+    background-color: #eef4ec;
+    border: 1px solid #cfe3ca;
+    border-radius: 8px;
+}
+
+.print-bar-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: #33502c;
+}
+
+.quoted-by {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 220px;
+}
+
+.quoted-by label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #33502c;
+}

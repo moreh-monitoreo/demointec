@@ -18,6 +18,13 @@ export interface PagedRequests {
   limit: number;
 }
 
+export type ItemSource = 'detail' | 'additional';
+
+export interface ItemSelection {
+  source: ItemSource;
+  id: number;
+}
+
 export interface FullRequest {
   header: RequestHeadersEntity;
   details: RequestDetailsEntity[];
@@ -34,4 +41,5 @@ export interface PurchaseRequestRepository {
   updateStatus(folio: string, status: string): Promise<RequestHeadersEntity>;
   updateAuthorization(folio: string, data: AuthorizationData): Promise<RequestHeadersEntity>;
   exportToBuffer(query?: Query): Promise<Buffer>;
+  exportFormat(folio: string, selection?: ItemSelection[], quotedBy?: string): Promise<Buffer>;
 }

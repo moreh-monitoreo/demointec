@@ -7,6 +7,7 @@ import {
   AuthorizationData,
   CreateRequestData,
   FullRequest,
+  ItemSelection,
   PagedRequests,
   ProjectSummary,
 } from '../models/purchase_request';
@@ -76,6 +77,13 @@ export class PurchaseRequestAdapterService {
     return this.http.get(`${this.myAppUrl}${this.myApiUrl}/exportar`, {
       headers: this.authHeaders(),
       params: this.toParams(filters),
+      responseType: 'blob'
+    });
+  }
+
+  exportFormat(folio: string, items: ItemSelection[], cotizo: string = ''): Observable<Blob> {
+    return this.http.post(`${this.myAppUrl}${this.myApiUrl}/${folio}/formato`, { items, cotizo }, {
+      headers: this.authHeaders(),
       responseType: 'blob'
     });
   }

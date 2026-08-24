@@ -4,6 +4,7 @@ import * as XLSX from "xlsx";
 import database from "../../../config/db";
 import {
   FullRequest,
+  ItemSelection,
   PagedRequests,
   PurchaseRequestRepository,
   Query,
@@ -21,6 +22,7 @@ import {
 import { RequestDetailsEntity } from "../entity/request_details.entity";
 import { RequestHeadersEntity } from "../entity/request_headers.entity";
 import { RequestsAdditionalEntity } from "../entity/requests_additional.entity";
+import { FormatItem, buildRequestFormat } from "./purchase-request-format.helper";
 import {
   ITEMS_SUBCOLLECTION,
   REQUESTS_COLLECTION,
@@ -341,6 +343,33 @@ export class PurchaseRequestAdapterRepository implements PurchaseRequestReposito
     XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(itemRows), 'Conceptos');
 
     return XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+  }
+
+  async exportFormat(folio: string, selection?: ItemSelection[], quotedBy?: string): Promise<Buffer> {
+    const { header, details, additional } = await this.get(folio);
+
+    const entries = [
+      ...details.map((item) => ({ source: 'detail', item })),
+      ...additional.map((item) => ({ source: 'additional', item })),
+    ];
+
+    const chosen = selection && selection.length > 0
+      ? entries.filter((entry) => selection.some((pick) => pick.source === entry.source && Number(pick.id) === entry.item.id))
+      : entries;
+
+    if (chosen.length === 0) {
+      throw new BadRequest('Debe seleccionar al menos un concepto para imprimir el formato');
+    }
+
+    const items: FormatItem[] = chosen.map(({ item }) => ({
+      code: item.code,
+      name: item.name,
+      unit: item.unit,
+      amount: item.amount,
+      observation: item.observation,
+    }));
+
+    return buildRequestFormat({ ...header, quotedBy }, items);
   }
 
   private buildDetail(

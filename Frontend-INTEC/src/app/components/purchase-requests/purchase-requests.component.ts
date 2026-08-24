@@ -17,6 +17,8 @@ import { Project } from '../../models/projects_catalog';
 import {
   CreateRequestItem,
   FullRequest,
+  ItemSelection,
+  ItemSource,
   ProjectSummary,
   REQUEST_STATUS_PENDING,
   REQUEST_STATUS_SUPPLIED,
@@ -68,6 +70,9 @@ export class PurchaseRequestsComponent implements OnInit {
   selectedToolDescription: string = '';
 
   selectedRequest: FullRequest | null = null;
+  selectedFormatItems = new Set<string>();
+  quotedBy: string = '';
+  isPrinting: boolean = false;
 
   constructor(
     private fb: FormBuilder,
@@ -425,11 +430,90 @@ export class PurchaseRequestsComponent implements OnInit {
     this.purchaseRequestAdapterService.get(request.folio_request).subscribe({
       next: (data) => {
         this.selectedRequest = data;
+        this.quotedBy = '';
+        this.selectAllFormatItems();
         this.openModal('detalleSolicitudModal');
       },
       error: (err) => {
         console.error('Error al cargar la solicitud', err);
         this.toastr.error('Error al cargar la solicitud', 'Error');
+      }
+    });
+  }
+
+  formatItemKey(source: ItemSource, id?: number): string {
+    return `${source}:${id}`;
+  }
+
+  isFormatItemSelected(source: ItemSource, id?: number): boolean {
+    return this.selectedFormatItems.has(this.formatItemKey(source, id));
+  }
+
+  toggleFormatItem(source: ItemSource, id?: number): void {
+    const key = this.formatItemKey(source, id);
+
+    if (this.selectedFormatItems.has(key)) {
+      this.selectedFormatItems.delete(key);
+    } else {
+      this.selectedFormatItems.add(key);
+    }
+  }
+
+  selectAllFormatItems(): void {
+    this.selectedFormatItems.clear();
+    if (!this.selectedRequest) return;
+
+    this.selectedRequest.details.forEach(item => this.selectedFormatItems.add(this.formatItemKey('detail', item.id)));
+    this.selectedRequest.additional.forEach(item => this.selectedFormatItems.add(this.formatItemKey('additional', item.id)));
+  }
+
+  toggleAllFormatItems(): void {
+    if (this.allFormatItemsSelected) {
+      this.selectedFormatItems.clear();
+      return;
+    }
+
+    this.selectAllFormatItems();
+  }
+
+  get totalFormatItems(): number {
+    if (!this.selectedRequest) return 0;
+    return this.selectedRequest.details.length + this.selectedRequest.additional.length;
+  }
+
+  get selectedFormatCount(): number {
+    return this.selectedFormatItems.size;
+  }
+
+  get allFormatItemsSelected(): boolean {
+    return this.totalFormatItems > 0 && this.selectedFormatCount === this.totalFormatItems;
+  }
+
+  printFormat(): void {
+    if (!this.selectedRequest) return;
+
+    if (this.selectedFormatCount === 0) {
+      this.toastr.error('Seleccione al menos un concepto para imprimir', 'Advertencia');
+      return;
+    }
+
+    const folio = this.selectedRequest.header.folio_request;
+    const items: ItemSelection[] = Array.from(this.selectedFormatItems).map((key) => {
+      const [source, id] = key.split(':');
+      return { source: source as ItemSource, id: Number(id) };
+    });
+
+    this.isPrinting = true;
+
+    this.purchaseRequestAdapterService.exportFormat(folio, items, this.quotedBy.trim()).subscribe({
+      next: (blob) => {
+        this.downloadBlob(blob, `solicitud-${folio}.xlsx`);
+        this.isPrinting = false;
+      },
+      error: (err) => {
+        console.error('Error al generar el formato', err);
+        this.toastr.error('Error al generar el formato de impresión', 'Error');
+        this.isPrinting = false;
       }
     });
   }
