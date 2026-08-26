@@ -4,13 +4,16 @@ import { RequestHeaders } from './request_headers';
 
 export type RequestKind = 'M' | 'H';
 
-export const REQUEST_STATUS_PENDING = 'Pendiente';
-export const REQUEST_STATUS_SUPPLIED = 'Suministrada';
+export const SUPPLY_STATUS_PENDING = 'Pendiente';
+export const SUPPLY_STATUS_PARTIAL = 'Surtida Parcial';
+export const SUPPLY_STATUS_DELIVERED = 'Surtida';
+export const SUPPLY_DELIVERED_VALUES = [SUPPLY_STATUS_DELIVERED, 'Suministrada'];
 
 export interface ProjectSummary {
   project: string;
   total: number;
   pending: number;
+  partial: number;
   supplied: number;
   last_date: string | null;
 }
@@ -31,6 +34,10 @@ export interface RequestSummary extends RequestTotals {
   official: string;
   locationType: string;
   status_header: string;
+  supply_status: string;
+  request_type: string;
+  authorized: boolean;
+  authorization_level: number;
   date: string;
 }
 

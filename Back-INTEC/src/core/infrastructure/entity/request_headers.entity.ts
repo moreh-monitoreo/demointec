@@ -24,6 +24,12 @@ import {
     @Column({ name: 'status_header', type: 'varchar', length: 255})
     status_header!: string;
 
+    @Column({ name: 'supply_status', type: 'varchar', length: 255, default: 'Pendiente' })
+    supply_status!: string;
+
+    @Column({ name: 'request_type', type: 'varchar', length: 255, default: '' })
+    request_type!: string;
+
     @Column({ name: 'locationType', type: 'varchar', length: 255})
     locationType!: string;
 

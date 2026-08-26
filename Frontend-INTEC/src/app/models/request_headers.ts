@@ -5,6 +5,8 @@ export interface RequestHeaders {
   auth2: string;
   auth3: string;
   status_header: string;
+  supply_status: string;
+  request_type: string;
   locationType: string;
   date: Date;
   hour: string;

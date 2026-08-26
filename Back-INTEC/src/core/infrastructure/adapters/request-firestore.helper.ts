@@ -28,6 +28,8 @@ export interface RequestHeaderFields {
   auth2: string;
   auth3: string;
   status_header: string;
+  supply_status: string;
+  request_type: string;
   locationType: string;
   date?: Date | string;
   hour: string;
@@ -113,6 +115,8 @@ export const toFirestoreHeader = (header: RequestHeaderFields): Record<string, s
   auth2: String(header.auth2 || ''),
   auth3: String(header.auth3 || ''),
   estatus: String(header.status_header || ''),
+  estatusSurtido: String(header.supply_status || ''),
+  tipo: String(header.request_type || ''),
   fLocalForanea: String(header.locationType || ''),
   fecha: formatDate(header.date),
   hora: String(header.hour || ''),
@@ -136,6 +140,8 @@ export const fromFirestoreHeader = (data: admin.firestore.DocumentData): Request
   auth2: data.auth2 || '',
   auth3: data.auth3 || '',
   status_header: data.estatus || '',
+  supply_status: data.estatusSurtido || '',
+  request_type: data.tipo || '',
   locationType: data.fLocalForanea || '',
   date: normalizeDate(data.fecha),
   hour: data.hora || '',

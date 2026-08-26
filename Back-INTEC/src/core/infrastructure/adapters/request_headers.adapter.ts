@@ -133,6 +133,8 @@ export class RequestHeadersAdpaterRepository implements RequestHeadersRepository
                       existing.auth2 !== newData.auth2 ||
                       existing.auth3 !== newData.auth3 ||
                       existing.status_header !== newData.status_header ||
+                      existing.supply_status !== newData.supply_status ||
+                      existing.request_type !== newData.request_type ||
                       existing.locationType !== newData.locationType ||
                       formatDate(existing.date) !== formatDate(newData.date) ||
                       existing.hour !== newData.hour ||
@@ -181,7 +183,7 @@ export class RequestHeadersAdpaterRepository implements RequestHeadersRepository
         await firestore()
           .collection(REQUESTS_COLLECTION)
           .doc(encabezado.id_header)
-          .set(toFirestoreHeader(encabezado));
+          .set(toFirestoreHeader(encabezado), { merge: true });
     }
   }
 
@@ -195,7 +197,7 @@ export class RequestHeadersAdpaterRepository implements RequestHeadersRepository
           throw new Error(`La sección ${encabezado.id_header} no existe en Firestore`);
         }
 
-        await docRef.set(toFirestoreHeader(encabezado));
+        await docRef.set(toFirestoreHeader(encabezado), { merge: true });
     }
   }
 

@@ -32,6 +32,9 @@
           <button type="button" [class.active]="statusFilter === statusPending" (click)="setStatusFilter(statusPending)">
             <span class="status-dot dot-pending"></span>Pendientes
           </button>
+          <button type="button" [class.active]="statusFilter === statusPartial" (click)="setStatusFilter(statusPartial)">
+            <span class="status-dot dot-partial"></span>Parciales
+          </button>
           <button type="button" [class.active]="statusFilter === statusSupplied" (click)="setStatusFilter(statusSupplied)">
             <span class="status-dot dot-supplied"></span>Suministradas
           </button>
@@ -64,7 +67,6 @@
           <div class="project-card-name">{{ project.project }}</div>
           <div class="project-card-meta">
             <span class="count-badge">{{ project.total }} {{ project.total === 1 ? 'solicitud' : 'solicitudes' }}</span>
-            <span class="count-badge pending" *ngIf="project.pending > 0">{{ project.pending }} pendientes</span>
           </div>
         </button>
       </div>
@@ -97,7 +99,8 @@
               <th>Residente</th>
               <th class="text-center">Conceptos</th>
               <th class="text-center">Unidades</th>
-              <th>Estatus</th>
+              <th>Autorización</th>
+              <th>Surtido</th>
               <th>Acciones</th>
             </tr>
           </thead>
@@ -111,9 +114,14 @@
               <td class="text-center">{{ request.concepts }}</td>
               <td class="text-center">{{ request.units }}</td>
               <td>
-                <span class="status-badge"
-                      [ngClass]="request.status_header === statusSupplied ? 'status-active' : 'status-inactive'">
-                  {{ request.status_header }}
+                <span class="status-badge" [ngClass]="authorizationClass(request.authorization_level)"
+                      [title]="request.authorization_level + ' de 3 autorizaciones'">
+                  {{ authorizationLabel(request.authorization_level) }}
+                </span>
+              </td>
+              <td>
+                <span class="status-badge" [ngClass]="supplyBadgeClass(request.supply_status)">
+                  {{ request.supply_status }}
                 </span>
               </td>
               <td>
@@ -122,8 +130,11 @@
                     <i class="bi bi-eye"></i>
                   </button>
                   <button class="btn-action btn-edit" (click)="toggleSupplied(request)"
-                          [title]="request.status_header === statusSupplied ? 'Marcar como pendiente' : 'Marcar como suministrada'">
-                    <i class="bi" [ngClass]="request.status_header === statusSupplied ? 'bi-arrow-counterclockwise' : 'bi-check2-circle'"></i>
+                          [class.btn-blocked]="supplyBlocked(request)"
+                          [title]="supplyBlocked(request)
+                            ? 'Requiere las tres autorizaciones para registrar el suministro'
+                            : 'Cambiar surtido a: ' + nextSupplyStatus(request)">
+                    <i class="bi" [ngClass]="supplyBlocked(request) ? 'bi-lock' : 'bi-arrow-repeat'"></i>
                   </button>
                   <button class="btn-action btn-delete" (click)="deleteRequest(request)" title="Eliminar">
                     <i class="bi bi-trash"></i>
@@ -403,7 +414,15 @@
           <div class="col-md-6"><strong>Residente:</strong> {{ selectedRequest.header.requester }}</div>
           <div class="col-md-6"><strong>Oficial:</strong> {{ selectedRequest.header.official }}</div>
           <div class="col-md-6"><strong>Ubicación:</strong> {{ selectedRequest.header.locationType }}</div>
-          <div class="col-md-6"><strong>Estatus:</strong> {{ selectedRequest.header.status_header }}</div>
+          <div class="col-md-6">
+            <strong>Surtido:</strong>
+            <span class="status-badge ms-1" [ngClass]="supplyBadgeClass(selectedRequest.header.supply_status)">
+              {{ selectedRequest.header.supply_status }}
+            </span>
+          </div>
+          <div class="col-md-6" *ngIf="selectedRequest.header.request_type">
+            <strong>Tipo:</strong> {{ selectedRequest.header.request_type }}
+          </div>
           <div class="col-12" *ngIf="selectedRequest.header.notes">
             <strong>Notas:</strong> {{ selectedRequest.header.notes }}
           </div>

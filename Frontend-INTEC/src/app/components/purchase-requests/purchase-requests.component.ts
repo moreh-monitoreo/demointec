@@ -20,8 +20,10 @@ import {
   ItemSelection,
   ItemSource,
   ProjectSummary,
-  REQUEST_STATUS_PENDING,
-  REQUEST_STATUS_SUPPLIED,
+  SUPPLY_DELIVERED_VALUES,
+  SUPPLY_STATUS_DELIVERED,
+  SUPPLY_STATUS_PARTIAL,
+  SUPPLY_STATUS_PENDING,
   RequestKind,
   RequestSummary,
 } from '../../models/purchase_request';
@@ -33,8 +35,9 @@ import {
   imports: [CommonModule, ReactiveFormsModule, RouterModule, FormsModule]
 })
 export class PurchaseRequestsComponent implements OnInit {
-  readonly statusPending = REQUEST_STATUS_PENDING;
-  readonly statusSupplied = REQUEST_STATUS_SUPPLIED;
+  readonly statusPending = SUPPLY_STATUS_PENDING;
+  readonly statusPartial = SUPPLY_STATUS_PARTIAL;
+  readonly statusSupplied = SUPPLY_STATUS_DELIVERED;
   readonly authLevels = [1, 2, 3];
 
   view: 'projects' | 'requests' = 'projects';
@@ -43,7 +46,7 @@ export class PurchaseRequestsComponent implements OnInit {
   requests: RequestSummary[] = [];
 
   searchTerm: string = '';
-  statusFilter: string = REQUEST_STATUS_PENDING;
+  statusFilter: string = SUPPLY_STATUS_PENDING;
   private readonly order: string = 'folio';
   private readonly direction: string = 'DESC';
 
@@ -518,8 +521,47 @@ export class PurchaseRequestsComponent implements OnInit {
     });
   }
 
+  nextSupplyStatus(request: RequestSummary): string {
+    if (request.supply_status === this.statusPending) return this.statusPartial;
+    if (request.supply_status === this.statusPartial) return this.statusSupplied;
+    return this.statusPending;
+  }
+
+  authorizationLabel(level: number): string {
+    if (level >= 3) return 'Autorizada';
+    if (level === 2) return '2da Autorización';
+    if (level === 1) return '1ra Autorización';
+    return 'Sin Autorizar';
+  }
+
+  authorizationClass(level: number): string {
+    if (level >= 3) return 'auth-ok';
+    if (level === 2) return 'auth-second';
+    if (level === 1) return 'auth-first';
+    return 'auth-pending';
+  }
+
+  supplyBlocked(request: RequestSummary): boolean {
+    return this.isDelivered(this.nextSupplyStatus(request)) && !request.authorized;
+  }
+
+  isDelivered(status: string): boolean {
+    return SUPPLY_DELIVERED_VALUES.includes(status);
+  }
+
+  supplyBadgeClass(status: string): string {
+    if (this.isDelivered(status)) return 'supply-delivered';
+    if (status === this.statusPartial) return 'supply-partial';
+    return 'supply-pending';
+  }
+
   toggleSupplied(request: RequestSummary): void {
-    const status = request.status_header === this.statusSupplied ? this.statusPending : this.statusSupplied;
+    const status = this.nextSupplyStatus(request);
+
+    if (this.isDelivered(status) && !request.authorized) {
+      this.toastr.error('La solicitud necesita las tres autorizaciones para registrar el suministro', 'Advertencia');
+      return;
+    }
 
     this.purchaseRequestAdapterService.updateStatus(request.folio_request, status).subscribe({
       next: () => {

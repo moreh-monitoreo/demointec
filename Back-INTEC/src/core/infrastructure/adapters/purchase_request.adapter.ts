@@ -16,6 +16,12 @@ import {
   ProjectSummary,
   REQUEST_STATUS_PENDING,
   REQUEST_STATUS_SUPPLIED,
+  REQUEST_TYPE_MATERIAL,
+  REQUEST_TYPE_TOOL,
+  SUPPLY_DELIVERED_VALUES,
+  SUPPLY_STATUS_DELIVERED,
+  SUPPLY_STATUS_PARTIAL,
+  SUPPLY_STATUS_PENDING,
   RequestSummary,
   RequestTotals,
 } from "../../domain/models/purchase_request";
@@ -48,16 +54,19 @@ export class PurchaseRequestAdapterRepository implements PurchaseRequestReposito
       .select('TRIM(UPPER(header.project))', 'project_key')
       .addSelect('MAX(header.project)', 'project')
       .addSelect('COUNT(*)', 'total')
-      .addSelect('SUM(CASE WHEN header.status_header = :pending THEN 1 ELSE 0 END)', 'pending')
-      .addSelect('SUM(CASE WHEN header.status_header = :supplied THEN 1 ELSE 0 END)', 'supplied')
+      .addSelect('SUM(CASE WHEN header.supply_status = :pending THEN 1 ELSE 0 END)', 'pending')
+      .addSelect('SUM(CASE WHEN header.supply_status = :partial THEN 1 ELSE 0 END)', 'partial')
+      .addSelect('SUM(CASE WHEN header.supply_status IN (:...supplied) THEN 1 ELSE 0 END)', 'supplied')
       .addSelect('MAX(header.date)', 'last_date')
       .where('header.status = :active', { active: true })
-      .setParameters({ pending: REQUEST_STATUS_PENDING, supplied: REQUEST_STATUS_SUPPLIED })
+      .setParameters({
+        pending: SUPPLY_STATUS_PENDING,
+        partial: SUPPLY_STATUS_PARTIAL,
+        supplied: SUPPLY_DELIVERED_VALUES,
+      })
       .groupBy('TRIM(UPPER(header.project))');
 
-    if (query.estatus) {
-      builder.andWhere('header.status_header = :estatus', { estatus: query.estatus });
-    }
+    this.applySupplyFilter(builder, query.estatus);
 
     if (query.buscar) {
       builder.andWhere('header.project LIKE :buscar', { buscar: `%${query.buscar}%` });
@@ -70,6 +79,7 @@ export class PurchaseRequestAdapterRepository implements PurchaseRequestReposito
         project: row.project || '',
         total: Number(row.total) || 0,
         pending: Number(row.pending) || 0,
+        partial: Number(row.partial) || 0,
         supplied: Number(row.supplied) || 0,
         last_date: row.last_date ? new Date(row.last_date) : null,
       }))
@@ -88,9 +98,7 @@ export class PurchaseRequestAdapterRepository implements PurchaseRequestReposito
         project_key: String(project).trim().toUpperCase(),
       });
 
-    if (query.estatus) {
-      builder.andWhere('header.status_header = :estatus', { estatus: query.estatus });
-    }
+    this.applySupplyFilter(builder, query.estatus);
 
     if (query.buscar) {
       builder.andWhere(
@@ -128,6 +136,10 @@ export class PurchaseRequestAdapterRepository implements PurchaseRequestReposito
         official: header.official,
         locationType: header.locationType,
         status_header: header.status_header,
+        supply_status: header.supply_status || SUPPLY_STATUS_PENDING,
+        request_type: header.request_type,
+        authorized: this.isAuthorized(header),
+        authorization_level: this.authorizationLevel(header),
         date: header.date,
         ...totals,
       };
@@ -182,6 +194,8 @@ export class PurchaseRequestAdapterRepository implements PurchaseRequestReposito
       date: normalizeDate(data.header.date) || now,
       hour: data.header.hour || now.toTimeString().slice(0, 5),
       status_header: data.header.status_header || REQUEST_STATUS_PENDING,
+      supply_status: data.header.supply_status || SUPPLY_STATUS_PENDING,
+      request_type: kind === 'H' ? REQUEST_TYPE_TOOL : REQUEST_TYPE_MATERIAL,
       locationType: data.header.locationType || 'local',
       auth1: data.header.auth1 || '0',
       auth2: data.header.auth2 || '0',
@@ -244,14 +258,27 @@ export class PurchaseRequestAdapterRepository implements PurchaseRequestReposito
   }
 
   async updateStatus(folio: string, status: string): Promise<RequestHeadersEntity> {
-    if (status !== REQUEST_STATUS_PENDING && status !== REQUEST_STATUS_SUPPLIED) {
-      throw new BadRequest(`El estatus debe ser ${REQUEST_STATUS_PENDING} o ${REQUEST_STATUS_SUPPLIED}`);
+    const allowed = [SUPPLY_STATUS_PENDING, SUPPLY_STATUS_PARTIAL, ...SUPPLY_DELIVERED_VALUES];
+
+    if (!allowed.includes(status)) {
+      throw new BadRequest(`El estatus de surtido debe ser ${allowed.join(', ')}`);
     }
 
+    const delivered = SUPPLY_DELIVERED_VALUES.includes(status);
     const { header } = await this.get(folio);
-    header.status_header = status;
 
-    await database.getRepository(RequestHeadersEntity).update({ id_header: header.id_header }, { status_header: status });
+    if (delivered && !this.isAuthorized(header)) {
+      throw new BadRequest('La solicitud necesita las tres autorizaciones para registrar el suministro');
+    }
+
+    const changes = {
+      supply_status: delivered ? SUPPLY_STATUS_DELIVERED : status,
+      status_header: delivered ? REQUEST_STATUS_SUPPLIED : REQUEST_STATUS_PENDING,
+    };
+
+    Object.assign(header, changes);
+
+    await database.getRepository(RequestHeadersEntity).update({ id_header: header.id_header }, changes);
     await this.updateHeaderOnFirestore(header);
 
     return header;
@@ -397,6 +424,28 @@ export class PurchaseRequestAdapterRepository implements PurchaseRequestReposito
       subcategory: item.subcategory || (isTool ? 'HERRAMIENTAS' : ''),
       status: true,
     };
+  }
+
+  private applySupplyFilter(
+    builder: SelectQueryBuilder<RequestHeadersEntity>,
+    status?: string
+  ): void {
+    if (!status) return;
+
+    if (SUPPLY_DELIVERED_VALUES.includes(status)) {
+      builder.andWhere('header.supply_status IN (:...delivered)', { delivered: SUPPLY_DELIVERED_VALUES });
+      return;
+    }
+
+    builder.andWhere('header.supply_status = :estatus', { estatus: status });
+  }
+
+  private authorizationLevel(header: RequestHeadersEntity): number {
+    return [header.auth1, header.auth2, header.auth3].filter((level) => String(level) === '1').length;
+  }
+
+  private isAuthorized(header: RequestHeadersEntity): boolean {
+    return this.authorizationLevel(header) === 3;
   }
 
   private sumItems(items: { amount: number; unit_cost: number }[]): RequestTotals {
