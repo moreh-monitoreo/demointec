@@ -16,15 +16,18 @@ export const hrTools: AiTool[] = [
             },
         },
         run: async (args) => {
-            const groupBy = args.agrupar_por === 'puesto' ? 'position'
-                : args.agrupar_por === 'ubicacion' ? 'location'
-                : null;
-            if (!groupBy) {
+            if (args.agrupar_por !== 'puesto' && args.agrupar_por !== 'ubicacion') {
                 const [rows] = await reportsPool.query('SELECT COUNT(*) AS total_empleados_activos FROM employees WHERE status = 1');
                 return rows as any[];
             }
+            const column = args.agrupar_por === 'puesto' ? 'position' : 'location';
+            // location tiene variantes de captura (mayusculas, espacios, punto final) para el mismo
+            // valor; se normaliza solo para agrupar mejor, sin asumir que abreviaturas distintas son iguales.
+            const groupExpr = args.agrupar_por === 'ubicacion'
+                ? `TRIM(TRAILING '.' FROM UPPER(TRIM(${column})))`
+                : column;
             const [rows] = await reportsPool.query(
-                `SELECT ${groupBy} AS grupo, COUNT(*) AS total FROM employees WHERE status = 1 AND ${groupBy} IS NOT NULL AND ${groupBy} <> '' GROUP BY ${groupBy} ORDER BY total DESC`
+                `SELECT ${groupExpr} AS grupo, COUNT(*) AS total FROM employees WHERE status = 1 AND ${column} IS NOT NULL AND ${column} <> '' GROUP BY ${groupExpr} ORDER BY total DESC`
             );
             return rows as any[];
         },

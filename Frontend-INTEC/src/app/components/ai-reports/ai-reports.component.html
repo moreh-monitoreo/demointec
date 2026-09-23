@@ -41,7 +41,10 @@
         <div class="ai-message" *ngFor="let m of messages" [class.user]="m.role === 'user'" [class.assistant]="m.role === 'assistant'">
           <div class="ai-bubble">
             <ng-container *ngIf="!m.pending; else typing">
-              <p class="ai-bubble-text">{{ m.content }}</p>
+              <div class="ai-bubble-text" *ngIf="m.role === 'assistant'; else userText" [innerHTML]="m.content | markdownLite"></div>
+              <ng-template #userText>
+                <p class="ai-bubble-text">{{ m.content }}</p>
+              </ng-template>
               <app-ai-chart *ngIf="m.chart" [spec]="m.chart"></app-ai-chart>
             </ng-container>
             <ng-template #typing>

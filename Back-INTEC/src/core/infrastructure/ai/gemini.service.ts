@@ -5,6 +5,13 @@ import { AI_REPORTS_SYSTEM_PROMPT } from './system-prompt';
 const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 const MAX_TOOL_ITERATIONS = 4;
 
+// El modelo no tiene nocion del reloj real; sin esto calcula mal periodos relativos
+// ("este mes", "ultimos 6 meses") usando una fecha "de hoy" incorrecta.
+function buildSystemInstruction(): string {
+    const today = new Date().toISOString().slice(0, 10);
+    return `${AI_REPORTS_SYSTEM_PROMPT}\n\nFecha actual del sistema (hoy): ${today}. Usa esta fecha como referencia de "hoy" para calcular cualquier periodo relativo (este mes, este año, los ultimos N meses, etc.) al construir los parametros de fecha de las herramientas.`;
+}
+
 export interface ChatMessage {
     role: 'user' | 'assistant';
     content: string;
@@ -119,15 +126,18 @@ function normalizeChart(raw: any): ChartSpec | null {
     };
 }
 
+const CONTAINS_DIGIT = /\d/;
+
 async function runToolLoop(ai: GoogleGenAI, contents: Content[], queriesUsed: string[]): Promise<string> {
     const tools = [{ functionDeclarations: buildFunctionDeclarations() }];
+    let ungroundedRetryUsed = false;
 
     for (let iteration = 0; iteration < MAX_TOOL_ITERATIONS; iteration++) {
         const response = await ai.models.generateContent({
             model: MODEL,
             contents,
             config: {
-                systemInstruction: AI_REPORTS_SYSTEM_PROMPT,
+                systemInstruction: buildSystemInstruction(),
                 tools,
                 temperature: 0.2,
             },
@@ -137,7 +147,22 @@ async function runToolLoop(ai: GoogleGenAI, contents: Content[], queriesUsed: st
         const functionCalls = parts.filter((p) => p.functionCall).map((p) => p.functionCall!);
 
         if (functionCalls.length === 0) {
-            return response.text || '';
+            const text = response.text || '';
+            // Red de seguridad: si no se invoco ninguna herramienta en este turno pero la respuesta
+            // trae numeros, es probable que el modelo este inventando o reutilizando una cifra de un
+            // turno anterior en vez de consultar datos frescos. Se fuerza un reintento antes de aceptarla.
+            if (!ungroundedRetryUsed && queriesUsed.length === 0 && CONTAINS_DIGIT.test(text)) {
+                ungroundedRetryUsed = true;
+                contents.push({ role: 'model', parts });
+                contents.push({
+                    role: 'user',
+                    parts: [{
+                        text: 'Tu respuesta anterior incluye cifras de la empresa pero no invocaste ninguna herramienta en este turno, lo cual viola tus reglas. Si la pregunta requiere datos reales, invoca ahora la herramienta correspondiente. Si en verdad no requiere datos (es una pregunta simple sobre ti o la conversacion), responde de nuevo sin mencionar ninguna cifra de la empresa.'
+                    }],
+                });
+                continue;
+            }
+            return text;
         }
 
         contents.push({ role: 'model', parts });
@@ -166,7 +191,7 @@ async function runToolLoop(ai: GoogleGenAI, contents: Content[], queriesUsed: st
     const forced = await ai.models.generateContent({
         model: MODEL,
         contents,
-        config: { systemInstruction: AI_REPORTS_SYSTEM_PROMPT, temperature: 0.2 },
+        config: { systemInstruction: buildSystemInstruction(), temperature: 0.2 },
     });
     return forced.text || 'No pude completar la consulta con la informacion disponible. Intenta reformular tu pregunta.';
 }
@@ -187,7 +212,7 @@ async function requestStructuredAnswer(ai: GoogleGenAI, contents: Content[], gro
         model: MODEL,
         contents: structuredContents,
         config: {
-            systemInstruction: AI_REPORTS_SYSTEM_PROMPT,
+            systemInstruction: buildSystemInstruction(),
             responseMimeType: 'application/json',
             responseSchema: CHART_RESPONSE_SCHEMA as any,
             temperature: 0.1,

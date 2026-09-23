@@ -191,28 +191,61 @@
 
 .ai-bubble {
     max-width: 75%;
-    padding: 0.75rem 1rem;
-    border-radius: 12px;
-    font-size: 0.92rem;
-    line-height: 1.45;
+    padding: 0.85rem 1.1rem;
+    border-radius: 14px;
+    font-size: 0.94rem;
+    line-height: 1.55;
 }
 
 .ai-message.user .ai-bubble {
     background-color: #F58525;
     color: #ffffff;
-    border-bottom-right-radius: 3px;
+    border-bottom-right-radius: 4px;
 }
 
 .ai-message.assistant .ai-bubble {
-    background-color: #f1f3f5;
-    color: #333;
-    border-bottom-left-radius: 3px;
+    background-color: #f4f5f7;
+    color: #2c2c2c;
+    border-bottom-left-radius: 4px;
 }
 
 .ai-bubble-text {
     margin: 0;
-    white-space: pre-wrap;
     word-break: break-word;
+}
+
+p.ai-bubble-text {
+    white-space: pre-wrap;
+}
+
+.ai-bubble-text p {
+    margin: 0 0 0.6rem 0;
+}
+
+.ai-bubble-text p:last-child {
+    margin-bottom: 0;
+}
+
+.ai-bubble-text ul {
+    margin: 0.2rem 0 0.6rem 0;
+    padding-left: 1.2rem;
+}
+
+.ai-bubble-text ul:last-child {
+    margin-bottom: 0;
+}
+
+.ai-bubble-text li {
+    margin-bottom: 0.3rem;
+}
+
+.ai-bubble-text li::marker {
+    color: #F58525;
+}
+
+.ai-bubble-text strong {
+    color: #b85f0e;
+    font-weight: 600;
 }
 
 .typing-dots {

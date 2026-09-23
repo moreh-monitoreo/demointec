@@ -70,8 +70,8 @@ export class AiChartComponent implements AfterViewInit, OnChanges, OnDestroy {
             display: !!this.spec.title,
             text: this.spec.title,
             color: '#333',
-            font: { size: 13, weight: 'normal' },
-            padding: { bottom: 10 },
+            font: { size: 13, weight: 'bold' },
+            padding: { bottom: 14 },
           },
           legend: {
             display: this.spec.datasets.length > 1 || isCircular,
@@ -80,8 +80,20 @@ export class AiChartComponent implements AfterViewInit, OnChanges, OnDestroy {
           },
         },
         scales: isCircular ? {} : {
-          y: { beginAtZero: true, grid: { color: '#eee' } },
-          x: { grid: { display: false } },
+          y: { beginAtZero: true, grid: { color: '#eee' }, ticks: { font: { size: 11 } } },
+          x: {
+            grid: { display: false },
+            ticks: {
+              font: { size: 11 },
+              maxRotation: 35,
+              minRotation: 0,
+              autoSkip: true,
+              callback: function (value) {
+                const label = this.getLabelForValue(value as number);
+                return label.length > 16 ? label.slice(0, 15) + '…' : label;
+              },
+            },
+          },
         },
       },
     };

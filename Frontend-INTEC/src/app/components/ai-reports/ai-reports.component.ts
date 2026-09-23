@@ -5,6 +5,7 @@ import { ToastrService } from 'ngx-toastr';
 import { AiReportsAdapterService } from '../../adapters/ai-reports.adapter';
 import { AiConversation, AiChartSpec } from '../../models/ai-report';
 import { AiChartComponent } from './ai-chart/ai-chart.component';
+import { MarkdownLitePipe } from '../../pipes/markdown-lite.pipe';
 
 interface UiMessage {
   role: 'user' | 'assistant';
@@ -23,7 +24,7 @@ const SUGGESTED_QUESTIONS = [
 @Component({
   selector: 'app-ai-reports',
   standalone: true,
-  imports: [CommonModule, FormsModule, AiChartComponent],
+  imports: [CommonModule, FormsModule, AiChartComponent, MarkdownLitePipe],
   templateUrl: './ai-reports.component.html',
   styleUrl: './ai-reports.component.css',
 })
