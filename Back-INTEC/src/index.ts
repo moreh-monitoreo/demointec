@@ -47,6 +47,7 @@ import rolePermissionsRouter from './core/infrastructure/rest/routes/role-permis
 import vacationAdjustmentRouter from './core/infrastructure/rest/routes/vacation-adjustment.route';
 import absenceAttachmentRouter from './core/infrastructure/rest/routes/absence-attachment.route';
 import syncRouter from './core/infrastructure/rest/routes/sync.route';
+import aiReportsRouter from './core/infrastructure/rest/routes/ai-reports.route';
 
 import { RoleEntity } from './core/infrastructure/entity/roles.entity';
 import { UserEntity } from './core/infrastructure/entity/users.entity';
@@ -110,6 +111,7 @@ app.use('/api', rolePermissionsRouter);
 app.use('/api', vacationAdjustmentRouter);
 app.use('/api', absenceAttachmentRouter);
 app.use('/api', syncRouter);
+app.use('/api', aiReportsRouter);
 
 // Serve Frontend Static Files
 app.use(express.static(path.join(__dirname, '../public')));
@@ -168,7 +170,8 @@ app.get('/seed-modules', async (_req, res) => {
       { name_module: 'Ventas',              icon_module: 'bi-cash-coin',     sort_order: 4 },
       { name_module: 'Finanzas',            icon_module: 'bi-bank',          sort_order: 5 },
       { name_module: 'Recursos Humanos',    icon_module: 'bi-people',        sort_order: 6 },
-      { name_module: 'Configuración',       icon_module: 'bi-gear',          sort_order: 7 },
+      { name_module: 'Reportes Ejecutivos IA', icon_module: 'bi-robot',      sort_order: 7 },
+      { name_module: 'Configuración',       icon_module: 'bi-gear',          sort_order: 8 },
     ];
 
     const sectionsData: { module_name: string; name_section: string; route_section: string; sort_order: number }[] = [
@@ -193,6 +196,7 @@ app.get('/seed-modules', async (_req, res) => {
       { module_name: 'Recursos Humanos', name_section: 'Inventario',                        route_section: '/dashboard/inventario-rh',           sort_order: 13 },
       { module_name: 'Recursos Humanos', name_section: 'Capacitación y Adiestramiento',     route_section: '/dashboard/capacitaciones',          sort_order: 14 },
       { module_name: 'Recursos Humanos', name_section: 'Formatos',                          route_section: '/dashboard/formatos',                sort_order: 15 },
+      { module_name: 'Reportes Ejecutivos IA', name_section: 'Asistente de Reportes',       route_section: '/dashboard/reportes-ia',             sort_order: 1 },
       { module_name: 'Configuración',    name_section: 'Gestión de Usuarios',               route_section: '/dashboard/usuarios',                sort_order: 1 },
       { module_name: 'Configuración',    name_section: 'Administrar Roles',                 route_section: '/dashboard/administrar-roles',       sort_order: 2 },
     ];

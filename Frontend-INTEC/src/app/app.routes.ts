@@ -27,6 +27,7 @@ import { InventoryAssignmentComponent } from './components/inventory-assignment/
 import { TrainingInstructionsComponent } from './components/training-instructions/training-instructions.component';
 import { FormatsComponent } from './components/formats/formats.component';
 import { RoleManagementComponent } from './components/role-management/role-management.component';
+import { AiReportsComponent } from './components/ai-reports/ai-reports.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -60,6 +61,7 @@ export const routes: Routes = [
       { path: 'capacitaciones',        component: TrainingInstructionsComponent,canActivate: [permissionsGuard] },
       { path: 'formatos',              component: FormatsComponent,           canActivate: [permissionsGuard] },
       { path: 'administrar-roles',     component: RoleManagementComponent,    canActivate: [permissionsGuard] },
+      { path: 'reportes-ia',           component: AiReportsComponent,         canActivate: [permissionsGuard] },
 
       { path: 'permisos-vacaciones', canActivate: [permissionsGuard], loadComponent: () => import('./components/permissions-vacations/permissions-vacations.component').then(m => m.PermissionsVacationsComponent) },
     ]

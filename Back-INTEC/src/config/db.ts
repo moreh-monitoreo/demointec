@@ -41,6 +41,8 @@ import { SectionEntity } from '../core/infrastructure/entity/section.entity';
 import { ModulePermissionEntity } from '../core/infrastructure/entity/module-permission.entity';
 import { VacationAdjustmentEntity } from '../core/infrastructure/entity/vacation-adjustment.entity';
 import { AbsenceAttachmentEntity } from '../core/infrastructure/entity/absence-attachment.entity';
+import { AiConversationEntity } from '../core/infrastructure/entity/ai-conversation.entity';
+import { AiMessageEntity } from '../core/infrastructure/entity/ai-message.entity';
 
 dotenv.config();
 
@@ -61,7 +63,8 @@ export const AppDataSource = new DataSource({
     InventoryEntity, InventoryUniformEntity, InventoryExtintorEntity, InventoryMovementEntity, InventoryAssignmentEntity,
     TrainingInstructionEntity, TrainingInstructionFolderEntity, InventoryCategoryEntity,
     LoanRequestEntity, LoanPaymentEntity, BondApplicationEntity, BondRecommendationEntity,
-    ModuleEntity, SectionEntity, ModulePermissionEntity, VacationAdjustmentEntity, AbsenceAttachmentEntity],
+    ModuleEntity, SectionEntity, ModulePermissionEntity, VacationAdjustmentEntity, AbsenceAttachmentEntity,
+    AiConversationEntity, AiMessageEntity],
 });
 
 

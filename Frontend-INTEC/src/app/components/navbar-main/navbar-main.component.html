@@ -141,6 +141,24 @@
         </div>
       </div>
 
+      <!-- Reportes Ejecutivos IA -->
+      <div class="nav-item">
+        <a (click)="handleModuleClick('reportesia', 'Reportes Ejecutivos IA')" class="nav-link" [class.nav-link-locked]="!canModule('Reportes Ejecutivos IA')">
+          <i class="bi bi-robot icon-box"></i>
+          <span class="menu-text">Reportes Ejecutivos IA</span>
+          <i class="bi bi-lock-fill lock-icon menu-text" *ngIf="!canModule('Reportes Ejecutivos IA')"></i>
+        </a>
+        <div class="submenu" [class.open]="isSubmenuOpen['reportesia']">
+          <div class="no-access-msg" *ngIf="!canModule('Reportes Ejecutivos IA')">
+            <i class="bi bi-shield-x"></i> Sin acceso a este módulo
+          </div>
+          <ng-container *ngIf="canModule('Reportes Ejecutivos IA')">
+            <a *ngIf="canRoute('/dashboard/reportes-ia')" routerLink="/dashboard/reportes-ia" routerLinkActive="active">
+              <span class="menu-text">Asistente de Reportes</span></a>
+          </ng-container>
+        </div>
+      </div>
+
       <!-- Configuración -->
       <div class="nav-item">
         <a (click)="handleModuleClick('configuracion', 'Configuración')" class="nav-link" [class.nav-link-locked]="!canModule('Configuración')">
