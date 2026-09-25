@@ -21,10 +21,12 @@ export const hrTools: AiTool[] = [
                 return rows as any[];
             }
             const column = args.agrupar_por === 'puesto' ? 'position' : 'location';
-            // location tiene variantes de captura (mayusculas, espacios, punto final) para el mismo
-            // valor; se normaliza solo para agrupar mejor, sin asumir que abreviaturas distintas son iguales.
+            // location tiene variantes de captura para el mismo lugar (mayusculas, espacios, punto
+            // final, y a veces con estado y a veces sin el, ej. "Guadalajara" / "GUADALAJARA, JAL"
+            // / "GUADALAJARA, JALISCO."). Se agrupa solo por la ciudad (antes de la primera coma)
+            // para unificarlas, ya que el estado se captura de forma inconsistente.
             const groupExpr = args.agrupar_por === 'ubicacion'
-                ? `TRIM(TRAILING '.' FROM UPPER(TRIM(${column})))`
+                ? `TRIM(SUBSTRING_INDEX(TRIM(TRAILING '.' FROM UPPER(TRIM(${column}))), ',', 1))`
                 : column;
             const [rows] = await reportsPool.query(
                 `SELECT ${groupExpr} AS grupo, COUNT(*) AS total FROM employees WHERE status = 1 AND ${column} IS NOT NULL AND ${column} <> '' GROUP BY ${groupExpr} ORDER BY total DESC`
