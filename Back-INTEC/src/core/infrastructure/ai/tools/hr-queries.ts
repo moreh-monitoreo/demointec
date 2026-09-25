@@ -3,6 +3,28 @@ import { AiTool, resolveDateRange } from './types';
 
 export const hrTools: AiTool[] = [
     {
+        name: 'buscar_empleado',
+        description: 'Busca empleados por nombre (coincidencia parcial) y devuelve su id_employee interno, nombre completo, puesto y estatus. El id_employee es un codigo interno (ej. EMP-0176) que el usuario nunca escribe directamente: usa esta herramienta primero para resolverlo cada vez que otra herramienta necesite id_employee y solo tengas un nombre.',
+        parameters: {
+            type: 'object',
+            properties: {
+                nombre: { type: 'string', description: 'Nombre o parte del nombre del empleado a buscar.' },
+            },
+            required: ['nombre'],
+        },
+        run: async (args) => {
+            const [rows] = await reportsPool.query(
+                `SELECT id_employee, name_employee AS nombre, position AS puesto, location AS ubicacion, status AS activo
+                 FROM employees
+                 WHERE name_employee LIKE ?
+                 ORDER BY status DESC, name_employee
+                 LIMIT 10`,
+                [`%${args.nombre}%`]
+            );
+            return rows as any[];
+        },
+    },
+    {
         name: 'contar_empleados_activos',
         description: 'Cuenta empleados activos actualmente en la empresa. Puede agrupar por puesto o por ubicacion. Usalo para preguntas de headcount / cuantos empleados hay.',
         parameters: {

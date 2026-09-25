@@ -4,11 +4,11 @@ import { AiTool } from './types';
 export const inventoryTools: AiTool[] = [
     {
         name: 'inventario_asignado',
-        description: 'Lista articulos de inventario (herramientas, uniformes, equipo) actualmente asignados a empleados. Puede filtrar por empleado.',
+        description: 'Lista articulos de inventario (herramientas, uniformes, equipo) actualmente asignados a empleados. Puede filtrar por empleado. Si el usuario pregunta por un empleado especifico por nombre, primero usa buscar_empleado para obtener su id_employee y luego pasalo aqui.',
         parameters: {
             type: 'object',
             properties: {
-                id_employee: { type: 'string', description: 'ID del empleado para filtrar sus asignaciones. Si se omite, trae todas las asignaciones activas.' },
+                id_employee: { type: 'string', description: 'id_employee interno del empleado (obtenido de buscar_empleado) para filtrar sus asignaciones. Si se omite, trae todas las asignaciones activas.' },
             },
         },
         run: async (args) => {
