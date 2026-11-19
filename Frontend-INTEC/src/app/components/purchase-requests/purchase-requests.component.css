@@ -664,6 +664,18 @@ font-size: 17px;
     border-color: #1ba508;
 }
 
+.supply-check {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    border-color: #c99a06;
+}
+
+.supply-check:checked {
+    background-color: #1b6ec2;
+    border-color: #1b6ec2;
+}
+
 .row-unselected {
     opacity: 0.45;
     background-color: #fafafa;
@@ -734,15 +746,6 @@ font-size: 17px;
 .supply-delivered {
     background-color: #d4edda;
     color: #155724;
-}
-
-.btn-blocked {
-    background-color: #ececec;
-    color: #8a8a8a;
-}
-
-.btn-blocked:hover {
-    background-color: #e0e0e0;
 }
 
 .auth-first {

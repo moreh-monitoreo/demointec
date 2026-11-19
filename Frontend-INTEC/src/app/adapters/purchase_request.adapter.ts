@@ -51,10 +51,10 @@ export class PurchaseRequestAdapterService {
     });
   }
 
-  updateStatus(folio: string, statusHeader: string): Observable<RequestHeaders> {
-    return this.http.patch<RequestHeaders>(
-      `${this.myAppUrl}${this.myApiUrl}/${folio}/estatus`,
-      { status_header: statusHeader },
+  updateSupply(folio: string, items: ItemSelection[]): Observable<FullRequest> {
+    return this.http.patch<FullRequest>(
+      `${this.myAppUrl}${this.myApiUrl}/${folio}/surtido`,
+      { items },
       { headers: this.authHeaders() }
     );
   }

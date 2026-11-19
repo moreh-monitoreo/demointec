@@ -1,5 +1,5 @@
 import { NotFound, BadRequest } from "http-errors";
-import { SelectQueryBuilder } from "typeorm";
+import { In, Repository, SelectQueryBuilder } from "typeorm";
 import * as XLSX from "xlsx";
 import database from "../../../config/db";
 import {
@@ -284,6 +284,48 @@ export class PurchaseRequestAdapterRepository implements PurchaseRequestReposito
     return header;
   }
 
+  async updateSupply(folio: string, supplied: ItemSelection[] = []): Promise<FullRequest> {
+    if (!Array.isArray(supplied)) {
+      throw new BadRequest('Debe indicar los conceptos surtidos');
+    }
+
+    const request = await this.get(folio);
+    const { header, details, additional } = request;
+
+    const isSupplied = (source: string, id: number): boolean =>
+      supplied.some((pick) => pick.source === source && Number(pick.id) === id);
+
+    details.forEach((item) => { item.supplied = isSupplied('detail', item.id); });
+    additional.forEach((item) => { item.supplied = isSupplied('additional', item.id); });
+
+    const items = [...details, ...additional];
+    const suppliedCount = items.filter((item) => item.supplied).length;
+    const delivered = items.length > 0 && suppliedCount === items.length;
+
+    if (delivered && !this.isAuthorized(header)) {
+      throw new BadRequest('La solicitud necesita las tres autorizaciones para registrar el suministro completo');
+    }
+
+    const changes = {
+      supply_status: delivered
+        ? SUPPLY_STATUS_DELIVERED
+        : suppliedCount > 0 ? SUPPLY_STATUS_PARTIAL : SUPPLY_STATUS_PENDING,
+      status_header: delivered ? REQUEST_STATUS_SUPPLIED : REQUEST_STATUS_PENDING,
+    };
+
+    Object.assign(header, changes);
+
+    await database.transaction(async (manager) => {
+      await this.saveSupplyFlags(manager.getRepository(RequestDetailsEntity), details);
+      await this.saveSupplyFlags(manager.getRepository(RequestsAdditionalEntity), additional);
+      await manager.update(RequestHeadersEntity, { id_header: header.id_header }, changes);
+    });
+
+    await this.updateHeaderOnFirestore(header);
+
+    return request;
+  }
+
   async updateAuthorization(folio: string, data: AuthorizationData): Promise<RequestHeadersEntity> {
     const level = Number(data?.level);
     if (![1, 2, 3].includes(level)) {
@@ -438,6 +480,22 @@ export class PurchaseRequestAdapterRepository implements PurchaseRequestReposito
     }
 
     builder.andWhere('header.supply_status = :estatus', { estatus: status });
+  }
+
+  private async saveSupplyFlags(
+    repository: Repository<RequestDetailsEntity | RequestsAdditionalEntity>,
+    items: (RequestDetailsEntity | RequestsAdditionalEntity)[]
+  ): Promise<void> {
+    const suppliedIds = items.filter((item) => item.supplied).map((item) => item.id);
+    const pendingIds = items.filter((item) => !item.supplied).map((item) => item.id);
+
+    if (suppliedIds.length > 0) {
+      await repository.update({ id: In(suppliedIds) }, { supplied: true });
+    }
+
+    if (pendingIds.length > 0) {
+      await repository.update({ id: In(pendingIds) }, { supplied: false });
+    }
   }
 
   private authorizationLevel(header: RequestHeadersEntity): number {

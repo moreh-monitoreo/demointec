@@ -14,6 +14,7 @@ purchaseRequestRouter.get("/solicitudes/exportar", verifyToken, controller.expor
 purchaseRequestRouter.get("/solicitudes/:folio", verifyToken, controller.get.bind(controller));
 purchaseRequestRouter.post("/solicitudes", verifyToken, controller.create.bind(controller));
 purchaseRequestRouter.patch("/solicitudes/:folio/estatus", verifyToken, controller.updateStatus.bind(controller));
+purchaseRequestRouter.patch("/solicitudes/:folio/surtido", verifyToken, controller.updateSupply.bind(controller));
 purchaseRequestRouter.patch("/solicitudes/:folio/autorizacion", verifyToken, controller.updateAuthorization.bind(controller));
 purchaseRequestRouter.post("/solicitudes/:folio/formato", verifyToken, controller.exportFormat.bind(controller));
 purchaseRequestRouter.delete("/solicitudes/:folio", verifyToken, controller.remove.bind(controller));

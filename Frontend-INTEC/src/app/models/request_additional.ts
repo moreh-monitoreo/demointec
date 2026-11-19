@@ -15,6 +15,7 @@ export interface RequestAdditional {
   category: string;
   subcategory: string;
   unit: string;
+  supplied?: boolean;
   status: boolean;
 }
 

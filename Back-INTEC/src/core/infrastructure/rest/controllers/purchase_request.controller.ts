@@ -68,6 +68,17 @@ export class PurchaseRequestController {
     }
   }
 
+  async updateSupply(req: Request, res: Response): Promise<void> {
+    try {
+      const { folio } = req.params;
+      const request = await this.purchaseRequestRepository.updateSupply(folio, req.body?.items);
+      res.status(200).json(request);
+    } catch (error) {
+      console.error(error);
+      res.status(statusFromError(error)).json({ message: messageFromError(error) });
+    }
+  }
+
   async updateAuthorization(req: Request, res: Response): Promise<void> {
     try {
       const { folio } = req.params;

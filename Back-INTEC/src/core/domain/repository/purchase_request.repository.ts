@@ -39,6 +39,7 @@ export interface PurchaseRequestRepository {
   create(data: CreateRequestData): Promise<FullRequest>;
   remove(folio: string): Promise<RequestHeadersEntity>;
   updateStatus(folio: string, status: string): Promise<RequestHeadersEntity>;
+  updateSupply(folio: string, supplied: ItemSelection[]): Promise<FullRequest>;
   updateAuthorization(folio: string, data: AuthorizationData): Promise<RequestHeadersEntity>;
   exportToBuffer(query?: Query): Promise<Buffer>;
   exportFormat(folio: string, selection?: ItemSelection[], quotedBy?: string): Promise<Buffer>;

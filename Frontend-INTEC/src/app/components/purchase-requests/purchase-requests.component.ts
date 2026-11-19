@@ -76,6 +76,9 @@ export class PurchaseRequestsComponent implements OnInit {
   selectedFormatItems = new Set<string>();
   quotedBy: string = '';
   isPrinting: boolean = false;
+  suppliedItems = new Set<string>();
+  isSavingSupply: boolean = false;
+  supplyEditable: boolean = false;
 
   constructor(
     private fb: FormBuilder,
@@ -429,12 +432,14 @@ export class PurchaseRequestsComponent implements OnInit {
     });
   }
 
-  viewRequest(request: RequestSummary): void {
+  viewRequest(request: RequestSummary, supplyEditable: boolean = false): void {
     this.purchaseRequestAdapterService.get(request.folio_request).subscribe({
       next: (data) => {
         this.selectedRequest = data;
+        this.supplyEditable = supplyEditable;
         this.quotedBy = '';
         this.selectAllFormatItems();
+        this.loadSuppliedItems();
         this.openModal('detalleSolicitudModal');
       },
       error: (err) => {
@@ -521,10 +526,72 @@ export class PurchaseRequestsComponent implements OnInit {
     });
   }
 
-  nextSupplyStatus(request: RequestSummary): string {
-    if (request.supply_status === this.statusPending) return this.statusPartial;
-    if (request.supply_status === this.statusPartial) return this.statusSupplied;
-    return this.statusPending;
+  private loadSuppliedItems(): void {
+    this.suppliedItems.clear();
+    if (!this.selectedRequest) return;
+
+    this.selectedRequest.details
+      .filter(item => item.supplied)
+      .forEach(item => this.suppliedItems.add(this.formatItemKey('detail', item.id)));
+    this.selectedRequest.additional
+      .filter(item => item.supplied)
+      .forEach(item => this.suppliedItems.add(this.formatItemKey('additional', item.id)));
+  }
+
+  isItemSupplied(source: ItemSource, id?: number): boolean {
+    return this.suppliedItems.has(this.formatItemKey(source, id));
+  }
+
+  toggleSuppliedItem(source: ItemSource, id?: number): void {
+    const key = this.formatItemKey(source, id);
+
+    if (this.suppliedItems.has(key)) {
+      this.suppliedItems.delete(key);
+    } else {
+      this.suppliedItems.add(key);
+    }
+  }
+
+  get suppliedCount(): number {
+    return this.suppliedItems.size;
+  }
+
+  get supplyRequiresAuthorization(): boolean {
+    if (!this.selectedRequest) return false;
+    const authorized = this.authLevels.every(level => this.getAuthLevel(level) === '1');
+    return !authorized && this.totalFormatItems > 0 && this.suppliedCount === this.totalFormatItems;
+  }
+
+  saveSupply(): void {
+    if (!this.selectedRequest || !this.supplyEditable) return;
+
+    if (this.supplyRequiresAuthorization) {
+      this.toastr.error('La solicitud necesita las tres autorizaciones para registrarse como surtida por completo', 'Advertencia');
+      return;
+    }
+
+    const folio = this.selectedRequest.header.folio_request;
+    const items: ItemSelection[] = Array.from(this.suppliedItems).map((key) => {
+      const [source, id] = key.split(':');
+      return { source: source as ItemSource, id: Number(id) };
+    });
+
+    this.isSavingSupply = true;
+
+    this.purchaseRequestAdapterService.updateSupply(folio, items).subscribe({
+      next: (data) => {
+        this.selectedRequest = data;
+        this.loadSuppliedItems();
+        this.isSavingSupply = false;
+        this.toastr.success(`Solicitud marcada como ${data.header.supply_status}`, 'Éxito');
+        this.refresh();
+      },
+      error: (err) => {
+        console.error('Error al registrar el surtido', err);
+        this.toastr.error(err?.error?.message || 'Error al registrar el surtido de la solicitud', 'Error');
+        this.isSavingSupply = false;
+      }
+    });
   }
 
   authorizationLabel(level: number): string {
@@ -541,10 +608,6 @@ export class PurchaseRequestsComponent implements OnInit {
     return 'auth-pending';
   }
 
-  supplyBlocked(request: RequestSummary): boolean {
-    return this.isDelivered(this.nextSupplyStatus(request)) && !request.authorized;
-  }
-
   isDelivered(status: string): boolean {
     return SUPPLY_DELIVERED_VALUES.includes(status);
   }
@@ -553,26 +616,6 @@ export class PurchaseRequestsComponent implements OnInit {
     if (this.isDelivered(status)) return 'supply-delivered';
     if (status === this.statusPartial) return 'supply-partial';
     return 'supply-pending';
-  }
-
-  toggleSupplied(request: RequestSummary): void {
-    const status = this.nextSupplyStatus(request);
-
-    if (this.isDelivered(status) && !request.authorized) {
-      this.toastr.error('La solicitud necesita las tres autorizaciones para registrar el suministro', 'Advertencia');
-      return;
-    }
-
-    this.purchaseRequestAdapterService.updateStatus(request.folio_request, status).subscribe({
-      next: () => {
-        this.toastr.success(`Solicitud marcada como ${status}`, 'Éxito');
-        this.refresh();
-      },
-      error: (err) => {
-        console.error('Error al cambiar el estatus', err);
-        this.toastr.error('Error al cambiar el estatus de la solicitud', 'Error');
-      }
-    });
   }
 
   authorize(level: number): void {

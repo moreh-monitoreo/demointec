@@ -129,12 +129,9 @@
                   <button class="btn-action btn-view" (click)="viewRequest(request)" title="Ver solicitud">
                     <i class="bi bi-eye"></i>
                   </button>
-                  <button class="btn-action btn-edit" (click)="toggleSupplied(request)"
-                          [class.btn-blocked]="supplyBlocked(request)"
-                          [title]="supplyBlocked(request)
-                            ? 'Requiere las tres autorizaciones para registrar el suministro'
-                            : 'Cambiar surtido a: ' + nextSupplyStatus(request)">
-                    <i class="bi" [ngClass]="supplyBlocked(request) ? 'bi-lock' : 'bi-arrow-repeat'"></i>
+                  <button class="btn-action btn-edit" (click)="viewRequest(request, true)"
+                          title="Registrar lo surtido por concepto">
+                    <i class="bi bi-box-seam"></i>
                   </button>
                   <button class="btn-action btn-delete" (click)="deleteRequest(request)" title="Eliminar">
                     <i class="bi bi-trash"></i>
@@ -467,6 +464,7 @@
                     <th>CONCEPTO</th>
                     <th class="text-center" style="width: 90px;">UNIDAD</th>
                     <th class="text-end" style="width: 110px;">IMPORTE</th>
+                    <th class="text-center" style="width: 90px;">SURTIDO</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -484,6 +482,13 @@
                     </td>
                     <td class="text-center">{{ detail.unit }}</td>
                     <td class="text-end">${{ detail.amount * detail.unit_cost | number:'1.2-2' }}</td>
+                    <td class="text-center">
+                      <input type="checkbox" class="form-check-input supply-check"
+                             [checked]="isItemSupplied('detail', detail.id)"
+                             (change)="toggleSuppliedItem('detail', detail.id)"
+                             [disabled]="!supplyEditable"
+                             title="Marcar como surtido">
+                    </td>
                   </tr>
                 </tbody>
               </table>
@@ -507,6 +512,7 @@
                     <th>CONCEPTO</th>
                     <th class="text-center" style="width: 90px;">UNIDAD</th>
                     <th class="text-end" style="width: 110px;">IMPORTE</th>
+                    <th class="text-center" style="width: 90px;">SURTIDO</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -521,6 +527,13 @@
                     <td>{{ extra.name }}</td>
                     <td class="text-center">{{ extra.unit }}</td>
                     <td class="text-end">${{ extra.amount * extra.unit_cost | number:'1.2-2' }}</td>
+                    <td class="text-center">
+                      <input type="checkbox" class="form-check-input supply-check"
+                             [checked]="isItemSupplied('additional', extra.id)"
+                             (change)="toggleSuppliedItem('additional', extra.id)"
+                             [disabled]="!supplyEditable"
+                             title="Marcar como surtido">
+                    </td>
                   </tr>
                 </tbody>
               </table>
@@ -532,6 +545,20 @@
           <span>Conceptos: {{ selectedRequest.totals.concepts }}</span>
           <span>Unidades: {{ selectedRequest.totals.units }}</span>
           <span class="ms-auto">Importe: ${{ selectedRequest.totals.amount | number:'1.2-2' }}</span>
+        </div>
+
+        <div class="print-bar mb-3">
+          <div class="print-bar-info">
+            <i class="bi bi-box-seam"></i>
+            Surtidos <strong>{{ suppliedCount }}</strong> de {{ totalFormatItems }} conceptos
+            <small class="d-block text-danger" *ngIf="supplyRequiresAuthorization">
+              Para marcarla como surtida por completo se requieren las tres autorizaciones
+            </small>
+          </div>
+          <button type="button" class="btn btn-warning" (click)="saveSupply()"
+                  [disabled]="!supplyEditable || isSavingSupply || supplyRequiresAuthorization">
+            <i class="bi bi-check2-square me-2"></i>{{ isSavingSupply ? 'Guardando...' : 'Guardar surtido' }}
+          </button>
         </div>
 
         <div class="print-bar">

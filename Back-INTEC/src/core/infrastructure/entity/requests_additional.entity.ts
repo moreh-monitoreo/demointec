@@ -51,6 +51,9 @@ import {
     @Column({ name: 'unit', type: 'varchar', length: 255})
     unit!: string;
   
+    @Column({ name: 'supplied', type: 'boolean', default: false })
+    supplied!: boolean;
+
     @Column({ name: 'status', type: 'boolean', default: true })
     status!: boolean;
   

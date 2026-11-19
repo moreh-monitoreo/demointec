@@ -15,5 +15,6 @@ export interface RequestDetails {
   category: string;
   subcategory: string;
   unit: string;
+  supplied?: boolean;
   status: boolean;
 } 
